@@ -67,7 +67,7 @@ function startSession() {
         html;
     $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
         $("#sourceLoginForm").hide();
-        $("#login").hide();
+        $("#sourceLoginBtn").hide();
         $("#logout").show();
         template = $("#sessionTemplate").html();
         html = Mustache.to_html(template, data);
