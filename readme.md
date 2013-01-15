@@ -4,7 +4,7 @@ readme
 
 about
 -----
-This app uses the admin API in AGOL and/or a custom Portal for ArcGIS to copy items from one to the other.
+This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [ArcGIS Online](http://www.arcgis.com/home/) and/or Portal for ArcGIS to copy items between accounts and across organizations.
 
 
 dependencies
