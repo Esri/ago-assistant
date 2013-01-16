@@ -37,9 +37,11 @@ function getToken(url, username, password, form, callback) {
             } else if (data.error.code === 400) {
                 var html = $("#loginErrorTemplate").html();
                 $(form).before(html);
+                callback();
             } else {
                 console.log("Unhandled error.");
                 console.log(data);
+                callback();
             }
         },
         error : function (response) {

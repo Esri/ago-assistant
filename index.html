@@ -50,11 +50,10 @@
 
 							<form class="navbar-form pull-right">
                                 
-                                <button type="button" class="btn" id="sourceLoginBtn" style="float: right; margin-left: 5px;" data-loading-text="Logging in...">
-									Login
-								</button>
-                                
                                 <div id="sourceLoginForm" class="control-group" style="float: right;">
+                                    <button type="button" class="btn" id="sourceLoginBtn" style="float: right; margin-left: 5px;" data-loading-text="Logging in...">
+                                        Login
+                                    </button>
                                     <input class="span2" type="text" value="https://arcgis.com/" id="sourceUrl">
                                     <input class="span2" type="text" placeholder="username" id="sourceUsername">
                                     <input class="span2" type="password" placeholder="password" id="sourcePassword">
@@ -184,8 +183,8 @@
 				$("#itemsArea").empty();  //Clear any old items.
 
                 $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function (token) {
+                    $("#sourceLoginBtn").button("reset");
                     $.when(storeCredentials("source", $("#sourceUrl").val(), token, function (callback) {
-                        $("#sourceLoginBtn").button("reset");
                         startSession();
                     }));
                 }));
