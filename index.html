@@ -209,6 +209,20 @@
                 }));
 			});
             
+            // Add a listener for the enter key on the source login form.
+            $("#sourceLoginForm").keypress(function (e) {
+                if(e.which == 13) {
+                    $("#sourceLoginBtn").focus().click();
+                }
+            });
+            
+            // Add a listener for the enter key on the destination login form.
+            $("#destinationLoginForm").keypress(function (e) {
+                if(e.which == 13) {
+                    $("#destinationLoginBtn").focus().click();
+                }
+            });
+            
             // Add a listener for the future logout button.
             $(document).on("click", "li[data-action='logout']", (function () {
                 sessionStorage.clear();
@@ -220,7 +234,7 @@
                 $("#sourceLoginBtn").show();
             }));
                 
-            // Add a listener for right click and disable the context menu.
+            // Disable the right click context menu.
             $(document).on("contextmenu", (function () {
                 return false;
             }));
