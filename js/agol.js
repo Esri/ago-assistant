@@ -256,6 +256,8 @@ function copyItem(id, folder) {
         $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
             
             // Clean up description items for posting.
+            // This is necessary because some of the item descriptions (e.g. tags and extent)
+            // are returned as arrays, but the post operation expects comma separated strings.
             $.each(description, function(item, value) {
                 if (value === null) {
                     value = "";
@@ -269,7 +271,7 @@ function copyItem(id, folder) {
                             arrayString = arrayString + "," + arrayValue;
                         }
                     });
-                    value = arrayString;
+                    description[item] = arrayString;
                 }
             });
             var thumbUrl = sourcePortal.url + "sharing/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
