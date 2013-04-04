@@ -90,7 +90,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                    <button id="destinationCancelBtn" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
                     <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
                 </div>
             </div>
@@ -197,8 +197,8 @@
 				$("#dropArea").empty(); //Clear any old items.
                 $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function (token) {
                     $("#destinationLoginBtn").button("reset");
-                    $("#copyModal").modal("hide");
                     $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function (callback) {
+                        $("#copyModal").modal("hide");
                         /*$(".content").addClass("disabled");
                         $(".content").css({ "opacity" : 1 });*/
                         $(".content").each(function(i) {
@@ -208,6 +208,11 @@
                     }));
                 }));
 			});
+            
+            // Reset the destination login form when the modal is canceled.
+            $("#destinationLoginBtn").click(function () {
+                $("#destinationLoginBtn").button("reset");
+            });
             
             // Add a listener for the enter key on the source login form.
             $("#sourceLoginForm").keypress(function (e) {
