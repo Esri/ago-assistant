@@ -147,13 +147,13 @@
                 
                 $("#destinationAgolBtn").click(function () {
                     $("#destinationUrl").attr({"placeholder" : "",
-                                               "value" : "http://arcgis.com/"});
+                                               "value" : "https://arcgis.com/"});
                     $("#destinationUrl").css({"visibility" : "hidden"});
                     $("#destinationAgolBtn").addClass("btn-primary");
                     $("#destinationPortalBtn").removeClass("btn-primary");
                 });
                 $("#destinationPortalBtn").click(function () {
-                    $("#destinationUrl").attr({"placeholder" : "http://myportal.com/",
+                    $("#destinationUrl").attr({"placeholder" : "https://myportal.com/",
                                                "value" : ""});
                     $("#destinationUrl").css({"visibility" : "visible"});
                     $("#destinationPortalBtn").addClass("btn-primary");

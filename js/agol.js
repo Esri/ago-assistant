@@ -1,11 +1,15 @@
 function validateUrl(el) {
+    // Check the url for errors (e.g. no trailing slash)
+    // and update it before sending.
     "use strict";
-    var url = $(el).val()
-        if (url === "") {
-            $(el).val("https://arcgis.com/");
-        } else if (url.charAt(url.length - 1) !== "/") {
-            $(el).val(url + "/");
-        }
+    var url = $(el).val();
+    if (url === "") {
+        url = "https://arcgis.com/";
+        $(el).val(url);
+    } else if (url.charAt(url.length - 1) !== "/") {
+        url = url + "/"
+        $(el).val(url);
+    }
     
     var html = $("#urlErrorTemplate").html();
     $.getJSON(url + "sharing?f=json", function (data) {
