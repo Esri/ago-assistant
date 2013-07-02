@@ -56,5 +56,5 @@ limitations under the License.
 
 A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/ago-assistant/master/license.txt) file.
 
-[](Esri Tags: ArcGIS ArcGIS-Online Portal Assistant Copy)
+[](Esri Tags: ArcGIS-Online Portal Assistant Copy Javascript)
 [](Esri Language: JavaScript)
