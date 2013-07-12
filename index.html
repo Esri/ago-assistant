@@ -365,10 +365,32 @@
         
         <script type="text/template" id="contentTemplate">
                
-            <button id="{{ id }}" class="btn btn-block content disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-itemType="{{ itemType }}">
+            <button id="{{ id }}" class="btn btn-block content disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
                 {{ title }} ({{type}})
             </button>
 
+        </script>
+        
+        <script type="text/template" id="contentTypeErrorTemplate">
+        
+            <div id="{{ id }}_alert" class="alert alert-info" style="position:absolute">
+                <button type="button" class="close" data-dismiss="alert">
+                    &times;
+                </button>
+                <strong>Sorry!</strong> {{ type }}s aren't supported yet.
+            </div>
+        
+        </script>
+        
+        <script type="text/template" id="contentCopyErrorTemplate">
+        
+            <div id="{{ id }}_alert" class="alert alter-error" style="position:absolute">
+                <button type="button" class="close" data-dismiss="alert">
+                    &times;
+                </button>
+                <strong>Copying failed!</strong> {{ message }}
+            </div>
+        
         </script>
 
 	</body>
