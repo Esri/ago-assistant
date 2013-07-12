@@ -131,7 +131,7 @@ function listItems() {
     };
 
     //Get user contents
-    $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
+    $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
         var folderTemplate = $("#folderTemplate").html(),
             contentTemplate = $("#contentTemplate").html();
         
@@ -154,11 +154,13 @@ function listItems() {
                 itemType : data.items[item].itemType,
                 type : data.items[item].type 
             };
+            console.log(data.items[item].itemType);
+            console.log(data.items[item]);
             var contentHtml = Mustache.to_html(contentTemplate, contentData);
             $("#collapseRoot").append(contentHtml);
         });
         $.each(data.folders, function(folder) {
-            $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
+            $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -201,7 +203,7 @@ function showDestinationFolders(url, token) {
     };
 
     // Show folders in the destination.
-    $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
+    $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
         var folderTemplate = $("#destinationFolderTemplate").html();
         var contentTemplate = $("#contentTemplate").html();
         
@@ -216,7 +218,7 @@ function showDestinationFolders(url, token) {
         makeDroppable("Dest" + folderData.id); // Enable the droppable area.
     
         $.each(data.folders, function(folder) {
-            $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
+            $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -257,7 +259,7 @@ function copyItem(id, folder) {
     if ($("#" + id).attr("data-itemType") === "text" || $("#" + id).attr("data-itemType") === "url") {
         // Item is text or url.
         // Get the full item description from the source.
-        $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
+        $.getJSON(sourcePortal.url + "sharing/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
             
             // Clean up description items for posting.
             // This is necessary because some of the item descriptions (e.g. tags and extent)
@@ -278,10 +280,10 @@ function copyItem(id, folder) {
                     description[item] = arrayString;
                 }
             });
-            var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
+            var thumbUrl = sourcePortal.url + "sharing/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
             
             // Get the item's data.
-            $.get(sourcePortal.url + "sharing/rest/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
+            $.get(sourcePortal.url + "sharing/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
                 var itemParams = {
                     item : description.title,
                     text : data,
@@ -290,7 +292,7 @@ function copyItem(id, folder) {
                 };
                 var addItemParams = $.param(description) + "&" + $.param(itemParams);
                 // Post it to the destination.
-                $.post(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function(response) {
+                $.post(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function(response) {
                     var responseJson = $.parseJSON(response);
                     if (responseJson.success === true) {
                         $("#" + id).addClass("btn-success");
