@@ -82,7 +82,7 @@ function startSession() {
         template = $("#loginSuccessTemplate").html();
         html = Mustache.to_html(template, data);
         $("#sessionDropdown").before(html);
-        $("#loginSuccess").fadeOut(5000);
+        $("#loginSuccess").fadeOut(4000);
         listItems();
     });
 }
@@ -111,6 +111,7 @@ function makeDroppable(id) {
 }
 
 function moveItem(item, destination) {
+    // Move the content element from the source to the destination elements on the page.
     "use strict";
     item.prependTo(destination);
     var itemId = $(item).attr("data-id");
@@ -131,7 +132,7 @@ function listItems() {
     };
 
     //Get user contents
-    $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
+    $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
         var folderTemplate = $("#folderTemplate").html(),
             contentTemplate = $("#contentTemplate").html();
         
@@ -150,8 +151,6 @@ function listItems() {
             var contentData = { 
                 id : data.items[item].id,
                 title : data.items[item].title,
-                item : data.items[item].item,
-                itemType : data.items[item].itemType,
                 type : data.items[item].type 
             };
             var contentHtml = Mustache.to_html(contentTemplate, contentData);
@@ -174,8 +173,6 @@ function listItems() {
                     var contentData = { 
                         id : folderItems.items[folderItem].id,
                         title : folderItems.items[folderItem].title,
-                        item : folderItems.items[folderItem].item,
-                        itemType : folderItems.items[folderItem].itemType,
                         type : folderItems.items[folderItem].type 
                     };
                     var contentHtml = Mustache.to_html(contentTemplate, contentData);
@@ -254,10 +251,12 @@ function copyItem(id, folder) {
         }
     };
     
-    if ($("#" + id).attr("data-itemType") === "text" || $("#" + id).attr("data-itemType") === "url") {
-        // Item is text or url.
+    var type = $("#" + id).attr("data-type");
+    if (isSupported(type)) {
+        console.log("supported...copy it");
+        
         // Get the full item description from the source.
-        $.getJSON(sourcePortal.url + "sharing/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
+        $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
             
             // Clean up description items for posting.
             // This is necessary because some of the item descriptions (e.g. tags and extent)
@@ -278,10 +277,10 @@ function copyItem(id, folder) {
                     description[item] = arrayString;
                 }
             });
-            var thumbUrl = sourcePortal.url + "sharing/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
+            var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
             
             // Get the item's data.
-            $.get(sourcePortal.url + "sharing/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
+            $.get(sourcePortal.url + "sharing/rest/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
                 var itemParams = {
                     item : description.title,
                     text : data,
@@ -290,25 +289,43 @@ function copyItem(id, folder) {
                 };
                 var addItemParams = $.param(description) + "&" + $.param(itemParams);
                 // Post it to the destination.
-                $.post(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function(response) {
+                $.post(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function(response) {
                     var responseJson = $.parseJSON(response);
                     if (responseJson.success === true) {
                         $("#" + id).addClass("btn-success");
                     } else if (responseJson.error) {
                         $("#" + id).addClass("btn-danger");
-                        alert("Copying failed: " + responseJson.error.message);
+                        var message = responseJson.error.message
+                        var html = Mustache.to_html( $("#contentCopyErrorTemplate").html(), {id: id,message: message} );
+                        $("#" + id).before(html);
                     } else {
-                        alert("Something went wrong.");
+                        var message = "Something went wrong."
+                        var html = Mustache.to_html( $("#contentCopyErrorTemplate").html(), {id: id,message: message} );
+                        $("#" + id).before(html);
                     }
                 });
             });
             
         });
-        
-    } else {
-        // Item is file.
-        alert("Copying files is not yet supported, but it's on the shortlist of new functionality.")
+    }
+    else {
+        // Not supported.
         $("#" + id).addClass("btn-warning");
+        var html = Mustache.to_html( $("#contentTypeErrorTemplate").html(), {id: id, type: type} );
+        $("#" + id).before(html);
+        $("#" + id + "_alert").fadeOut(6000);
     }
     
+}
+
+function isSupported(type) {
+    // Check if the content type is supported.
+    // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+    var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
+                          "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service", 
+                          "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set", 
+                          "Color Set", "Document Link"];
+    if ($.inArray(type, supportedTypes) > -1) {
+        return true;
+    }
 }
