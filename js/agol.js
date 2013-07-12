@@ -12,7 +12,7 @@ function validateUrl(el) {
     }
     
     var html = $("#urlErrorTemplate").html();
-    $.getJSON(url + "sharing?f=json", function (data) {
+    $.getJSON(url + "sharing/rest?f=json", function (data) {
         console.log("API v" + data.currentVersion); // List the API version.
     })
         .error(function () { $(el).parent().after(html); });
@@ -31,7 +31,7 @@ function getToken(url, username, password, form, callback) {
 
     //Get session token
     $.ajax({
-        url : url + "sharing/generateToken?",
+        url : url + "sharing/rest/generateToken?",
         type : "POST",
         dataType : 'json',
         data : tokenParams,
@@ -131,7 +131,7 @@ function listItems() {
     };
 
     //Get user contents
-    $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
+    $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "?" + $.param(sourcePortal.params), function (data) {
         var folderTemplate = $("#folderTemplate").html(),
             contentTemplate = $("#contentTemplate").html();
         
@@ -158,7 +158,7 @@ function listItems() {
             $("#collapseRoot").append(contentHtml);
         });
         $.each(data.folders, function(folder) {
-            $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
+            $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -201,7 +201,7 @@ function showDestinationFolders(url, token) {
     };
 
     // Show folders in the destination.
-    $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
+    $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
         var folderTemplate = $("#destinationFolderTemplate").html();
         var contentTemplate = $("#contentTemplate").html();
         
@@ -216,7 +216,7 @@ function showDestinationFolders(url, token) {
         makeDroppable("Dest" + folderData.id); // Enable the droppable area.
     
         $.each(data.folders, function(folder) {
-            $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
+            $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -278,7 +278,7 @@ function copyItem(id, folder) {
                     description[item] = arrayString;
                 }
             });
-            var thumbUrl = sourcePortal.url + "sharing/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
+            var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
             
             // Get the item's data.
             $.get(sourcePortal.url + "sharing/rest/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
