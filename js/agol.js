@@ -154,8 +154,6 @@ function listItems() {
                 itemType : data.items[item].itemType,
                 type : data.items[item].type 
             };
-            console.log(data.items[item].itemType);
-            console.log(data.items[item]);
             var contentHtml = Mustache.to_html(contentTemplate, contentData);
             $("#collapseRoot").append(contentHtml);
         });
