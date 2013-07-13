@@ -157,7 +157,7 @@ function listItems() {
             $("#collapseRoot").append(contentHtml);
         });
         $.each(data.folders, function(folder) {
-            $.getJSON(sourcePortal.url + "sharing/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
+            $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -198,7 +198,7 @@ function showDestinationFolders(url, token) {
     };
 
     // Show folders in the destination.
-    $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
+    $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function(data) {
         var folderTemplate = $("#destinationFolderTemplate").html();
         var contentTemplate = $("#contentTemplate").html();
         
@@ -213,7 +213,7 @@ function showDestinationFolders(url, token) {
         makeDroppable("Dest" + folderData.id); // Enable the droppable area.
     
         $.each(data.folders, function(folder) {
-            $.getJSON(destinationPortal.url + "sharing/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
+            $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function(folderItems) {
                 // Append the folder.
                 var folderData = { 
                     name : data.folders[folder].title,
@@ -252,9 +252,8 @@ function copyItem(id, folder) {
     };
     
     var type = $("#" + id).attr("data-type");
-    if (isSupported(type)) {
-        console.log("supported...copy it");
-        
+    // Ensure the content type is supported before trying to copy it.
+    if (isSupported(type)) {        
         // Get the full item description from the source.
         $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function(description) {
             
