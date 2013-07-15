@@ -111,7 +111,7 @@ function makeDroppable(id) {
 }
 
 function moveItem(item, destination) {
-    // Move the content element from the source to the destination elements on the page.
+    // Move the content DOM element from the source to the destination container on the page.
     "use strict";
     item.prependTo(destination);
     var itemId = $(item).attr("data-id");
@@ -262,18 +262,9 @@ function copyItem(id, folder) {
             // are returned as arrays, but the post operation expects comma separated strings.
             $.each(description, function(item, value) {
                 if (value === null) {
-                    value = "";
+                    description[item] = "";
                 } else if ( value instanceof Array) {
-                    //convert the array to a comma separated string
-                    var arrayString;
-                    $.each(value, function(index, arrayValue) {
-                        if (index === 0) {
-                            arrayString = arrayValue;
-                        } else if (index > 0) {
-                            arrayString = arrayString + "," + arrayValue;
-                        }
-                    });
-                    description[item] = arrayString;
+                    description[item] = arrayToString(value);
                 }
             });
             var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
@@ -327,4 +318,17 @@ function isSupported(type) {
     if ($.inArray(type, supportedTypes) > -1) {
         return true;
     }
+}
+
+function arrayToString(array) {
+    // Convert an array to a comma separated string.
+    var arrayString;
+    $.each(array, function(index, arrayValue) {
+        if (index === 0) {
+            arrayString = arrayValue;
+        } else if (index > 0) {
+            arrayString = arrayString + "," + arrayValue;
+        }
+    });
+    return arrayString;
 }
