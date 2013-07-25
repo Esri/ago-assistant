@@ -8,6 +8,7 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 
 ## Features
 * Copy content between accounts
+* Inspect content (view JSON)
 
 ## Instructions
 
