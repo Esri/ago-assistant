@@ -13,7 +13,7 @@
 
 	<body>
         
-		<div class="container-fluid">
+		<div class="container-fluid span12">
 
 			<div class="navbar navbar-inverse navbar-fixed-top">
 				<div class="navbar-inner">
@@ -27,13 +27,13 @@
 									<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help<b class="caret"></b></a>
 									<ul class="dropdown-menu">
 										<li data-action="about">
-											<a href="https://github.com/ecaldwell/AgolAssistant/blob/master/readme.md" target="_blank">About</a>
+											<a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
 										</li>
 										<li>
-											<a href="https://github.com/ecaldwell/AgolAssistant/issues" target="_blank" >Submit Feeback or Issues</a>
+											<a href="https://github.com/esri/ago-assistant/issues" target="_blank" >Submit Feeback or Issues</a>
 										</li>
                                         <li>
-											<a href="https://github.com/ecaldwell/AgolAssistant" target="_blank">Contribute on GitHub</a>
+											<a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
 										</li>
 									</ul>
 								</li>
@@ -42,7 +42,10 @@
                                     <ul class="dropdown-menu">
                                         <li data-action="copyContent"><a href="#copyModal" data-toggle="modal">Copy my content</a></li>
                                         <li data-action="updateMapServices">
-                                            <a href="#aboutModal">Update map services <span class="badge badge-info">Coming Soon</span></a>
+                                            <a href="#updateModal" data-toggle="modal">Update map services <span class="badge badge-info">Coming Soon</span></a>
+                                        </li>
+                                        <li data-action="inspectContent">
+                                            <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -94,6 +97,19 @@
                 <div class="modal-footer">
                     <button id="destinationCancelBtn" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
                     <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
+                </div>
+            </div>
+            
+            <div id="inspectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="copyModalLabel">Inspect my content</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Select any of your items to see the JSON contents.</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="inspectBtn" class="btn btn-primary">Got it!</button>
                 </div>
             </div>
             
@@ -206,6 +222,7 @@
                         $(".content").each(function(i) {
                             makeDraggable($(this)); //Make the content draggable.
                         });
+                        cleanUp();
                         showDestinationFolders();
                     }));
                 }));
@@ -250,6 +267,28 @@
             $.get("templates.html", function(templates) {
                 $("body").append(templates);
             });
+            
+            // Enable inspecting of content.
+            $("#inspectBtn").click(function () {
+                cleanUp();
+                $("#inspectModal").modal("hide");
+                $("#inspectBtn").button("reset");
+                // Add a listener for clicking on content buttons.
+                $(".content").click(function() {
+                    var id = $(this).attr("data-id"),
+                        title = $(this).text();
+                    $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(description) {
+                        var descriptionString = JSON.stringify(description, undefined, 4);
+                        $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(data) {
+                            var dataString = JSON.stringify(data, undefined, 4);
+                            var templateData = {title: title, description: descriptionString, data: dataString}
+                            var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
+                            // Add the HTML container with the item JSON.
+                            $("#dropArea").html(html);
+                        }));
+                    }));
+                });
+             });
 
 		</script>
 
