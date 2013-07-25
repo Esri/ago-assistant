@@ -188,6 +188,7 @@ function listItems() {
 
 function showDestinationFolders(url, token) {
     "use strict";
+    
     var destinationPortal = {
         url : sessionStorage["destinationUrl"],
         username : sessionStorage["destinationUsername"],
@@ -306,6 +307,23 @@ function copyItem(id, folder) {
         $("#" + id + "_alert").fadeOut(6000);
     }
     
+}
+
+function itemDescription(portal, id, token, callback) {
+    $.getJSON(portal + "sharing/rest/content/items/" + id + "?" + $.param({token : token, f : "json"}), function(description) {
+        callback(description);
+    });
+}
+
+function itemData(portal, id, token, callback) {
+    $.getJSON(portal + "sharing/rest/content/items/" + id + "/data?" + $.param({token : token, f : "json"}), function(data) {
+        callback(data);
+    });
+}
+
+function cleanUp() {
+    $("#dropArea").empty(); //Clear any old items.
+    $(".content").unbind("click"); // Remove old event handlers.
 }
 
 function isSupported(type) {
