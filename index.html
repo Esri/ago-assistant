@@ -1,76 +1,78 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>ArcGIS Online Assistant</title>
-        
+    
+    <head>
+        <meta charset="utf-8">
+        <title>ArcGIS Online Assistant</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link type="text/css" href="lib/bootstrap/css/bootstrap-responsive.min.css" rel="Stylesheet" />
-        
+        <link type="text/css" href="lib/bootstrap/css/bootstrap-responsive.min.css" rel="Stylesheet" />
         <script type="text/javascript" src="lib/jquery-1.8.3.min.js"></script>
         <link rel="stylesheet" href="css/jquery-ui-1.9.2.css" />
-		<link type="text/css" href="lib/bootstrap/css/bootstrap.min.css" rel="Stylesheet" />
-		<link type="text/css" href="css/styles.css" rel="Stylesheet" />
-		
-	</head>
-
-	<body>
-        
-		<div class="container-fluid span12 center">
-
-			<div class="navbar navbar-inverse navbar-fixed-top">
-				<div class="navbar-inner">
-					<div class="container">
-						<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a>
-						<a class="brand">ArcGIS Online Assistant</a>
-						<div class="nav-collapse collapse">
-
-							<ul class="nav">
-								<li  id="helpDropdown" class="dropdown">
-									<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help<b class="caret"></b></a>
-									<ul class="dropdown-menu">
-										<li data-action="about">
-											<a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
-										</li>
-										<li>
-											<a href="https://github.com/esri/ago-assistant/issues" target="_blank" >Submit Feeback or Issues</a>
-										</li>
-                                        <li>
-											<a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
-										</li>
-									</ul>
-								</li>
-                                <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to... <b class="caret"></b></a>
+        <link type="text/css" href="lib/bootstrap/css/bootstrap.min.css" rel="Stylesheet" />
+        <link type="text/css" href="css/styles.css" rel="Stylesheet" />
+    </head>
+    
+    <body>
+        <div class="container-fluid span12 center">
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand">ArcGIS Online Assistant</a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav">
+                                <li id="helpDropdown" class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
+                                        <b class="caret"></b>
+                                    </a>
                                     <ul class="dropdown-menu">
-                                        <li data-action="copyContent"><a href="#copyModal" data-toggle="modal">Copy my content</a></li>
+                                        <li data-action="about">
+                                            <a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/esri/ago-assistant/issues" target="_blank">Submit Feeback or Issues</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
+                                        <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li data-action="copyContent">
+                                            <a href="#copyModal" data-toggle="modal">Copy my content</a>
+                                        </li>
                                         <li data-action="updateMapServices">
-                                            <a href="#updateModal" data-toggle="modal">Update map services <span class="badge badge-info">Coming Soon</span></a>
+                                            <a href="#updateModal" data-toggle="modal">Update map services
+                                                <span class="badge badge-info">Coming Soon</span>
+                                            </a>
                                         </li>
                                         <li data-action="inspectContent">
                                             <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
                                         </li>
                                     </ul>
                                 </li>
-							</ul>
-
-							<form class="navbar-form pull-right">
-                                
+                            </ul>
+                            <form class="navbar-form pull-right">
                                 <div id="sourceLoginForm" class="control-group" style="float: right;">
-                                    <button type="button" class="btn" id="sourceLoginBtn" style="float: right; margin-left: 5px;" data-loading-text="Logging in...">
-                                        Login
-                                    </button>
+                                    <button type="button" class="btn" id="sourceLoginBtn" style="float: right; margin-left: 5px;" data-loading-text="Logging in...">Login</button>
                                     <input class="span2" type="text" value="https://arcgis.com/" id="sourceUrl">
                                     <input class="span2" type="text" placeholder="username" id="sourceUsername">
                                     <input class="span2" type="password" placeholder="password" id="sourcePassword">
                                 </div>
-								
-							</form>
-						</div><!--/.nav-collapse -->
-					</div>
-				</div>
-			</div>
-            
+                            </form>
+                        </div>
+                        <!--/.nav-collapse -->
+                    </div>
+                </div>
+            </div>
             <!-- Copy content modal -->
             <div id="copyModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
                 <div class="modal-header">
@@ -81,16 +83,16 @@
                     <p>Login to the destination account. You will then be able to select which items to copy.</p>
                     <br>
                     <form>
-                    <p>Select the destination:</p>
-                    <div class="input-append">
-                       <input class="span2" style = "float: right; margin-right: 100px" type="text" value="https://arcgis.com/" id="destinationUrl">
-                        <div class="btn-group" data-toggle="buttons-radio">
-                            <button type="button" id="destinationAgolBtn" class="btn" data-toggle="button">ArcGIS Online</button>
-                            <button type="button" id="destinationPortalBtn" class="btn" data-toggle="button">Portal for ArcGIS</button>
+                        <p>Select the destination:</p>
+                        <div class="input-append">
+                            <input class="span2" style="float: right; margin-right: 100px" type="text" value="https://arcgis.com/" id="destinationUrl">
+                            <div class="btn-group" data-toggle="buttons-radio">
+                                <button type="button" id="destinationAgolBtn" class="btn" data-toggle="button">ArcGIS Online</button>
+                                <button type="button" id="destinationPortalBtn" class="btn" data-toggle="button">Portal for ArcGIS</button>
+                            </div>
                         </div>
-                    </div>
-                    <br>
-                    <p>Enter your credentials:</p>
+                        <br>
+                        <p>Enter your credentials:</p>
                         <div id="destinationLoginForm" class="control-group" style="float: left;">
                             <input class="span2" type="text" placeholder="username" id="destinationUsername">
                             <input class="span2" type="password" placeholder="password" id="destinationPassword">
@@ -102,7 +104,6 @@
                     <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
                 </div>
             </div>
-            
             <!-- Inspect content modal -->
             <div id="inspectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
                 <div class="modal-header">
@@ -116,111 +117,116 @@
                     <button id="inspectBtn" class="btn btn-primary">Got it!</button>
                 </div>
             </div>
-            
             <!-- Item containers -->
-			<div id="itemsContainer" class="row-fluid">
-				<div id="itemsArea" class="span6 itemArea">
-					<!-- folder accordions go here -->
-				</div>
-
-				<div id="dropArea" class="span6 itemArea">
-					<!-- dropped items will go here -->
-				</div>
-			</div>
-
-		</div>
-
-		<script>
-            
+            <div id="itemsContainer" class="row-fluid">
+                <div id="itemsArea" class="span6 itemArea">
+                    <!-- folder accordions go here -->
+                </div>
+                <div id="dropArea" class="span6 itemArea">
+                    <!-- dropped items will go here -->
+                </div>
+            </div>
+        </div>
+        <script>
             function resizeContentAreas() {
                 "use strict";
                 var height = $(window).height() - 60;
                 $("#itemsArea").height(height);
                 $("#dropArea").height(height);
             }
-            
-			// Do stuff when DOM is ready.
-			$(document).ready(function () {
-                
+
+             // Do stuff when DOM is ready.
+            $(document).ready(function() {
+
                 // Detect IE.
                 if (navigator.appName == 'Microsoft Internet Explorer') {
                     alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
                 }
-                
+
                 $("#logout").hide();
 
-				resizeContentAreas() // Resize the content areas based on the window size.
-                
+                resizeContentAreas() // Resize the content areas based on the window size.
+
                 $("#sourceUrl").tooltip({
-					trigger : "hover",
-					title : "Use https://arcgis.com/ for AGOL Organization accounts.",
-					placement : "bottom"
-				});
-                
+                    trigger: "hover",
+                    title: "Use https://arcgis.com/ for AGOL Organization accounts.",
+                    placement: "bottom"
+                });
+
                 $("#destinationAgolBtn").tooltip({
-					trigger : "hover",
-					title : "Use this for AGOL Organization accounts.",
-					placement : "right"
-				});
-                
+                    trigger: "hover",
+                    title: "Use this for AGOL Organization accounts.",
+                    placement: "right"
+                });
+
                 // Preformat the copy login screen.
                 $("#destinationAgolBtn").button("toggle");
                 $("#destinationAgolBtn").addClass("btn-primary");
-                $("#destinationUrl").css({"visibility" : "hidden"});
-                
-                $("#destinationAgolBtn").click(function () {
-                    $("#destinationUrl").attr({"placeholder" : "",
-                                               "value" : "https://arcgis.com/"});
-                    $("#destinationUrl").css({"visibility" : "hidden"});
+                $("#destinationUrl").css({
+                    "visibility": "hidden"
+                });
+
+                $("#destinationAgolBtn").click(function() {
+                    $("#destinationUrl").attr({
+                        "placeholder": "",
+                        "value": "https://arcgis.com/"
+                    });
+                    $("#destinationUrl").css({
+                        "visibility": "hidden"
+                    });
                     $("#destinationAgolBtn").addClass("btn-primary");
                     $("#destinationPortalBtn").removeClass("btn-primary");
                 });
-                $("#destinationPortalBtn").click(function () {
-                    $("#destinationUrl").attr({"placeholder" : "https://myportal.com/",
-                                               "value" : ""});
-                    $("#destinationUrl").css({"visibility" : "visible"});
+                $("#destinationPortalBtn").click(function() {
+                    $("#destinationUrl").attr({
+                        "placeholder": "https://myportal.com/",
+                        "value": ""
+                    });
+                    $("#destinationUrl").css({
+                        "visibility": "visible"
+                    });
                     $("#destinationPortalBtn").addClass("btn-primary");
                     $("#destinationAgolBtn").removeClass("btn-primary");
                 });
 
-			});
-            
-            // Do stuff when the window is resized.
-            $(window).resize(function () {
+            });
+
+             // Do stuff when the window is resized.
+            $(window).resize(function() {
 
                 resizeContentAreas() // Resize the content areas based on the window size.
-                
+
             });
-            
-            // Validate the url when the input loses focus.
-            $("#sourceUrl").blur(function () {
+
+             // Validate the url when the input loses focus.
+            $("#sourceUrl").blur(function() {
                 validateUrl("#sourceUrl");
             });
-            $("#destinationUrl").blur(function () {
+            $("#destinationUrl").blur(function() {
                 validateUrl("#destinationUrl");
             });
 
-			// Source Login.
-			$("#sourceLoginBtn").click(function () {
+             // Source Login.
+            $("#sourceLoginBtn").click(function() {
                 $("#sourceLoginBtn").button("loading");
-				$("#itemsArea").empty();  //Clear any old items.
+                $("#itemsArea").empty(); //Clear any old items.
 
-                $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function (token) {
+                $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function(token) {
                     $("#sourceLoginBtn").button("reset");
-                    $.when(storeCredentials("source", $("#sourceUrl").val(), token, function (callback) {
+                    $.when(storeCredentials("source", $("#sourceUrl").val(), token, function(callback) {
                         startSession();
                     }));
                 }));
 
-			});
-            
-            // Destination Login.
-			$("#destinationLoginBtn").click(function () {
+            });
+
+             // Destination Login.
+            $("#destinationLoginBtn").click(function() {
                 $("#destinationLoginBtn").button("loading");
-				$("#dropArea").empty(); //Clear any old items.
-                $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function (token) {
+                $("#dropArea").empty(); //Clear any old items.
+                $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function(token) {
                     $("#destinationLoginBtn").button("reset");
-                    $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function (callback) {
+                    $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function(callback) {
                         $("#copyModal").modal("hide");
                         /*$(".content").addClass("disabled");
                         $(".content").css({ "opacity" : 1 });*/
@@ -231,55 +237,57 @@
                         showDestinationFolders();
                     }));
                 }));
-			});
-            
-            // Reset the destination login form when the modal is canceled.
-            $("#destinationLoginBtn").click(function () {
+            });
+
+             // Reset the destination login form when the modal is canceled.
+            $("#destinationLoginBtn").click(function() {
                 $("#destinationLoginBtn").button("reset");
             });
-            
-            // Add a listener for the enter key on the source login form.
-            $("#sourceLoginForm").keypress(function (e) {
-                if(e.which == 13) {
+
+             // Add a listener for the enter key on the source login form.
+            $("#sourceLoginForm").keypress(function(e) {
+                if (e.which == 13) {
                     $("#sourceLoginBtn").focus().click();
                 }
             });
-            
-            // Add a listener for the enter key on the destination login form.
-            $("#destinationLoginForm").keypress(function (e) {
-                if(e.which == 13) {
+
+             // Add a listener for the enter key on the destination login form.
+            $("#destinationLoginForm").keypress(function(e) {
+                if (e.which == 13) {
                     $("#destinationLoginBtn").focus().click();
                 }
             });
-            
-            // Add a listener for the future logout button.
-            $(document).on("click", "li[data-action='logout']", (function () {
+
+             // Add a listener for the future logout button.
+            $(document).on("click", "li[data-action='logout']", (function() {
                 sessionStorage.clear();
-                $("#itemsArea").empty();  //Clear any old items.
-				$("#dropArea").empty(); //Clear any old items.
+                $("#itemsArea").empty(); //Clear any old items.
+                $("#dropArea").empty(); //Clear any old items.
                 $("#sessionDropdown").remove();
-                $("#actionDropdown").css({"visibility": "hidden"});
+                $("#actionDropdown").css({
+                    "visibility": "hidden"
+                });
                 $("#sourceLoginForm").show();
                 $("#sourceLoginBtn").show();
             }));
-                
-            // Disable the right click context menu.
-            $(document).on("contextmenu", (function () {
+
+             // Disable the right click context menu.
+            $(document).on("contextmenu", (function() {
                 return false;
             }));
-            
-            // Load the html templates.
+
+             // Load the html templates.
             $.get("templates.html", function(templates) {
                 $("body").append(templates);
             });
-            
-            // Enable inspecting of content.
-            $("#inspectBtn").click(function () {
+
+             // Enable inspecting of content.
+            $("#inspectBtn").click(function() {
                 cleanUp();
                 $(".content").addClass("data-toggle");
                 $(".content").removeClass("disabled");
                 $(".content").attr("data-toggle", "button");
-                
+
                 $("#inspectModal").modal("hide");
                 $("#inspectBtn").button("reset");
                 // Add a listener for clicking on content buttons.
@@ -293,23 +301,24 @@
                         var descriptionString = JSON.stringify(description, undefined, 4);
                         $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(data) {
                             var dataString = JSON.stringify(data, undefined, 4);
-                            var templateData = {title: title, description: descriptionString, data: dataString}
+                            var templateData = {
+                                title: title,
+                                description: descriptionString,
+                                data: dataString
+                            }
                             var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                             // Add the HTML container with the item JSON.
                             $("#dropArea").html(html);
                         }));
                     }));
                 });
-             });
-
-		</script>
-
+            });
+        </script>
         <!-- loaded here to speed up the page load -->
         <script src="lib/jquery-ui-1.9.2.min.js"></script>
-		<script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="lib/mustache.js"></script>
-		<script type="text/javascript" src="js/agol.js"></script>
-
-	</body>
+        <script type="text/javascript" src="js/agol.js"></script>
+    </body>
 
 </html>
