@@ -271,10 +271,17 @@
             // Enable inspecting of content.
             $("#inspectBtn").click(function () {
                 cleanUp();
+                $(".content").addClass("data-toggle");
+                $(".content").removeClass("disabled");
+                $(".content").attr("data-toggle", "button");
+                
                 $("#inspectModal").modal("hide");
                 $("#inspectBtn").button("reset");
                 // Add a listener for clicking on content buttons.
                 $(".content").click(function() {
+                    $(".content").removeClass("active");
+                    $(".content").removeClass("btn-info");
+                    $(this).addClass("btn-info");
                     var id = $(this).attr("data-id"),
                         title = $(this).text();
                     $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(description) {
