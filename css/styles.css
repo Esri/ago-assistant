@@ -50,3 +50,9 @@ a .accordion-toggle {
 .accordion-toggle .badge {
     float: right;
 }
+
+.center {
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+}
