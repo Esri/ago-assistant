@@ -47,16 +47,19 @@
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li data-action="copyContent">
-                                            <a href="#copyModal" data-toggle="modal">Copy my content</a>
-                                        </li>
-                                        <li data-action="updateMapServices">
-                                            <a href="#updateModal" data-toggle="modal">Update map services
-                                                <span class="badge badge-info">Coming Soon</span>
-                                            </a>
+                                            <a href="#copyModal" data-toggle="modal">Copy Content</a>
                                         </li>
                                         <li data-action="inspectContent">
                                             <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
                                         </li>
+                                        <li data-action="stats">
+                                            <a>View My Stats</a>
+                                        </li>
+                                        <!--<li data-action="updateMapServices">
+                                            <a href="#updateModal" data-toggle="modal">Update Map Services
+                                                <span class="badge badge-info">Coming Soon</span>
+                                            </a>
+                                        </li>-->
                                     </ul>
                                 </li>
                             </ul>
@@ -105,7 +108,7 @@
                 </div>
             </div>
             <!-- Inspect content modal -->
-            <div id="inspectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+            <div id="inspectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="inspectModalLabel" aria-hidden="true">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                     <h3 id="copyModalLabel">Inspect my content</h3>
@@ -271,11 +274,6 @@
                 $("#sourceLoginBtn").show();
             }));
 
-             // Disable the right click context menu.
-            $(document).on("contextmenu", (function() {
-                return false;
-            }));
-
              // Load the html templates.
             $.get("templates.html", function(templates) {
                 $("body").append(templates);
@@ -313,12 +311,40 @@
                     }));
                 });
             });
+
+             // Add a listener for the future stats button.
+            $(document).on("click", "li[data-action='stats']", (function() {
+                $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function(user) {
+
+                    var template = $("#statsTemplate").html();
+                    var thumbnailUrl;
+                    // Check that the user has a thumbnail image.
+                    if (user.thumbnail) {
+                        thumbnailUrl = sessionStorage["sourceUrl"] + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage["sourceToken"];
+                    }
+                    else {
+                        thumbnailUrl = "assets/images/no-user-thumb.jpg";
+                    }
+                    var data = {
+                        username : user.username,
+                        thumbnail : thumbnailUrl
+                    }
+                    html = Mustache.to_html(template, data);
+                    $("body").append(html);
+                    statsCalendar(app.stats.activities);
+                    $("#statsModal").modal("show");
+                    
+                }));
+            }));
         </script>
         <!-- loaded here to speed up the page load -->
         <script src="lib/jquery-ui-1.9.2.min.js"></script>
         <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="lib/mustache.js"></script>
         <script type="text/javascript" src="js/agol.js"></script>
+        <script type="text/javascript" src="lib/d3.v3-3.2.7.min.js"></script>
+        <link rel="stylesheet" href="lib/cal-heatmap/cal-heatmap-3.0.7.css" />
+        <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap-3.0.7.min.js"></script>
     </body>
 
 </html>

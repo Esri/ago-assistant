@@ -1,3 +1,10 @@
+var app = {
+    user : {},
+    stats : {
+        activities : {}
+    },
+};
+
 function validateUrl(el) {
     // Check the url for errors (e.g. no trailing slash)
     // and update it before sending.
@@ -159,6 +166,7 @@ function listItems() {
             };
             var contentHtml = Mustache.to_html(contentTemplate, contentData);
             $("#collapseRoot").append(contentHtml);
+            storeActivity(data.items[item].modified);
         });
         $.each(data.folders, function (folder) {
             $.getJSON(sourcePortal.url + "sharing/rest/content/users/" + sourcePortal.username + "/" + data.folders[folder].id + "?" + $.param(sourcePortal.params), function (folderItems) {
@@ -179,6 +187,7 @@ function listItems() {
                         title: folderItems.items[folderItem].title,
                         type: folderItems.items[folderItem].type
                     };
+                    storeActivity(folderItems.items[folderItem].modified);
                     var contentHtml = Mustache.to_html(contentTemplate, contentData);
                     $("#collapse" + folderData.id).append(contentHtml);
                     // Collapse the accordion to avoid cluttering the display.
@@ -321,6 +330,25 @@ function copyItem(id, folder) {
 
 }
 
+function userContent(portal, user, token, callback) {
+    var content;
+    $.getJSON(portal + "sharing/rest/content/users/" + user + "?" + $.param({
+        token: token,
+        f: "json"
+    }), function (content) {
+        $.each(data.items, function (item) {
+            var contentData = {
+                id: data.items[item].id,
+                title: data.items[item].title,
+                type: data.items[item].type
+            };
+            var contentHtml = Mustache.to_html(contentTemplate, contentData);
+            $("#collapseRoot").append(contentHtml);
+        });
+        callback(content);
+    });
+}
+
 function itemDescription(portal, id, token, callback) {
     $.getJSON(portal + "sharing/rest/content/items/" + id + "?" + $.param({
         token: token,
@@ -367,4 +395,49 @@ function arrayToString(array) {
         }
     });
     return arrayString;
+}
+
+function storeActivity(activityTime) {
+    seconds = activityTime / 1000;
+    app.stats.activities[seconds] = 1;
+}
+
+function userProfile(portal, username, token, callback) {
+    $.getJSON(portal + "sharing/rest/community/users/" + username + "?" + $.param({
+        token: token,
+        f: "json"
+    }), function (user) {
+        callback(user);
+    });
+}
+
+function statsCalendar(activities) {
+
+    // Create a date object for tomorrow's date, last year.
+    // e.g. July 30th, 2013 becomes July 31st, 2012.
+    var today = new Date();
+    var startDate = new Date();
+    startDate.setDate(today.getDate() - 120);
+    
+    var cal = new CalHeatMap();
+    cal.init({
+        itemSelector: "#statsCalendar",
+        domain: "month",
+        subDomain: "day",
+        data: activities,
+        start: startDate,
+        cellSize: 10,
+        domainGutter: 10,
+        range: 4,
+        legend: [1, 2, 5, 10],
+        displayLegend: false,
+        itemNamespace: "cal",
+        previousSelector: "#calPrev",
+        nextSelector: "#calNext",
+        domainLabelFormat: "%b '%y",
+        onComplete: function() {
+            console.log($("svg.graph").width());
+        }
+    });
+
 }

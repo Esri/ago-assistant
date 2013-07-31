@@ -23,11 +23,6 @@
                 {{/name}}
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
-                <li>
-                    <a>Stats 
-                        <span class="label label-info">Coming Soon</span>
-                    </a>
-                </li>
                 <li data-action="logout">
                     <a>Logout</a>
                 </li>
@@ -155,4 +150,41 @@
         </div>
     </div>
 
+</script>
+
+<script type="text/template" id="statsTemplate">
+
+    <!-- User stats modal -->
+    <div id="statsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="statsModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="statsModalLabel">Stats for {{ username }}</h3>
+        </div>
+        <div class="modal-body">
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span3">
+                        <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 120px; max-height: 120px; margin-top: 10px">
+                    </div>
+                    <div class="span9" style="margin-left: 10px">
+                        <div style="margin-left: auto">
+                            <div class="span1" style="margin-top: 115px"><i id="calPrev" class="icon-backward"></i></div>
+                            <div class="span10" id="statsCalendar" style="width: auto">
+                                <div class="row-fluid">
+                                    <div class="span12">
+                                        <p class="muted" style="text-align: center">Recent Activity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span1" style="margin-top: 115px"><i id="calNext" class="icon-forward"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+            
 </script>
