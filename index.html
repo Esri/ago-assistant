@@ -332,7 +332,20 @@
                     html = Mustache.to_html(template, data);
                     $("body").append(html);
                     statsCalendar(app.stats.activities);
+                    
                     $("#statsModal").modal("show");
+                    
+                    $("#statsModal").on("shown", function () {
+                        // Apply CSS to style the calendar arrows.
+                        var calHeight = $(".calContainer").height();
+                        $(".calArrow").css("margin-top", (calHeight - 20) + "px");
+                    });
+                    
+                    $("#statsModal").on("hide", function () {
+                        // Destroy the existing stats modal.
+                        // This allows it to be properly recreated next time.
+                        $("#statsModal").remove();
+                    });
                     
                 }));
             }));
