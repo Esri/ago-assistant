@@ -437,6 +437,8 @@ function statsCalendar(activities) {
         previousSelector: "#calPrev",
         nextSelector: "#calNext",
         domainLabelFormat: "%b '%y",
+        subDomainTitleFormat: {empty: "No activity on {date}",
+                               filled: "Saved {count} {name} {connector} {date}"},
         domainDynamicDimension: false
     });
 
