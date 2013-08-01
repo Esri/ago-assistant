@@ -436,7 +436,6 @@ function statsCalendar(activities) {
         nextSelector: "#calNext",
         domainLabelFormat: "%b '%y",
         onComplete: function() {
-            console.log($("svg.graph").width());
         }
     });
 
