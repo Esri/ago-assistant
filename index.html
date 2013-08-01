@@ -211,35 +211,12 @@
 
              // Source Login.
             $("#sourceLoginBtn").click(function() {
-                $("#sourceLoginBtn").button("loading");
-                $("#itemsArea").empty(); //Clear any old items.
-
-                $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function(token) {
-                    $("#sourceLoginBtn").button("reset");
-                    $.when(storeCredentials("source", $("#sourceUrl").val(), token, function(callback) {
-                        startSession();
-                    }));
-                }));
-
+                loginSource();
             });
 
              // Destination Login.
             $("#destinationLoginBtn").click(function() {
-                $("#destinationLoginBtn").button("loading");
-                $("#dropArea").empty(); //Clear any old items.
-                $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function(token) {
-                    $("#destinationLoginBtn").button("reset");
-                    $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function(callback) {
-                        $("#copyModal").modal("hide");
-                        /*$(".content").addClass("disabled");
-                        $(".content").css({ "opacity" : 1 });*/
-                        $(".content").each(function(i) {
-                            makeDraggable($(this)); //Make the content draggable.
-                        });
-                        cleanUp();
-                        showDestinationFolders();
-                    }));
-                }));
+                login();
             });
 
              // Reset the destination login form when the modal is canceled.
@@ -263,15 +240,7 @@
 
              // Add a listener for the future logout button.
             $(document).on("click", "li[data-action='logout']", (function() {
-                sessionStorage.clear();
-                $("#itemsArea").empty(); //Clear any old items.
-                $("#dropArea").empty(); //Clear any old items.
-                $("#sessionDropdown").remove();
-                $("#actionDropdown").css({
-                    "visibility": "hidden"
-                });
-                $("#sourceLoginForm").show();
-                $("#sourceLoginBtn").show();
+                logout();
             }));
 
              // Load the html templates.
@@ -282,79 +251,20 @@
              // Enable inspecting of content.
             $("#inspectBtn").click(function() {
                 cleanUp();
-                $(".content").addClass("data-toggle");
-                $(".content").removeClass("disabled");
-                $(".content").attr("data-toggle", "button");
-
-                $("#inspectModal").modal("hide");
-                $("#inspectBtn").button("reset");
-                // Add a listener for clicking on content buttons.
-                $(".content").click(function() {
-                    $(".content").removeClass("active");
-                    $(".content").removeClass("btn-info");
-                    $(this).addClass("btn-info");
-                    var id = $(this).attr("data-id"),
-                        title = $(this).text();
-                    $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(description) {
-                        var descriptionString = JSON.stringify(description, undefined, 4);
-                        $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function(data) {
-                            var dataString = JSON.stringify(data, undefined, 4);
-                            var templateData = {
-                                title: title,
-                                description: descriptionString,
-                                data: dataString
-                            }
-                            var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
-                            // Add the HTML container with the item JSON.
-                            $("#dropArea").html(html);
-                        }));
-                    }));
-                });
+                inspectContent();
             });
 
              // Add a listener for the future stats button.
             $(document).on("click", "li[data-action='stats']", (function() {
-                $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function(user) {
-
-                    var template = $("#statsTemplate").html();
-                    var thumbnailUrl;
-                    // Check that the user has a thumbnail image.
-                    if (user.thumbnail) {
-                        thumbnailUrl = sessionStorage["sourceUrl"] + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage["sourceToken"];
-                    }
-                    else {
-                        thumbnailUrl = "assets/images/no-user-thumb.jpg";
-                    }
-                    var data = {
-                        username : user.username,
-                        thumbnail : thumbnailUrl
-                    }
-                    html = Mustache.to_html(template, data);
-                    $("body").append(html);
-                    statsCalendar(app.stats.activities);
-                    
-                    $("#statsModal").modal("show");
-                    
-                    $("#statsModal").on("shown", function () {
-                        // Apply CSS to style the calendar arrows.
-                        var calHeight = $(".calContainer").height();
-                        $(".calArrow").css("margin-top", (calHeight - 20) + "px");
-                    });
-                    
-                    $("#statsModal").on("hide", function () {
-                        // Destroy the existing stats modal.
-                        // This allows it to be properly recreated next time.
-                        $("#statsModal").remove();
-                    });
-                    
-                }));
+                viewStats();
             }));
         </script>
         <!-- loaded here to speed up the page load -->
         <script src="lib/jquery-ui-1.9.2.min.js"></script>
         <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="lib/mustache.js"></script>
-        <script type="text/javascript" src="js/agol.js"></script>
+        <script type="text/javascript" src="js/portal.js"></script>
+        <script type="text/javascript" src="js/app.js"></script>
         <script type="text/javascript" src="lib/d3.v3-3.2.7.min.js"></script>
         <link rel="stylesheet" href="lib/cal-heatmap/cal-heatmap-3.0.7.css" />
         <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap-3.0.7.min.js"></script>

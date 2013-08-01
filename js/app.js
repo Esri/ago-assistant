@@ -1,77 +1,20 @@
 var app = {
-    user : {},
-    stats : {
-        activities : {}
+    user: {},
+    stats: {
+        activities: {}
     },
 };
 
-function validateUrl(el) {
-    // Check the url for errors (e.g. no trailing slash)
-    // and update it before sending.
-    "use strict";
-    var url = $(el).val();
-    if (url === "") {
-        url = "https://arcgis.com/";
-        $(el).val(url);
-    } else if (url.charAt(url.length - 1) !== "/") {
-        url = url + "/"
-        $(el).val(url);
-    }
+function loginSource() {
+    $("#sourceLoginBtn").button("loading");
+    $("#itemsArea").empty(); //Clear any old items.
 
-    var html = $("#urlErrorTemplate").html();
-    $.getJSON(url + "sharing/rest?f=json", function (data) {
-        console.log("API v" + data.currentVersion); // List the API version.
-    })
-        .error(function () {
-        $(el).parent().after(html);
-    });
-}
-
-function getToken(url, username, password, form, callback) {
-    "use strict";
-    // Define token parameters.
-    var token, tokenParams = {
-            username: username,
-            password: password,
-            referer: $(location).attr("href"),
-            expiration: 60,
-            f: "json"
-        };
-
-    //Get session token
-    $.ajax({
-        url: url + "sharing/rest/generateToken?",
-        type: "POST",
-        dataType: 'json',
-        data: tokenParams,
-        success: function (data) {
-            if (data.token) {
-                callback(data.token);
-            } else if (data.error.code === 400) {
-                var html = $("#loginErrorTemplate").html();
-                $(form).before(html);
-                callback();
-            } else {
-                console.log("Unhandled error.");
-                console.log(data);
-                callback();
-            }
-        },
-        error: function (response) {
-            console.log("Error");
-            console.log(response);
-        }
-    });
-}
-
-function storeCredentials(direction, url, token, callback) {
-    "use strict";
-    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
-        sessionStorage[direction + "Token"] = token;
-        sessionStorage[direction + "Url"] = url;
-        sessionStorage[direction + "Username"] = data.user.username;
-        callback();
-    });
+    $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function (token) {
+        $("#sourceLoginBtn").button("reset");
+        $.when(storeCredentials("source", $("#sourceUrl").val(), token, function (callback) {
+            startSession();
+        }));
+    }));
 }
 
 function startSession() {
@@ -98,6 +41,114 @@ function startSession() {
     });
 }
 
+
+function storeCredentials(direction, url, token, callback) {
+    "use strict";
+    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
+        sessionStorage[direction + "Token"] = token;
+        sessionStorage[direction + "Url"] = url;
+        sessionStorage[direction + "Username"] = data.user.username;
+        callback();
+    });
+}
+
+function loginDestination() {
+    $("#destinationLoginBtn").button("loading");
+    $("#dropArea").empty(); //Clear any old items.
+    $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function (token) {
+        $("#destinationLoginBtn").button("reset");
+        $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function (callback) {
+            $("#copyModal").modal("hide");
+            /*$(".content").addClass("disabled");
+            $(".content").css({ "opacity" : 1 });*/
+            $(".content").each(function (i) {
+                makeDraggable($(this)); //Make the content draggable.
+            });
+            cleanUp();
+            showDestinationFolders();
+        }));
+    }));
+}
+
+function logout() {
+    sessionStorage.clear();
+    $("#itemsArea").empty(); //Clear any old items.
+    $("#dropArea").empty(); //Clear any old items.
+    $("#sessionDropdown").remove();
+    $("#actionDropdown").css({
+        "visibility": "hidden"
+    });
+    $("#sourceLoginForm").show();
+    $("#sourceLoginBtn").show();
+}
+
+function inspectContent() {
+    $(".content").addClass("data-toggle");
+    $(".content").removeClass("disabled");
+    $(".content").attr("data-toggle", "button");
+
+    $("#inspectModal").modal("hide");
+    $("#inspectBtn").button("reset");
+    // Add a listener for clicking on content buttons.
+    $(".content").click(function () {
+        $(".content").removeClass("active");
+        $(".content").removeClass("btn-info");
+        $(this).addClass("btn-info");
+        var id = $(this).attr("data-id"),
+            title = $(this).text();
+        $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
+            var descriptionString = JSON.stringify(description, undefined, 4);
+            $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
+                var dataString = JSON.stringify(data, undefined, 4);
+                var templateData = {
+                    title: title,
+                    description: descriptionString,
+                    data: dataString
+                }
+                var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
+                // Add the HTML container with the item JSON.
+                $("#dropArea").html(html);
+            }));
+        }));
+    });
+}
+
+function viewStats() {
+    $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function (user) {
+
+        var template = $("#statsTemplate").html();
+        var thumbnailUrl;
+        // Check that the user has a thumbnail image.
+        if (user.thumbnail) {
+            thumbnailUrl = sessionStorage["sourceUrl"] + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage["sourceToken"];
+        } else {
+            thumbnailUrl = "assets/images/no-user-thumb.jpg";
+        }
+        var data = {
+            username: user.username,
+            thumbnail: thumbnailUrl
+        }
+        html = Mustache.to_html(template, data);
+        $("body").append(html);
+        statsCalendar(app.stats.activities);
+
+        $("#statsModal").modal("show");
+
+        $("#statsModal").on("shown", function () {
+            // Apply CSS to style the calendar arrows.
+            var calHeight = $(".calContainer").height();
+            $(".calArrow").css("margin-top", (calHeight - 20) + "px");
+        });
+
+        $("#statsModal").on("hide", function () {
+            // Destroy the existing stats modal.
+            // This allows it to be properly recreated next time.
+            $("#statsModal").remove();
+        });
+
+    }));
+}
+
 function makeDraggable(el) {
     el.draggable({
         cancel: false,
@@ -121,14 +172,61 @@ function makeDroppable(id) {
     });
 }
 
-function moveItem(item, destination) {
-    // Move the content DOM element from the source to the destination container on the page.
-    "use strict";
-    item.prependTo(destination);
-    var itemId = $(item).attr("data-id");
-    var destinationFolder = $(item).parent().attr("data-folder");
-    copyItem(itemId, destinationFolder);
+function cleanUp() {
+    $("#dropArea").empty(); //Clear any old items.
+    $(".content").unbind("click"); // Remove old event handlers.
+}
 
+function isSupported(type) {
+    // Check if the content type is supported.
+    // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+    var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
+                          "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
+                          "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
+                          "Color Set", "Document Link"];
+    if ($.inArray(type, supportedTypes) > -1) {
+        return true;
+    }
+}
+
+function statsCalendar(activities) {
+
+    // Create a date object for three months ago.
+    var today = new Date();
+    var startDate = new Date();
+    startDate.setMonth(today.getMonth() - 2);
+    if (today.getMonth() < 2) {
+        startDate.setYear(today.getYear() - 1);
+    }
+
+    var cal = new CalHeatMap();
+    cal.init({
+        itemSelector: "#statsCalendar",
+        domain: "month",
+        subDomain: "day",
+        data: activities,
+        start: startDate,
+        cellSize: 10,
+        domainGutter: 10,
+        range: 3,
+        legend: [1, 2, 5, 10],
+        displayLegend: false,
+        itemNamespace: "cal",
+        previousSelector: "#calPrev",
+        nextSelector: "#calNext",
+        domainLabelFormat: "%b '%y",
+        subDomainTitleFormat: {
+            empty: "No activity on {date}",
+            filled: "Saved {count} {name} {connector} {date}"
+        },
+        domainDynamicDimension: false
+    });
+
+}
+
+function storeActivity(activityTime) {
+    seconds = activityTime / 1000;
+    app.stats.activities[seconds] = 1;
 }
 
 function listItems() {
@@ -245,6 +343,16 @@ function showDestinationFolders(url, token) {
 
 }
 
+function moveItem(item, destination) {
+    // Move the content DOM element from the source to the destination container on the page.
+    "use strict";
+    item.prependTo(destination);
+    var itemId = $(item).attr("data-id");
+    var destinationFolder = $(item).parent().attr("data-folder");
+    copyItem(itemId, destinationFolder);
+
+}
+
 function copyItem(id, folder) {
     "use strict";
     var sourcePortal = {
@@ -327,119 +435,5 @@ function copyItem(id, folder) {
         $("#" + id).before(html);
         $("#" + id + "_alert").fadeOut(6000);
     }
-
-}
-
-function userContent(portal, user, token, callback) {
-    var content;
-    $.getJSON(portal + "sharing/rest/content/users/" + user + "?" + $.param({
-        token: token,
-        f: "json"
-    }), function (content) {
-        $.each(data.items, function (item) {
-            var contentData = {
-                id: data.items[item].id,
-                title: data.items[item].title,
-                type: data.items[item].type
-            };
-            var contentHtml = Mustache.to_html(contentTemplate, contentData);
-            $("#collapseRoot").append(contentHtml);
-        });
-        callback(content);
-    });
-}
-
-function itemDescription(portal, id, token, callback) {
-    $.getJSON(portal + "sharing/rest/content/items/" + id + "?" + $.param({
-        token: token,
-        f: "json"
-    }), function (description) {
-        callback(description);
-    });
-}
-
-function itemData(portal, id, token, callback) {
-    $.getJSON(portal + "sharing/rest/content/items/" + id + "/data?" + $.param({
-        token: token,
-        f: "json"
-    }), function (data) {
-        callback(data);
-    });
-}
-
-function cleanUp() {
-    $("#dropArea").empty(); //Clear any old items.
-    $(".content").unbind("click"); // Remove old event handlers.
-}
-
-function isSupported(type) {
-    // Check if the content type is supported.
-    // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
-    var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
-                          "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
-                          "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
-                          "Color Set", "Document Link"];
-    if ($.inArray(type, supportedTypes) > -1) {
-        return true;
-    }
-}
-
-function arrayToString(array) {
-    // Convert an array to a comma separated string.
-    var arrayString;
-    $.each(array, function (index, arrayValue) {
-        if (index === 0) {
-            arrayString = arrayValue;
-        } else if (index > 0) {
-            arrayString = arrayString + "," + arrayValue;
-        }
-    });
-    return arrayString;
-}
-
-function storeActivity(activityTime) {
-    seconds = activityTime / 1000;
-    app.stats.activities[seconds] = 1;
-}
-
-function userProfile(portal, username, token, callback) {
-    $.getJSON(portal + "sharing/rest/community/users/" + username + "?" + $.param({
-        token: token,
-        f: "json"
-    }), function (user) {
-        callback(user);
-    });
-}
-
-function statsCalendar(activities) {
-
-    // Create a date object for three months ago.
-    var today = new Date();
-    var startDate = new Date();
-    startDate.setMonth(today.getMonth() - 2);
-    if (today.getMonth() < 2) {
-        startDate.setYear(today.getYear() - 1);
-    }
-    
-    var cal = new CalHeatMap();
-    cal.init({
-        itemSelector: "#statsCalendar",
-        domain: "month",
-        subDomain: "day",
-        data: activities,
-        start: startDate,
-        cellSize: 10,
-        domainGutter: 10,
-        range: 3,
-        legend: [1, 2, 5, 10],
-        displayLegend: false,
-        itemNamespace: "cal",
-        previousSelector: "#calPrev",
-        nextSelector: "#calNext",
-        domainLabelFormat: "%b '%y",
-        subDomainTitleFormat: {empty: "No activity on {date}",
-                               filled: "Saved {count} {name} {connector} {date}"},
-        domainDynamicDimension: false
-    });
 
 }
