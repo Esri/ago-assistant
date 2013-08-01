@@ -413,11 +413,13 @@ function userProfile(portal, username, token, callback) {
 
 function statsCalendar(activities) {
 
-    // Create a date object for tomorrow's date, last year.
-    // e.g. July 30th, 2013 becomes July 31st, 2012.
+    // Create a date object for three months ago.
     var today = new Date();
     var startDate = new Date();
-    startDate.setDate(today.getDate() - 120);
+    startDate.setMonth(today.getMonth() - 2);
+    if (today.getMonth() < 2) {
+        startDate.setYear(today.getYear() - 1);
+    }
     
     var cal = new CalHeatMap();
     cal.init({
@@ -428,16 +430,16 @@ function statsCalendar(activities) {
         start: startDate,
         cellSize: 10,
         domainGutter: 10,
-        range: 4,
+        range: 3,
         legend: [1, 2, 5, 10],
         displayLegend: false,
         itemNamespace: "cal",
         previousSelector: "#calPrev",
         nextSelector: "#calNext",
         domainLabelFormat: "%b '%y",
-        onComplete: function() {
-            console.log($("svg.graph").width());
-        }
+        subDomainTitleFormat: {empty: "No activity on {date}",
+                               filled: "Saved {count} {name} {connector} {date}"},
+        domainDynamicDimension: false
     });
 
 }
