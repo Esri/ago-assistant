@@ -1,39 +1,31 @@
-function validateUrl(el) {
-    // Check the url for errors (e.g. no trailing slash)
-    // and update it before sending.
-    "use strict";
-    var url = $(el).val();
-    if (url === "") {
-        url = "https://arcgis.com/";
-        $(el).val(url);
-    } else if (url.charAt(url.length - 1) !== "/") {
-        url = url + "/"
-        $(el).val(url);
-    }
-
-    var html = $("#urlErrorTemplate").html();
-    $.getJSON(url + "sharing/rest?f=json", function (data) {
-        console.log("API v" + data.currentVersion); // List the API version.
-    })
-        .error(function () {
-        $(el).parent().after(html);
+function portalVersion(portal, callback) {
+    $.ajax({
+        url: portal + "sharing/rest?f=json",
+        dataType: "json",
+        success: function (data) {
+            callback(data.currentVersion);
+        },
+        error: function (data, textStatus, xhr) {
+            callback(textStatus);
+        }
     });
 }
 
-function getToken(url, username, password, form, callback) {
+function getToken(portal, username, password, form, callback) {
     "use strict";
     // Define token parameters.
-    var token, tokenParams = {
+    var token,
+        tokenParams = {
             username: username,
             password: password,
-            referer: $(location).attr("href"),
+            referer: $(location).attr("href"), // URL of the app.
             expiration: 60,
             f: "json"
         };
 
     //Get session token
     $.ajax({
-        url: url + "sharing/rest/generateToken?",
+        url: portal + "sharing/rest/generateToken?",
         type: "POST",
         dataType: 'json',
         data: tokenParams,

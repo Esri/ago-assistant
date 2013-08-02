@@ -5,6 +5,34 @@ var app = {
     },
 };
 
+function validateUrl(el) {
+    // Check the url for errors (e.g. no trailing slash)
+    // and update it before sending.
+    "use strict";
+    var portal = $.trim($(el).val()), // trim whitespace
+        html = $("#urlErrorTemplate").html();
+    if (portal === "") {
+        // Default to ArcGIS Online.
+        portal = "https://arcgis.com/";
+    } else if (portal.search("/home") > 0) {
+        // Strip the /home endpoint.
+        portal = portal.substr(0, portal.search("/home")) + "/";
+    } else if (portal.charAt(portal.length - 1) !== "/") {
+        // Add the trailing slash.
+        portal = portal + "/"
+    }
+    $(el).val(portal);
+
+    $.when(portalVersion(portal, function (response) {
+        if (response === "error") {
+            $(el).parent().after(html);    
+        }
+        else {
+            console.log("API v" + response);
+        }
+    }));
+}
+
 function loginSource() {
     $("#sourceLoginBtn").button("loading");
     $("#itemsArea").empty(); //Clear any old items.
@@ -40,7 +68,6 @@ function startSession() {
         listItems();
     });
 }
-
 
 function storeCredentials(direction, url, token, callback) {
     "use strict";
@@ -294,12 +321,10 @@ function listItems() {
             });
         });
     });
-
 }
 
 function showDestinationFolders(url, token) {
     "use strict";
-
     var destinationPortal = {
         url: sessionStorage["destinationUrl"],
         username: sessionStorage["destinationUsername"],
@@ -340,7 +365,6 @@ function showDestinationFolders(url, token) {
             });
         });
     });
-
 }
 
 function moveItem(item, destination) {
@@ -350,7 +374,6 @@ function moveItem(item, destination) {
     var itemId = $(item).attr("data-id");
     var destinationFolder = $(item).parent().attr("data-folder");
     copyItem(itemId, destinationFolder);
-
 }
 
 function copyItem(id, folder) {
@@ -423,7 +446,6 @@ function copyItem(id, folder) {
                     }
                 });
             });
-
         });
     } else {
         // Not supported.
@@ -435,5 +457,4 @@ function copyItem(id, folder) {
         $("#" + id).before(html);
         $("#" + id + "_alert").fadeOut(6000);
     }
-
 }
