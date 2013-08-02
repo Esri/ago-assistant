@@ -167,9 +167,8 @@ function viewStats() {
             $(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
-        $("#statsModal").on("hide", function () {
-            // Destroy the existing stats modal.
-            // This allows it to be properly recreated next time.
+        $("#statsModal").on("hidden", function () {
+            // Destroy the stats modal so it can be properly rendered next time.
             $("#statsModal").remove();
         });
 
