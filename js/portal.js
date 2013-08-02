@@ -27,7 +27,7 @@ function getToken(portal, username, password, form, callback) {
     $.ajax({
         url: portal + "sharing/rest/generateToken?",
         type: "POST",
-        dataType: 'json',
+        dataType: "json",
         data: tokenParams,
         success: function (data) {
             if (data.token) {
