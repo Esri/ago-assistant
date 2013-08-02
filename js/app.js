@@ -14,9 +14,12 @@ function validateUrl(el) {
     if (portal === "") {
         // Default to ArcGIS Online.
         portal = "https://arcgis.com/";
-    } else if (portal.search("/home") > 0) {
+    } else if (portal.search("/home/") > 0) {
         // Strip the /home endpoint.
-        portal = portal.substr(0, portal.search("/home")) + "/";
+        portal = portal.substr(0, portal.search("/home/")) + "/";
+    } else if (portal.search("/sharing/") > 0) {
+        // Strip the /home endpoint.
+        portal = portal.substr(0, portal.search("/sharing/")) + "/";
     } else if (portal.charAt(portal.length - 1) !== "/") {
         // Add the trailing slash.
         portal = portal + "/"
