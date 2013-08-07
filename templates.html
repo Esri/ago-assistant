@@ -75,7 +75,7 @@
 
     <div class="accordion-group">
         <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse{{ id }}"><span class="badge"> {{ count }} </span> {{ name }} </a>
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse{{ id }}"><span class="badge"> {{ count }} </span> {{ title }} </a>
         </div>
         <div id="collapse{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
             <!-- content gets inserted here -->
@@ -84,11 +84,11 @@
 
 </script>
 
-<script type="text/template" id="destinationFolderTemplate">
+<script type="text/template" id="dropFolderTemplate">
 
     <div class="accordion-group">
         <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest{{ id }}"> {{ name }} </a>
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest{{ id }}"> {{ title }} </a>
         </div>
         <div id="collapseDest{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
             <div class="dropArea">

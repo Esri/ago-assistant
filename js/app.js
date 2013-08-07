@@ -259,32 +259,41 @@ function storeActivity(activityTime) {
 
 function listItems() {
     "use strict";
-    var sourcePortal = {
-        url: sessionStorage["sourceUrl"],
-        username: sessionStorage["sourceUsername"],
-        params: {
-            token: sessionStorage["sourceToken"],
-            f: "json"
-        }
-    };
+    var url = sessionStorage["sourceUrl"],
+        username = sessionStorage["sourceUsername"],
+        token = sessionStorage["sourceToken"];
 
-    $.when(userContent(sourcePortal.url, sourcePortal.username, sourcePortal.params.token, "/", function (content) {
+    $.when(userContent(url, username, token, "/", function (content) {
         // Append the root folder accordion.
-        appendFolder("#itemsArea", content);
+        var folderData = {
+            title: "Root",
+            id: "Root",
+            count: content.items.length
+        };
+        var html = Mustache.to_html($("#folderTemplate").html(), folderData)
+        $("#itemsArea").append(html);
         // Append the root items to the Root folder.
         $.each(content.items, function (item) {
-            appendContent("#collapseRoot", content.items[item]);
+            var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
+            $("#collapseRoot").append(html);
             storeActivity(content.items[item].modified);
         });
         $.each(content.folders, function (folder) {
-            $.when(userContent(sourcePortal.url, sourcePortal.username, sourcePortal.params.token, content.folders[folder].id, function (content) {
+            $.when(userContent(url, username, token, content.folders[folder].id, function (content) {
+                var folderData = {
+                    title: content.currentFolder.title,
+                    id: content.currentFolder.id,
+                    count: content.items.length
+                };
                 // Append an accordion for the folder.
-                appendFolder("#itemsArea", content);
+                var html = Mustache.to_html($("#folderTemplate").html(), folderData)
+                $("#itemsArea").append(html);
                 // Collapse the accordion to avoid cluttering the display.
                 $("#collapse" + content.currentFolder.id).collapse("hide");
                 // Append the items to the folder.
                 $.each(content.items, function (item) {
-                    appendContent("#collapse" + content.currentFolder.id, content.items[item]);
+                    var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
+                    $("#collapse" + content.currentFolder.id).append(html);
                     storeActivity(content.items[item].modified);
                 });
             }));
@@ -294,46 +303,37 @@ function listItems() {
 
 function showDestinationFolders(url, token) {
     "use strict";
-    var destinationPortal = {
-        url: sessionStorage["destinationUrl"],
-        username: sessionStorage["destinationUsername"],
-        params: {
-            token: sessionStorage["destinationToken"],
-            f: "json"
-        }
-    };
+    var url = sessionStorage["destinationUrl"],
+        username = sessionStorage["destinationUsername"],
+        token = sessionStorage["destinationToken"];
 
-    // Show folders in the destination.
-    $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "?" + $.param(destinationPortal.params), function (data) {
-        var folderTemplate = $("#destinationFolderTemplate").html();
-        var contentTemplate = $("#contentTemplate").html();
-
-        // Add an entry for the root folder.
+    $.when(userContent(url, username, token, "/", function (content) {
         var folderData = {
-            name: "Root (Top Level)",
-            id: "",
-            count: data.items.length
+            title: "Root",
+            id: "Root",
+            count: content.items.length
         };
-        var folderHtml = Mustache.to_html(folderTemplate, folderData);
-        $("#dropArea").append(folderHtml);
-        makeDroppable("Dest" + folderData.id); // Enable the droppable area.
-
-        $.each(data.folders, function (folder) {
-            $.getJSON(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + data.folders[folder].id + "?" + $.param(destinationPortal.params), function (folderItems) {
-                // Append the folder.
+        // Append the root folder accordion.
+        var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData)
+        $("#dropArea").append(html);
+        makeDroppable("DestRoot"); // Enable the droppable area.
+        // Append the other folders.
+        $.each(content.folders, function (folder) {
+            $.when(userContent(url, username, token, content.folders[folder].id, function (content) {
                 var folderData = {
-                    name: data.folders[folder].title,
-                    id: data.folders[folder].id,
-                    count: folderItems.items.length
+                    title: content.currentFolder.title,
+                    id: content.currentFolder.id,
+                    count: content.items.length
                 };
-                var folderHtml = Mustache.to_html(folderTemplate, folderData);
-                $("#dropArea").append(folderHtml);
+                // Append an accordion for the folder.
+                var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData)
+                $("#dropArea").append(html);
                 // Collapse the accordion to avoid cluttering the display.
-                $("#collapse" + folderData.id).collapse("hide");
-                makeDroppable("Dest" + folderData.id); // Enable the droppable area.
-            });
+                $("#collapse" + content.currentFolder.id).collapse("hide");
+                makeDroppable("Dest" + content.currentFolder.id); // Enable the droppable area.
+            }));
         });
-    });
+    }));
 }
 
 function moveItem(item, destination) {
@@ -439,29 +439,4 @@ function arrayToString(array) {
         }
     });
     return arrayString;
-}
-
-function appendFolder(el, content) {
-    var folderData;
-    if (content.currentFolder === null) {
-        // This is the root folder.
-        folderData = {
-            name: "Root (Top Level)",
-            elName: "source" + "Root",
-            id: "Root",
-            count: content.items.length
-        }
-    } else {
-        folderData = {
-            name: content.currentFolder.title,
-            elName: "source" + content.currentFolder.title,
-            id: content.currentFolder.id,
-            count: content.items.length
-        }
-    }
-    $(el).append(Mustache.to_html($("#folderTemplate").html(), folderData));
-}
-
-function appendContent(el, content) {
-    $(el).append(Mustache.to_html($("#contentTemplate").html(), content));
 }
