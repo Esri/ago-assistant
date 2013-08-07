@@ -460,3 +460,17 @@ function copyItem(id, folder) {
         $("#" + id + "_alert").fadeOut(6000);
     }
 }
+
+
+function arrayToString(array) {
+    // Convert an array to a comma separated string.
+    var arrayString;
+    $.each(array, function (index, arrayValue) {
+        if (index === 0) {
+            arrayString = arrayValue;
+        } else if (index > 0) {
+            arrayString = arrayString + "," + arrayValue;
+        }
+    });
+    return arrayString;
+}

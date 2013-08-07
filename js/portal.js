@@ -59,20 +59,10 @@ function userProfile(portal, username, token, callback) {
 }
 
 function userContent(portal, user, token, callback) {
-    var content;
     $.getJSON(portal + "sharing/rest/content/users/" + user + "?" + $.param({
         token: token,
         f: "json"
     }), function (content) {
-        $.each(data.items, function (item) {
-            var contentData = {
-                id: data.items[item].id,
-                title: data.items[item].title,
-                type: data.items[item].type
-            };
-            var contentHtml = Mustache.to_html(contentTemplate, contentData);
-            $("#collapseRoot").append(contentHtml);
-        });
         callback(content);
     });
 }
@@ -93,17 +83,4 @@ function itemData(portal, id, token, callback) {
     }), function (data) {
         callback(data);
     });
-}
-
-function arrayToString(array) {
-    // Convert an array to a comma separated string.
-    var arrayString;
-    $.each(array, function (index, arrayValue) {
-        if (index === 0) {
-            arrayString = arrayValue;
-        } else if (index > 0) {
-            arrayString = arrayString + "," + arrayValue;
-        }
-    });
-    return arrayString;
 }
