@@ -58,8 +58,8 @@ function userProfile(portal, username, token, callback) {
     });
 }
 
-function userContent(portal, user, token, callback) {
-    $.getJSON(portal + "sharing/rest/content/users/" + user + "?" + $.param({
+function userContent(portal, username, token, folder, callback) {
+    $.getJSON(portal + "sharing/rest/content/users/" + username + "/" + folder + "?" + $.param({
         token: token,
         f: "json"
     }), function (content) {
