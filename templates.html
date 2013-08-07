@@ -45,7 +45,7 @@
 
 <script type="text/template" id="loginSuccessTemplate">
 
-    <div id="loginSuccess" class="alert alert-success" style="float: left; margin: 10px">
+    <div id="loginSuccess" class="alert alert-success" style="right: 30%; margin: 10px; position: absolute">
         <button type="button" class="close" data-dismiss="alert">
             &times;
         </button>
@@ -75,7 +75,7 @@
 
     <div class="accordion-group">
         <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse{{ id }}"><span class="badge"> {{ count }} </span> {{ name }} </a>
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse{{ id }}"><span class="badge"> {{ count }} </span> {{ title }} </a>
         </div>
         <div id="collapse{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
             <!-- content gets inserted here -->
@@ -84,11 +84,11 @@
 
 </script>
 
-<script type="text/template" id="destinationFolderTemplate">
+<script type="text/template" id="dropFolderTemplate">
 
     <div class="accordion-group">
         <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest{{ id }}"> {{ name }} </a>
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest{{ id }}"> {{ title }} </a>
         </div>
         <div id="collapseDest{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
             <div class="dropArea">
