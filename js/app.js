@@ -288,14 +288,14 @@ function listItems() {
                 // Append an accordion for the folder.
                 var html = Mustache.to_html($("#folderTemplate").html(), folderData)
                 $("#itemsArea").append(html);
-                // Collapse the accordion to avoid cluttering the display.
-                $("#collapse" + content.currentFolder.id).collapse("hide");
                 // Append the items to the folder.
                 $.each(content.items, function (item) {
                     var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
                     $("#collapse" + content.currentFolder.id).append(html);
                     storeActivity(content.items[item].modified);
                 });
+                // Collapse the accordion to avoid cluttering the display.
+                $("#collapse" + content.currentFolder.id).collapse("hide");
             }));
         });
     }));
