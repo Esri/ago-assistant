@@ -38,12 +38,19 @@ function validateUrl(el) {
 function loginSource() {
     $("#sourceLoginBtn").button("loading");
     $("#itemsArea").empty(); //Clear any old items.
-
-    $.when(getToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), "#sourceLoginForm", function (token) {
+    $.when(generateToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), function (response) {
         $("#sourceLoginBtn").button("reset");
-        $.when(storeCredentials("source", $("#sourceUrl").val(), token, function (callback) {
-            startSession();
-        }));
+        if (response.token) {
+            $.when(storeCredentials("source", $("#sourceUrl").val(), response.token, function (callback) {
+                startSession();
+            }));
+        } else if (response.error.code === 400) {
+            var html = $("#loginErrorTemplate").html();
+            $("#sourceLoginForm").before(html);
+        } else {
+            console.log("Unhandled error.");
+            console.log(response);
+        }
     }));
 }
 
@@ -63,10 +70,6 @@ function startSession() {
         $("#actionDropdown").css({
             "visibility": "visible"
         });
-        template = $("#loginSuccessTemplate").html();
-        html = Mustache.to_html(template, data);
-        $("#sessionDropdown").before(html);
-        $("#loginSuccess").fadeOut(4000);
         listItems();
     });
 }
@@ -84,18 +87,24 @@ function storeCredentials(direction, url, token, callback) {
 function loginDestination() {
     $("#destinationLoginBtn").button("loading");
     $("#dropArea").empty(); //Clear any old items.
-    $.when(getToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), "#destinationLoginForm", function (token) {
+    $.when(generateToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), function (response) {
         $("#destinationLoginBtn").button("reset");
-        $.when(storeCredentials("destination", $("#destinationUrl").val(), token, function (callback) {
-            $("#copyModal").modal("hide");
-            /*$(".content").addClass("disabled");
-            $(".content").css({ "opacity" : 1 });*/
-            $(".content").each(function (i) {
-                makeDraggable($(this)); //Make the content draggable.
-            });
-            cleanUp();
-            showDestinationFolders();
-        }));
+        if (response.token) {
+            $.when(storeCredentials("destination", $("#destinationUrl").val(), response.token, function (callback) {
+                $("#copyModal").modal("hide");
+                $(".content").each(function (i) {
+                    makeDraggable($(this)); //Make the content draggable.
+                });
+                cleanUp();
+                showDestinationFolders();
+            }));
+        } else if (response.error.code === 400) {
+            var html = $("#loginErrorTemplate").html();
+            $("#destinationLoginForm").before(html);
+        } else {
+            console.log("Unhandled error.");
+            console.log(response);
+        }
     }));
 }
 
@@ -104,6 +113,7 @@ function logout() {
     $("#itemsArea").empty(); //Clear any old items.
     $("#dropArea").empty(); //Clear any old items.
     $("#sessionDropdown").remove();
+    $("#loginSuccess").remove();
     $("#actionDropdown").css({
         "visibility": "hidden"
     });
@@ -121,8 +131,8 @@ function inspectContent() {
     // Add a listener for clicking on content buttons.
     $(".content").click(function () {
         $(".content").removeClass("active");
-        $(".content").removeClass("btn-info");
-        $(this).addClass("btn-info");
+        $(".content").removeClass("btn-primary");
+        $(this).addClass("btn-primary");
         var id = $(this).attr("data-id"),
             title = $(this).text();
         $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
@@ -185,16 +195,16 @@ function makeDraggable(el) {
         revert: "invalid",
         opacity: 0.45
     });
+    el.removeClass("disabled");
 }
 
 function makeDroppable(id) {
     // Make the drop area accept content items.
-    $("#dropFolder" + id).droppable({
+    $("#dropFolder_" + id).droppable({
         accept: ".content",
         activeClass: "ui-state-hover",
         hoverClass: "ui-state-active",
         drop: function (event, ui) {
-            var destFolder = $(this).parent().parent().attr("data-folder");
             moveItem(ui.draggable, $(this).parent().parent());
         }
     });
@@ -203,6 +213,8 @@ function makeDroppable(id) {
 function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
+    $(".content").removeClass("active");
+    $(".content").removeClass("btn-primary");
 }
 
 function isSupported(type) {
@@ -267,7 +279,7 @@ function listItems() {
         // Append the root folder accordion.
         var folderData = {
             title: "Root",
-            id: "Root",
+            id: "",
             count: content.items.length
         };
         var html = Mustache.to_html($("#folderTemplate").html(), folderData)
@@ -275,7 +287,7 @@ function listItems() {
         // Append the root items to the Root folder.
         $.each(content.items, function (item) {
             var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
-            $("#collapseRoot").append(html);
+            $("#collapse_").append(html);
             storeActivity(content.items[item].modified);
         });
         $.each(content.folders, function (folder) {
@@ -291,11 +303,11 @@ function listItems() {
                 // Append the items to the folder.
                 $.each(content.items, function (item) {
                     var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
-                    $("#collapse" + content.currentFolder.id).append(html);
+                    $("#collapse_" + content.currentFolder.id).append(html);
                     storeActivity(content.items[item].modified);
                 });
                 // Collapse the accordion to avoid cluttering the display.
-                $("#collapse" + content.currentFolder.id).collapse("hide");
+                $("#collapse_" + content.currentFolder.id).collapse("hide");
             }));
         });
     }));
@@ -310,13 +322,13 @@ function showDestinationFolders(url, token) {
     $.when(userContent(url, username, token, "/", function (content) {
         var folderData = {
             title: "Root",
-            id: "Root",
+            id: "",
             count: content.items.length
         };
         // Append the root folder accordion.
         var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData)
         $("#dropArea").append(html);
-        makeDroppable("DestRoot"); // Enable the droppable area.
+        makeDroppable(""); // Enable the droppable area.
         // Append the other folders.
         $.each(content.folders, function (folder) {
             $.when(userContent(url, username, token, content.folders[folder].id, function (content) {
@@ -330,7 +342,7 @@ function showDestinationFolders(url, token) {
                 $("#dropArea").append(html);
                 // Collapse the accordion to avoid cluttering the display.
                 $("#collapse" + content.currentFolder.id).collapse("hide");
-                makeDroppable("Dest" + content.currentFolder.id); // Enable the droppable area.
+                makeDroppable(content.currentFolder.id); // Enable the droppable area.
             }));
         });
     }));

@@ -1,16 +1,11 @@
 body {
     background: #e7e5df;
-    padding-top: 60px; 
+    padding-top: 50px;
 }
 
 #dropArea {
     min-height: 100px;
     overflow-y: auto;
-}
-
-.content {
-    width: 98%;
-    margin-left: 1%;
 }
 
 .dropArea {
@@ -37,6 +32,7 @@ body {
 .itemArea {
     background: #c4bea7;
     overflow-y: auto;
+    padding-top: 10px;
 }
 
 .accordion-inner {
