@@ -106,7 +106,7 @@
 
 <script type="text/template" id="contentTypeErrorTemplate">
 
-    <div id="{{ id }}_alert" class="alert alert-info alert-dismissable" style="position:absolute">
+    <div id="{{ id }}_alert" class="alert alert-info alert-dismissable" style="position:absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <strong>Sorry!</strong> {{ type }}s aren't supported yet.
     </div>
@@ -115,7 +115,7 @@
 
 <script type="text/template" id="contentCopyErrorTemplate">
 
-    <div id="{{ id }}_alert" class="alert alter-danger alert-dismissable" style="position:absolute">
+    <div id="{{ id }}_alert" class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <strong>Copying failed!</strong> {{ message }}
     </div>
