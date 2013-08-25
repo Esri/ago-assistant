@@ -9,7 +9,7 @@
                 
 <script type="text/template" id="sessionTemplate">
 
-    <ul class="nav" id="sessionDropdown">
+    <ul class="nav navbar-nav navbar-right" id="sessionDropdown">
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 {{#user}}
@@ -34,10 +34,8 @@
 
 <script type="text/template" id="urlErrorTemplate">
 
-    <div class="alert alert-error" style="position:absolute">
-        <button type="button" class="close" data-dismiss="alert">
-            &times;
-        </button>
+    <div class="alert alert-danger alert-dismissable" style="position: absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <strong>Uh oh!</strong> That doesn't appear to be a valid url.
     </div>
 
@@ -45,10 +43,8 @@
 
 <script type="text/template" id="loginSuccessTemplate">
 
-    <div id="loginSuccess" class="alert alert-success" style="right: 30%; margin: 10px; position: absolute">
-        <button type="button" class="close" data-dismiss="alert">
-            &times;
-        </button>
+    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99" id="loginSuccess">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <strong>Great!</strong> You're logged into 
             {{#name}}
                 {{name}}
@@ -62,10 +58,8 @@
 
 <script type="text/template" id="loginErrorTemplate">
 
-    <div class="alert alert-error" style="position:absolute">
-        <button type="button" class="close" data-dismiss="alert">
-            &times;
-        </button>
+    <div class="alert alert-danger alert-dismissable" style="position: absolute; right: 10px; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <strong>Whoops!</strong> Double check your username and password.
     </div>
 
@@ -73,11 +67,11 @@
 
 <script type="text/template" id="folderTemplate">
 
-    <div class="accordion-group">
-        <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse{{ id }}"><span class="badge"> {{ count }} </span> {{ title }} </a>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge"> {{ count }} </span> {{ title }} </a>
         </div>
-        <div id="collapse{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
+        <div id="collapse_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
             <!-- content gets inserted here -->
         </div>
     </div>
@@ -86,13 +80,13 @@
 
 <script type="text/template" id="dropFolderTemplate">
 
-    <div class="accordion-group">
-        <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest{{ id }}"> {{ title }} </a>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest_{{ id }}"> {{ title }} </a>
         </div>
-        <div id="collapseDest{{ id }}" class="accordion-body collapse in" data-folder="{{ id }}">
+        <div id="collapseDest_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
             <div class="dropArea">
-                <div id="dropFolderDest{{ id }}" class="dropBorder">
+                <div id="dropFolder_{{ id }}" class="dropBorder">
                     Drop items to copy to this folder
                     <!-- content gets dropped here -->
                 </div>
@@ -104,7 +98,7 @@
 
 <script type="text/template" id="contentTemplate">
        
-    <button id="{{ id }}" class="btn btn-block content disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
+    <button id="{{ id }}" class="btn btn-block disabled content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
         {{ title }} ({{type}})
     </button>
 
@@ -112,10 +106,8 @@
 
 <script type="text/template" id="contentTypeErrorTemplate">
 
-    <div id="{{ id }}_alert" class="alert alert-info" style="position:absolute">
-        <button type="button" class="close" data-dismiss="alert">
-            &times;
-        </button>
+    <div id="{{ id }}_alert" class="alert alert-info alert-dismissable" style="position:absolute">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
         <strong>Sorry!</strong> {{ type }}s aren't supported yet.
     </div>
 
@@ -123,30 +115,43 @@
 
 <script type="text/template" id="contentCopyErrorTemplate">
 
-    <div id="{{ id }}_alert" class="alert alter-error" style="position:absolute">
-        <button type="button" class="close" data-dismiss="alert">
-            &times;
-        </button>
+    <div id="{{ id }}_alert" class="alert alter-danger alert-dismissable" style="position:absolute">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
         <strong>Copying failed!</strong> {{ message }}
     </div>
 
 </script>
 
 <script type="text/template" id="inspectTemplate">
-
-    <div class="container-fluid" style="padding-top: 20px">
-        <div class="row-fluid">
-            <div class="span12">
-                <h2>{{ title }}</h2>
-            </div>
-            <div id="itemDescription class="span12">
-                <strong>Item Description</strong>
-                <pre>{{ description }}</pre>
-            </div>
-            <div id="itemData class="span12">
-                <strong>Item Data</strong>
-                <pre>{{ data }}</pre>
-            </div>
+    
+    <!--<div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <strong>Item Description</strong>
+            <pre>{{ description }}</pre>
+        </div>
+        <div id="itemData class="panel-body">
+            <strong>Item Data</strong>
+            <pre>{{ data }}</pre>
+        </div>
+    </div>-->
+    
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <ul class="list-group">
+                <li class="list-group-item">Description</li>
+                <li class="list-group-item"><pre>{{ description }}</pre></li>
+            </ul>
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item">Data</li>
+                <li class="list-group-item"><pre>{{ data }}</pre></li>
+            </ul>
         </div>
     </div>
 
@@ -155,35 +160,39 @@
 <script type="text/template" id="statsTemplate">
 
     <!-- User stats modal -->
-    <div id="statsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="statsModalLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="statsModalLabel">Stats for {{ username }}</h3>
-        </div>
-        <div class="modal-body">
-            <div class="container-fluid">
-                <div class="row-fluid">
-                    <div class="span4">
-                        <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
-                    </div>
-                    <div class="span8 calContainer">
-                        <!--<div style="margin-left: auto">-->
-                            <div class="span1 calArrow" style="height: auto"><i id="calPrev" class="icon-backward"></i></div>
-                            <div class="span10" id="statsCalendar" style="width: auto">
-                                <div class="row-fluid">
-                                    <div class="span12">
-                                        <p class="muted" style="text-align: center">Recent Activity</p>
-                                    </div>
-                                </div>
+    <div id="statsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="statsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="statsModalLabel">Stats for {{ username }}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
                             </div>
-                            <div class="span1 calArrow" style="height: auto"><i id="calNext" class="icon-forward"></i></div>
-                        <!--</div>-->
+                            <div class="col-md-8 calContainer">
+                                <!--<div style="margin-left: auto">-->
+                                    <div class="col-md-1 calArrow" style="height: auto"><i id="calPrev" class="glyphicon glyphicon-backward"></i></div>
+                                    <div class="col-md-10" id="statsCalendar" style="width: auto">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <p class="muted" style="text-align: center">Recent Activity</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
+                                <!--</div>-->
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
             

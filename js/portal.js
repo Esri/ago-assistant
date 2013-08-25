@@ -11,7 +11,7 @@ function portalVersion(portal, callback) {
     });
 }
 
-function getToken(portal, username, password, form, callback) {
+function generateToken(portal, username, password, callback) {
     "use strict";
     // Define token parameters.
     var token,
@@ -23,28 +23,17 @@ function getToken(portal, username, password, form, callback) {
             f: "json"
         };
 
-    //Get session token
+    //Get session token.
     $.ajax({
         url: portal + "sharing/rest/generateToken?",
         type: "POST",
         dataType: "json",
         data: tokenParams,
         success: function (data) {
-            if (data.token) {
-                callback(data.token);
-            } else if (data.error.code === 400) {
-                var html = $("#loginErrorTemplate").html();
-                $(form).before(html);
-                callback();
-            } else {
-                console.log("Unhandled error.");
-                console.log(data);
-                callback();
-            }
+            callback(data)
         },
         error: function (response) {
-            console.log("Error");
-            console.log(response);
+            callback(response);
         }
     });
 }

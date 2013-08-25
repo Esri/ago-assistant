@@ -5,127 +5,140 @@
         <meta charset="utf-8">
         <title>ArcGIS Online Assistant</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link type="text/css" href="lib/bootstrap/css/bootstrap-responsive.min.css" rel="Stylesheet" />
-        <script type="text/javascript" src="lib/jquery-1.8.3.min.js"></script>
+        <script type="text/javascript" src="lib/jquery-1.10.2.min.js"></script>
         <link rel="stylesheet" href="css/jquery-ui-1.9.2.css" />
         <link type="text/css" href="lib/bootstrap/css/bootstrap.min.css" rel="Stylesheet" />
         <link type="text/css" href="css/styles.css" rel="Stylesheet" />
     </head>
     
     <body>
-        <div class="container-fluid span12 center">
-            <div class="navbar navbar-inverse navbar-fixed-top">
-                <div class="navbar-inner">
-                    <div class="container">
-                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </a>
-                        <a class="brand">ArcGIS Online Assistant</a>
-                        <div class="nav-collapse collapse">
-                            <ul class="nav">
-                                <li id="helpDropdown" class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
-                                        <b class="caret"></b>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li data-action="about">
-                                            <a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://github.com/esri/ago-assistant/issues" target="_blank">Submit Feeback or Issues</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
-                                        </li>
-                                    </ul>
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand">ArcGIS Online Assistant</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="helpDropdown" class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li data-action="about">
+                                    <a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
                                 </li>
-                                <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
-                                        <b class="caret"></b>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li data-action="copyContent">
-                                            <a href="#copyModal" data-toggle="modal">Copy Content</a>
-                                        </li>
-                                        <li data-action="inspectContent">
-                                            <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
-                                        </li>
-                                        <li data-action="stats">
-                                            <a>View My Stats</a>
-                                        </li>
-                                        <!--<li data-action="updateMapServices">
-                                            <a href="#updateModal" data-toggle="modal">Update Map Services
-                                                <span class="badge badge-info">Coming Soon</span>
-                                            </a>
-                                        </li>-->
-                                    </ul>
+                                <li>
+                                    <a href="https://github.com/esri/ago-assistant/issues" target="_blank">Submit Feeback or Issues</a>
+                                </li>
+                                <li>
+                                    <a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
                                 </li>
                             </ul>
-                            <form class="navbar-form pull-right">
-                                <div id="sourceLoginForm" class="control-group" style="float: right;">
-                                    <button type="button" class="btn" id="sourceLoginBtn" style="float: right; margin-left: 5px;" data-loading-text="Logging in...">Login</button>
-                                    <input class="span2" type="text" value="https://arcgis.com/" id="sourceUrl">
-                                    <input class="span2" type="text" placeholder="username" id="sourceUsername">
-                                    <input class="span2" type="password" placeholder="password" id="sourcePassword">
+                        </li>
+                        <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li data-action="copyContent">
+                                    <a href="#copyModal" data-toggle="modal">Copy Content</a>
+                                </li>
+                                <li data-action="inspectContent">
+                                    <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
+                                </li>
+                                <li data-action="stats">
+                                    <a>View My Stats</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <form class="navbar-form navbar-right" id="sourceLoginForm">
+                        <div class="form-group">
+                            <input class="form-control" type="text" value="https://arcgis.com/" id="sourceUrl">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="text" placeholder="username" id="sourceUsername">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="password" placeholder="password" id="sourcePassword">
+                        </div>
+                        <button type="button" class="btn btn-default" id="sourceLoginBtn" style="" data-loading-text="Logging in...">Login</button>
+                    </form>
+                </div>
+                <!--/.navbar-collapse -->
+            </div>
+        </div>
+        <div class="container col-md-12 center">
+            <!-- Copy content modal -->
+            <div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">Copy my content</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>Login to the destination account. You will then be able to select which items to copy.</p>
+                            <br>
+                            <form>
+                                <p>Select the destination:</p>
+                                <div class="form-inline">
+                                    <div class="btn-group" data-toggle="buttons-radio">
+                                        <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
+                                        <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" value="https://arcgis.com/" id="destinationUrl">
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Enter your credentials:</p>
+                                <div id="destinationLoginForm" class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                    </div>
                                 </div>
                             </form>
                         </div>
-                        <!--/.nav-collapse -->
+                        <div class="modal-footer">
+                            <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- Copy content modal -->
-            <div id="copyModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h3 id="copyModalLabel">Copy my content</h3>
-                </div>
-                <div class="modal-body">
-                    <p>Login to the destination account. You will then be able to select which items to copy.</p>
-                    <br>
-                    <form>
-                        <p>Select the destination:</p>
-                        <div class="input-append">
-                            <input class="span2" style="float: right; margin-right: 100px" type="text" value="https://arcgis.com/" id="destinationUrl">
-                            <div class="btn-group" data-toggle="buttons-radio">
-                                <button type="button" id="destinationAgolBtn" class="btn" data-toggle="button">ArcGIS Online</button>
-                                <button type="button" id="destinationPortalBtn" class="btn" data-toggle="button">Portal for ArcGIS</button>
-                            </div>
-                        </div>
-                        <br>
-                        <p>Enter your credentials:</p>
-                        <div id="destinationLoginForm" class="control-group" style="float: left;">
-                            <input class="span2" type="text" placeholder="username" id="destinationUsername">
-                            <input class="span2" type="password" placeholder="password" id="destinationPassword">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button id="destinationCancelBtn" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                    <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
-                </div>
-            </div>
             <!-- Inspect content modal -->
-            <div id="inspectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="inspectModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h3 id="copyModalLabel">Inspect my content</h3>
-                </div>
-                <div class="modal-body">
-                    <p>Select any of your items to see the <abbr title="JavaScript Object Notation" class="initialism">JSON</abbr> contents.</p>
-                </div>
-                <div class="modal-footer">
-                    <button id="inspectBtn" class="btn btn-primary">Got it!</button>
+            <div id="inspectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="inspectModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">Inspect my content</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>Select any of your items to see the
+                                <abbr title="JavaScript Object Notation" class="initialism">JSON</abbr> contents.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="inspectBtn" class="btn btn-primary">Got it!</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Item containers -->
-            <div id="itemsContainer" class="row-fluid">
-                <div id="itemsArea" class="span6 itemArea">
+            <div id="itemsContainer" class="row">
+                <div id="itemsArea" class="col-md-6 itemArea">
                     <!-- folder accordions go here -->
                 </div>
-                <div id="dropArea" class="span6 itemArea">
+                <div id="dropArea" class="col-md-6 itemArea">
                     <!-- dropped items will go here -->
                 </div>
             </div>
@@ -133,7 +146,7 @@
         <script>
             function resizeContentAreas() {
                 "use strict";
-                var height = $(window).height() - 60;
+                var height = $(window).height() - 50;
                 $("#itemsArea").height(height);
                 $("#dropArea").height(height);
             }
@@ -159,7 +172,7 @@
                 $("#destinationAgolBtn").tooltip({
                     trigger: "hover",
                     title: "Use this for AGOL Organization accounts.",
-                    placement: "right"
+                    placement: "bottom"
                 });
 
                 // Preformat the copy login screen.
@@ -174,31 +187,31 @@
                         "placeholder": "",
                         "value": "https://arcgis.com/"
                     });
+                    $("#destinationUrl").val("https://arcgis.com/");
                     $("#destinationUrl").css({
                         "visibility": "hidden"
                     });
-                    $("#destinationAgolBtn").addClass("btn-primary");
-                    $("#destinationPortalBtn").removeClass("btn-primary");
+                    $("#destinationAgolBtn").addClass("btn-primary active");
+                    $("#destinationPortalBtn").removeClass("btn-primary active");
                 });
                 $("#destinationPortalBtn").click(function() {
                     $("#destinationUrl").attr({
                         "placeholder": "https://myportal.com/",
                         "value": ""
                     });
+                    $("#destinationUrl").val("");
                     $("#destinationUrl").css({
                         "visibility": "visible"
                     });
-                    $("#destinationPortalBtn").addClass("btn-primary");
-                    $("#destinationAgolBtn").removeClass("btn-primary");
+                    $("#destinationPortalBtn").addClass("btn-primary active");
+                    $("#destinationAgolBtn").removeClass("btn-primary active");
                 });
 
             });
 
              // Do stuff when the window is resized.
             $(window).resize(function() {
-
                 resizeContentAreas() // Resize the content areas based on the window size.
-
             });
 
              // Validate the url when the input loses focus.
@@ -206,7 +219,12 @@
                 validateUrl("#sourceUrl");
             });
             $("#destinationUrl").blur(function() {
-                validateUrl("#destinationUrl");
+                // Give the DOM time to update before firing the validation.
+                setTimeout(function() {
+                    if ($("#destinationPortalBtn").hasClass("active")) {
+                        validateUrl("#destinationUrl");
+                    }
+                }, 500);
             });
 
              // Source Login.
