@@ -41,7 +41,8 @@ function loginSource() {
     $.when(generateToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), function (response) {
         $("#sourceLoginBtn").button("reset");
         if (response.token) {
-            $.when(storeCredentials("source", $("#sourceUrl").val(), response.token, function (callback) {
+            // Store the portal info in the browser's sessionStorage.
+            $.when(storeCredentials("source", $("#sourceUrl").val(), $("#sourceUsername").val(), response.token, function (callback) {
                 startSession();
             }));
         } else if (response.error.code === 400) {
@@ -56,32 +57,28 @@ function loginSource() {
 
 function startSession() {
     "use strict";
-    var url = sessionStorage["sourceUrl"],
-        token = sessionStorage["sourceToken"],
-        template,
-        html;
-    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
+    var portal = sessionStorage["sourceUrl"],
+        token = sessionStorage["sourceToken"];
+    $.when(portalInfo(portal, token, function(info) {
+        var template = $("#sessionTemplate").html(),
+            html = Mustache.to_html(template, info);
+        $("#sourceLoginForm").before(html);
         $("#sourceLoginForm").hide();
         $("#sourceLoginBtn").hide();
         $("#logout").show();
-        template = $("#sessionTemplate").html();
-        html = Mustache.to_html(template, data);
-        $("#sourceLoginForm").before(html);
         $("#actionDropdown").css({
             "visibility": "visible"
         });
         listItems();
-    });
+    }));
 }
 
-function storeCredentials(direction, url, token, callback) {
+function storeCredentials(direction, portal, username, token, callback) {
     "use strict";
-    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
-        sessionStorage[direction + "Token"] = token;
-        sessionStorage[direction + "Url"] = url;
-        sessionStorage[direction + "Username"] = data.user.username;
-        callback();
-    });
+    sessionStorage[direction + "Token"] = token;
+    sessionStorage[direction + "Url"] = portal;
+    sessionStorage[direction + "Username"] = username;
+    callback();    
 }
 
 function loginDestination() {
@@ -90,7 +87,7 @@ function loginDestination() {
     $.when(generateToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), function (response) {
         $("#destinationLoginBtn").button("reset");
         if (response.token) {
-            $.when(storeCredentials("destination", $("#destinationUrl").val(), response.token, function (callback) {
+            $.when(storeCredentials("destination", $("#destinationUrl").val(), $("#destinationUsername").val(), response.token, function (callback) {
                 $("#copyModal").modal("hide");
                 $(".content").each(function (i) {
                     makeDraggable($(this)); //Make the content draggable.

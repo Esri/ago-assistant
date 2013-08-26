@@ -11,6 +11,15 @@ function portalVersion(portal, callback) {
     });
 }
 
+function portalInfo(portal, token, callback) {
+    $.getJSON(portal + "sharing/rest/portals/self?" + $.param({
+        token: token,
+        f: "json"
+    }), function (info) {
+        callback(info);
+    });
+}
+
 function generateToken(portal, username, password, callback) {
     "use strict";
     // Define token parameters.
