@@ -355,60 +355,33 @@ function moveItem(item, destination) {
 }
 
 function copyItem(id, folder) {
+    // id: id of the source item
+    // folder: id of the destination folder
     "use strict";
-    var sourcePortal = {
-        url: sessionStorage["sourceUrl"],
-        username: sessionStorage["sourceUsername"],
-        params: {
-            token: sessionStorage["sourceToken"],
-            f: "json"
-        }
-    };
-
-    var destinationPortal = {
-        url: sessionStorage["destinationUrl"],
-        username: sessionStorage["destinationUsername"],
-        params: {
-            token: sessionStorage["destinationToken"],
-            f: "json"
-        }
-    };
+    var sourcePortal = sessionStorage["sourceUrl"],
+        sourceToken = sessionStorage["sourceToken"],
+        destinationPortal = sessionStorage["destinationUrl"],
+        destinationUsername = sessionStorage["destinationUsername"],
+        destinationToken = sessionStorage["destinationToken"];
 
     var type = $("#" + id).attr("data-type");
     // Ensure the content type is supported before trying to copy it.
     if (isSupported(type)) {
-        // Get the full item description from the source.
-        $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function (description) {
-
-            // Clean up description items for posting.
-            // This is necessary because some of the item descriptions (e.g. tags and extent)
-            // are returned as arrays, but the post operation expects comma separated strings.
-            $.each(description, function (item, value) {
-                if (value === null) {
-                    description[item] = "";
-                } else if (value instanceof Array) {
-                    description[item] = arrayToString(value);
+        // Get the full item description and data from the source.
+        $.when(itemDescription(sourcePortal, id, sourceToken, function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            $.when(itemData(sourcePortal, id, sourceToken, function (data) {
+                // Replace response object for items with no data component.
+                if (data.responseText === "") {
+                    data = "";
                 }
-            });
-            var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
-
-            // Get the item's data.
-            $.get(sourcePortal.url + "sharing/rest/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
-                var itemParams = {
-                    item: description.title,
-                    text: data,
-                    overwrite: false,
-                    thumbnailurl: thumbUrl
-                };
-                var addItemParams = $.param(description) + "&" + $.param(itemParams);
                 // Post it to the destination.
-                $.post(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function (response) {
-                    var responseJson = $.parseJSON(response);
-                    if (responseJson.success === true) {
+                $.when(addItem(destinationPortal, destinationUsername, folder, destinationToken, description, data, thumbnailUrl, function (response) {
+                    if (response.success === true) {
                         $("#" + id).addClass("btn-success");
-                    } else if (responseJson.error) {
+                    } else if (response.error) {
                         $("#" + id).addClass("btn-danger");
-                        var message = responseJson.error.message
+                        var message = response.error.message
                         var html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
@@ -422,9 +395,9 @@ function copyItem(id, folder) {
                         });
                         $("#" + id).before(html);
                     }
-                });
-            });
-        });
+                }));
+            }));
+        }));
     } else {
         // Not supported.
         $("#" + id).addClass("btn-warning");
@@ -435,17 +408,4 @@ function copyItem(id, folder) {
         $("#" + id).before(html);
         $("#" + id + "_alert").fadeOut(6000);
     }
-}
-
-function arrayToString(array) {
-    // Convert an array to a comma separated string.
-    var arrayString;
-    $.each(array, function (index, arrayValue) {
-        if (index === 0) {
-            arrayString = arrayValue;
-        } else if (index > 0) {
-            arrayString = arrayString + "," + arrayValue;
-        }
-    });
-    return arrayString;
 }
