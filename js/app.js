@@ -59,7 +59,7 @@ function startSession() {
     "use strict";
     var portal = sessionStorage["sourceUrl"],
         token = sessionStorage["sourceToken"];
-    $.when(portalInfo(portal, token, function(info) {
+    $.when(portalInfo(portal, token, function (info) {
         var template = $("#sessionTemplate").html(),
             html = Mustache.to_html(template, info);
         $("#sourceLoginForm").before(html);
@@ -78,7 +78,7 @@ function storeCredentials(direction, portal, username, token, callback) {
     sessionStorage[direction + "Token"] = token;
     sessionStorage[direction + "Url"] = portal;
     sessionStorage[direction + "Username"] = username;
-    callback();    
+    callback();
 }
 
 function loginDestination() {
@@ -91,6 +91,7 @@ function loginDestination() {
                 $("#copyModal").modal("hide");
                 $(".content").each(function (i) {
                     makeDraggable($(this)); //Make the content draggable.
+                    $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 cleanUp();
                 showDestinationFolders();
@@ -348,6 +349,7 @@ function showDestinationFolders(url, token) {
 function moveItem(item, destination) {
     // Move the content DOM element from the source to the destination container on the page.
     "use strict";
+    $(item).css("max-width", ""); // Remove the max-width property so it fills the folder.
     item.prependTo(destination);
     var itemId = $(item).attr("data-id");
     var destinationFolder = $(item).parent().attr("data-folder");

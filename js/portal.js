@@ -90,7 +90,7 @@ function itemData(portal, id, token, callback) {
 
 function addItem(portal, username, folder, token, description, data, thumbnailUrl, callback) {
     // Create a new item on the specified portal.
-    
+
     // Clean up description items for posting.
     // This is necessary because some of the item descriptions (e.g. tags and extent)
     // are returned as arrays, but the post operation expects comma separated strings.
@@ -101,7 +101,7 @@ function addItem(portal, username, folder, token, description, data, thumbnailUr
             description[item] = arrayToString(value);
         }
     });
-    
+
     // Create a new item in a user's content.
     var itemParams = {
         item: description.title,
