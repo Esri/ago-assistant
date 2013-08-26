@@ -41,7 +41,8 @@ function loginSource() {
     $.when(generateToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), function (response) {
         $("#sourceLoginBtn").button("reset");
         if (response.token) {
-            $.when(storeCredentials("source", $("#sourceUrl").val(), response.token, function (callback) {
+            // Store the portal info in the browser's sessionStorage.
+            $.when(storeCredentials("source", $("#sourceUrl").val(), $("#sourceUsername").val(), response.token, function (callback) {
                 startSession();
             }));
         } else if (response.error.code === 400) {
@@ -56,32 +57,28 @@ function loginSource() {
 
 function startSession() {
     "use strict";
-    var url = sessionStorage["sourceUrl"],
-        token = sessionStorage["sourceToken"],
-        template,
-        html;
-    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
+    var portal = sessionStorage["sourceUrl"],
+        token = sessionStorage["sourceToken"];
+    $.when(portalInfo(portal, token, function (info) {
+        var template = $("#sessionTemplate").html(),
+            html = Mustache.to_html(template, info);
+        $("#sourceLoginForm").before(html);
         $("#sourceLoginForm").hide();
         $("#sourceLoginBtn").hide();
         $("#logout").show();
-        template = $("#sessionTemplate").html();
-        html = Mustache.to_html(template, data);
-        $("#sourceLoginForm").before(html);
         $("#actionDropdown").css({
             "visibility": "visible"
         });
         listItems();
-    });
+    }));
 }
 
-function storeCredentials(direction, url, token, callback) {
+function storeCredentials(direction, portal, username, token, callback) {
     "use strict";
-    $.getJSON(url + "sharing/rest/portals/self?f=json&token=" + token, function (data) {
-        sessionStorage[direction + "Token"] = token;
-        sessionStorage[direction + "Url"] = url;
-        sessionStorage[direction + "Username"] = data.user.username;
-        callback();
-    });
+    sessionStorage[direction + "Token"] = token;
+    sessionStorage[direction + "Url"] = portal;
+    sessionStorage[direction + "Username"] = username;
+    callback();
 }
 
 function loginDestination() {
@@ -90,10 +87,11 @@ function loginDestination() {
     $.when(generateToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), function (response) {
         $("#destinationLoginBtn").button("reset");
         if (response.token) {
-            $.when(storeCredentials("destination", $("#destinationUrl").val(), response.token, function (callback) {
+            $.when(storeCredentials("destination", $("#destinationUrl").val(), $("#destinationUsername").val(), response.token, function (callback) {
                 $("#copyModal").modal("hide");
                 $(".content").each(function (i) {
                     makeDraggable($(this)); //Make the content draggable.
+                    $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 cleanUp();
                 showDestinationFolders();
@@ -193,7 +191,7 @@ function makeDraggable(el) {
         helper: "clone",
         appendTo: "body",
         revert: "invalid",
-        opacity: 0.45
+        opacity: 0.7
     });
     el.removeClass("disabled");
 }
@@ -351,6 +349,7 @@ function showDestinationFolders(url, token) {
 function moveItem(item, destination) {
     // Move the content DOM element from the source to the destination container on the page.
     "use strict";
+    $(item).css("max-width", ""); // Remove the max-width property so it fills the folder.
     item.prependTo(destination);
     var itemId = $(item).attr("data-id");
     var destinationFolder = $(item).parent().attr("data-folder");
@@ -358,60 +357,33 @@ function moveItem(item, destination) {
 }
 
 function copyItem(id, folder) {
+    // id: id of the source item
+    // folder: id of the destination folder
     "use strict";
-    var sourcePortal = {
-        url: sessionStorage["sourceUrl"],
-        username: sessionStorage["sourceUsername"],
-        params: {
-            token: sessionStorage["sourceToken"],
-            f: "json"
-        }
-    };
-
-    var destinationPortal = {
-        url: sessionStorage["destinationUrl"],
-        username: sessionStorage["destinationUsername"],
-        params: {
-            token: sessionStorage["destinationToken"],
-            f: "json"
-        }
-    };
+    var sourcePortal = sessionStorage["sourceUrl"],
+        sourceToken = sessionStorage["sourceToken"],
+        destinationPortal = sessionStorage["destinationUrl"],
+        destinationUsername = sessionStorage["destinationUsername"],
+        destinationToken = sessionStorage["destinationToken"];
 
     var type = $("#" + id).attr("data-type");
     // Ensure the content type is supported before trying to copy it.
     if (isSupported(type)) {
-        // Get the full item description from the source.
-        $.getJSON(sourcePortal.url + "sharing/rest/content/items/" + id + "?" + $.param(sourcePortal.params), function (description) {
-
-            // Clean up description items for posting.
-            // This is necessary because some of the item descriptions (e.g. tags and extent)
-            // are returned as arrays, but the post operation expects comma separated strings.
-            $.each(description, function (item, value) {
-                if (value === null) {
-                    description[item] = "";
-                } else if (value instanceof Array) {
-                    description[item] = arrayToString(value);
+        // Get the full item description and data from the source.
+        $.when(itemDescription(sourcePortal, id, sourceToken, function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            $.when(itemData(sourcePortal, id, sourceToken, function (data) {
+                // Replace response object for items with no data component.
+                if (data.responseText === "") {
+                    data = "";
                 }
-            });
-            var thumbUrl = sourcePortal.url + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?" + $.param(sourcePortal.params).replace("&f=json", "");
-
-            // Get the item's data.
-            $.get(sourcePortal.url + "sharing/rest/content/items/" + id + "/data" + "?" + $.param(sourcePortal.params), function (data) {
-                var itemParams = {
-                    item: description.title,
-                    text: data,
-                    overwrite: false,
-                    thumbnailurl: thumbUrl
-                };
-                var addItemParams = $.param(description) + "&" + $.param(itemParams);
                 // Post it to the destination.
-                $.post(destinationPortal.url + "sharing/rest/content/users/" + destinationPortal.username + "/" + folder + "/addItem?" + $.param(destinationPortal.params), addItemParams, function (response) {
-                    var responseJson = $.parseJSON(response);
-                    if (responseJson.success === true) {
+                $.when(addItem(destinationPortal, destinationUsername, folder, destinationToken, description, data, thumbnailUrl, function (response) {
+                    if (response.success === true) {
                         $("#" + id).addClass("btn-success");
-                    } else if (responseJson.error) {
+                    } else if (response.error) {
                         $("#" + id).addClass("btn-danger");
-                        var message = responseJson.error.message
+                        var message = response.error.message
                         var html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
@@ -425,9 +397,9 @@ function copyItem(id, folder) {
                         });
                         $("#" + id).before(html);
                     }
-                });
-            });
-        });
+                }));
+            }));
+        }));
     } else {
         // Not supported.
         $("#" + id).addClass("btn-warning");
@@ -438,17 +410,4 @@ function copyItem(id, folder) {
         $("#" + id).before(html);
         $("#" + id + "_alert").fadeOut(6000);
     }
-}
-
-function arrayToString(array) {
-    // Convert an array to a comma separated string.
-    var arrayString;
-    $.each(array, function (index, arrayValue) {
-        if (index === 0) {
-            arrayString = arrayValue;
-        } else if (index > 0) {
-            arrayString = arrayString + "," + arrayValue;
-        }
-    });
-    return arrayString;
 }
