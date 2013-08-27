@@ -183,13 +183,13 @@ function viewStats() {
 
         $("#statsModal").modal("show");
 
-        $("#statsModal").on("shown", function () {
+        $("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.
             var calHeight = $(".calContainer").height();
             $(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
-        $("#statsModal").on("hidden", function () {
+        $("#statsModal").on("hidden.bs.modal", function () {
             // Destroy the stats modal so it can be properly rendered next time.
             $("#statsModal").remove();
         });
