@@ -43,10 +43,6 @@ body {
     color: #48423a;
 }
 
-.accordion-toggle .badge {
-    float: right;
-}
-
 .center {
     float: none;
     margin-left: auto;

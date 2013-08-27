@@ -164,9 +164,18 @@ function viewStats() {
         } else {
             thumbnailUrl = "assets/images/no-user-thumb.jpg";
         }
+        // Calculate storage quota stats.
+        var gigabyteConstant = 0.000000000931322574615479,
+            usage = (user.storageUsage * gigabyteConstant).toFixed(2),
+            quota = (user.storageQuota * gigabyteConstant).toFixed(2),
+            usageRate = (usage / quota).toFixed(2) * 100;
+
         var data = {
             username: user.username,
-            thumbnail: thumbnailUrl
+            thumbnail: thumbnailUrl,
+            usage: usage,
+            quota: quota,
+            usageRate: usageRate
         }
         html = Mustache.to_html(template, data);
         $("body").append(html);
