@@ -69,7 +69,7 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge"> {{ count }} </span> {{ title }} </a>
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
         </div>
         <div id="collapse_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
             <!-- content gets inserted here -->
@@ -124,20 +124,6 @@
 
 <script type="text/template" id="inspectTemplate">
     
-    <!--<div class="panel panel-primary">
-        <div class="panel-heading">
-            <h2 class="panel-title">{{ title }}</h2>
-        </div>
-        <div class="panel-body" id="itemDescription>
-            <strong>Item Description</strong>
-            <pre>{{ description }}</pre>
-        </div>
-        <div id="itemData class="panel-body">
-            <strong>Item Data</strong>
-            <pre>{{ data }}</pre>
-        </div>
-    </div>-->
-    
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
@@ -174,18 +160,25 @@
                                 <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
                             </div>
                             <div class="col-md-8 calContainer">
-                                <!--<div style="margin-left: auto">-->
-                                    <div class="col-md-1 calArrow" style="height: auto"><i id="calPrev" class="glyphicon glyphicon-backward"></i></div>
-                                    <div class="col-md-10" id="statsCalendar" style="width: auto">
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <p class="muted" style="text-align: center">Recent Activity</p>
-                                            </div>
+                                <div class="col-md-1 calArrow" style="height: auto"><i id="calPrev" class="glyphicon glyphicon-backward"></i></div>
+                                <div class="col-md-10" id="statsCalendar" style="width: auto">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <p class="muted" style="text-align: center">Recent Activity</p>
                                         </div>
                                     </div>
-                                    <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
-                                <!--</div>-->
+                                </div>
+                                <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
                             </div>
+                        </div>
+                        </br>
+                        <div class="row">
+                            <div class="progress progress-striped">
+                                <div class="progress-bar" role="progressbar" aria-valuenow="{{ usageRate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ usageRate }}%">
+                                    <span class="sr-only">{{ usage }} of {{ quota }} GB used</span>
+                                </div>
+                            </div>
+                            <div style="text-align: center; margin-top:-15px">{{ usage }} of {{ quota }} GB used</div>
                         </div>
                     </div>
                 </div>

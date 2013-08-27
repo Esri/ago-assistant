@@ -134,7 +134,7 @@ function inspectContent() {
         var id = $(this).attr("data-id"),
             title = $(this).text();
         $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
-            var descriptionString = JSON.stringify(description, undefined, 4);
+            var descriptionString = JSON.stringify(description, undefined, 2);
             $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
                 if (data.statusText) {
                     // No data was returned.
@@ -143,7 +143,7 @@ function inspectContent() {
                 var templateData = {
                     title: title,
                     description: descriptionString,
-                    data: JSON.stringify(data, undefined, 4)
+                    data: JSON.stringify(data, undefined, 2)
                 }
                 var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
@@ -164,9 +164,18 @@ function viewStats() {
         } else {
             thumbnailUrl = "assets/images/no-user-thumb.jpg";
         }
+        // Calculate storage quota stats.
+        var gigabyteConstant = 0.000000000931322574615479,
+            usage = (user.storageUsage * gigabyteConstant).toFixed(2),
+            quota = (user.storageQuota * gigabyteConstant).toFixed(2),
+            usageRate = (usage / quota).toFixed(2) * 100;
+
         var data = {
             username: user.username,
-            thumbnail: thumbnailUrl
+            thumbnail: thumbnailUrl,
+            usage: usage,
+            quota: quota,
+            usageRate: usageRate
         }
         html = Mustache.to_html(template, data);
         $("body").append(html);
@@ -174,13 +183,13 @@ function viewStats() {
 
         $("#statsModal").modal("show");
 
-        $("#statsModal").on("shown", function () {
+        $("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.
             var calHeight = $(".calContainer").height();
             $(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
-        $("#statsModal").on("hidden", function () {
+        $("#statsModal").on("hidden.bs.modal", function () {
             // Destroy the stats modal so it can be properly rendered next time.
             $("#statsModal").remove();
         });

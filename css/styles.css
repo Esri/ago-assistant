@@ -43,12 +43,12 @@ body {
     color: #48423a;
 }
 
-.accordion-toggle .badge {
-    float: right;
-}
-
 .center {
     float: none;
     margin-left: auto;
     margin-right: auto;
+}
+
+.list-group-item pre{
+    font-size: .8em;
 }
