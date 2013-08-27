@@ -105,19 +105,20 @@ function addItem(portal, username, folder, token, description, data, thumbnailUr
     // Create a new item in a user's content.
     var itemParams = {
         item: description.title,
-        text: data,
+        text: JSON.stringify(data), // stringify the Javascript object so it can be properly sent
         overwrite: false,
         thumbnailurl: thumbnailUrl
     };
     var postParams = $.param(description) + "&" + $.param(itemParams);
+
     // Post it to the destination.
     $.ajax({
         url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/addItem?f=json&token=" + token,
         type: "POST",
         data: postParams,
         dataType: "json",
-        success: function (data) {
-            callback(data);
+        success: function (response) {
+            callback(response);
         },
         error: function (data, textStatus, xhr) {
             callback(data, textStatus, xhr);
