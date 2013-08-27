@@ -24,22 +24,7 @@
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li id="helpDropdown" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
-                                <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li data-action="about">
-                                    <a href="https://github.com/esri/ago-assistant/blob/master/README.md" target="_blank">About</a>
-                                </li>
-                                <li>
-                                    <a href="https://github.com/esri/ago-assistant/issues" target="_blank">Submit Feeback or Issues</a>
-                                </li>
-                                <li>
-                                    <a href="https://github.com/esri/ago-assistant" target="_blank">Contribute on GitHub</a>
-                                </li>
-                            </ul>
-                        </li>
+                        <li><a data-toggle="modal" data-target="#aboutModal">About</a></li>
                         <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
                                 <b class="caret"></b>
@@ -74,6 +59,31 @@
             </div>
         </div>
         <div class="container col-md-12 center">
+            <!-- About modal -->
+            <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">About this application</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to let you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>
+                            The key features are: 
+                            <ul>
+                                <li>Copy content between accounts (even on different organizations or Portals)</li>
+                                <li>Inspect content</li>
+                                <li>View user stats</li>
+                            </ul>
+                            <p>The code is available on GitHub. Please <a href="https://github.com/esri/ago-assistant" target="_blank">contribute to this project</a> or <a href="https://github.com/esri/ago-assistant/issues" target="_blank">submit ideas, feeback, or issues</a>.</p>
+                            <p class="well"><strong>Disclaimer: </strong>This hosted version collects basic usage stats such as the type of item being copied (e.g. Web Map, Feature Collection, etc). No information is collected that could be used to determine a user or organization/Portal (including the URL). If this is still a problem, you can simply <a href="https://github.com/Esri/ago-assistant/archive/master.zip">download the app</a> (the GitHub code does not include the statistics tracker) and host it locally or on your own server.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Copy content modal -->
             <div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
