@@ -136,11 +136,14 @@ function inspectContent() {
         $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
             var descriptionString = JSON.stringify(description, undefined, 4);
             $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
-                var dataString = JSON.stringify(data, undefined, 4);
+                if (data.statusText) {
+                    // No data was returned.
+                    data = "";
+                }
                 var templateData = {
                     title: title,
                     description: descriptionString,
-                    data: dataString
+                    data: JSON.stringify(data, undefined, 4)
                 }
                 var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
