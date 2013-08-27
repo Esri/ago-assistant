@@ -134,7 +134,7 @@ function inspectContent() {
         var id = $(this).attr("data-id"),
             title = $(this).text();
         $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
-            var descriptionString = JSON.stringify(description, undefined, 4);
+            var descriptionString = JSON.stringify(description, undefined, 2);
             $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
                 if (data.statusText) {
                     // No data was returned.
@@ -143,7 +143,7 @@ function inspectContent() {
                 var templateData = {
                     title: title,
                     description: descriptionString,
-                    data: JSON.stringify(data, undefined, 4)
+                    data: JSON.stringify(data, undefined, 2)
                 }
                 var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.

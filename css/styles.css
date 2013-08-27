@@ -52,3 +52,7 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
+.list-group-item pre{
+    font-size: .8em;
+}
