@@ -153,6 +153,80 @@ function inspectContent() {
     });
 }
 
+function updateWebmapServices() {
+    var webmapData, // make a couple globals so we can access them in other parts of the function
+        folder;
+    $(".content").addClass("data-toggle");
+    $(".content").removeClass("disabled");
+    $(".content").attr("data-toggle", "button");
+    $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+
+    // Add a listener for clicking on content buttons.
+    $(".content").click(function () {
+        // Display the selected Web Map's operational layers with a URL component.
+        $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+        $(".content").removeClass("active");
+        $(".content").removeClass("btn-primary");
+        $(this).addClass("btn-primary");
+        $(this).removeClass("btn-info");
+        var id = $(this).attr("data-id"),
+            title = $(this).text();
+        $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
+            if (data.statusText) {
+                // No data was returned.
+                data = "";
+            } else {
+                webmapData = JSON.stringify(data);
+                var services = [];
+                $.each(data.operationalLayers, function (layer) {
+                    if (data.operationalLayers[layer].hasOwnProperty("url")) {
+                        services.push(data.operationalLayers[layer]);
+                    }
+                });
+
+                var templateData = {
+                    descriptionTitle: title,
+                    services: services
+                }
+                var html = Mustache.to_html($("#webmapServicesTemplate").html(), templateData);
+                // Add the HTML container with the item JSON.
+                $("#dropArea").html(html);
+            }
+        }));
+    });
+
+    $(document).on("click", "#btnUpdateWebmapServices", (function () {
+        var webmapServices = $("[data-original]");
+        $.each(webmapServices, function (service) {
+            var originalUrl = $(webmapServices[service]).attr("data-original"),
+                newUrl = $(webmapServices[service]).val();
+            // Find and replace each URL.
+            webmapData = webmapData.replace(originalUrl, newUrl);
+            $(webmapServices[service]).val(newUrl);
+        });
+        var webmapId = $(".content.active.btn-primary").attr("data-id"),
+            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
+            itemData = JSON.parse(webmapData);
+        $.when(updateWebmapData(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, webmapId, itemData, sessionStorage["sourceToken"], function (response) {
+            if (response.success === true) {
+                var html = Mustache.to_html($("#updateWebmapSuccessTemplate").html());
+                $("#btnResetWebmapServices").before(html);
+            }
+        }));
+    }));
+
+    $(document).on("click", "#btnResetWebmapServices", (function () {
+        var webmapServices = $("[data-original]");
+        $.each(webmapServices, function (service) {
+            var originalUrl = $(webmapServices[service]).attr("data-original"),
+                currentUrl = $(webmapServices[service]).val();
+            $(webmapServices[service]).val(originalUrl);
+            $(webmapServices[service]).attr("data-original", currentUrl);
+        });
+    }));
+
+}
+
 function viewStats() {
     $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function (user) {
 
@@ -224,7 +298,7 @@ function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
     $(".content").removeClass("active");
-    $(".content").removeClass("btn-primary");
+    $(".content").removeClass("btn-primary btn-info");
 }
 
 function isSupported(type) {

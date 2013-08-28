@@ -126,6 +126,28 @@ function addItem(portal, username, folder, token, description, data, thumbnailUr
     });
 }
 
+function updateWebmapData(portal, username, folder, id, data, token, callback) {
+    // Update web map content.
+    var updateParams = {
+        text: JSON.stringify(data) // stringify the Javascript object so it can be properly sent
+    };
+    var postParams = $.param(updateParams);
+
+    // Post it to the destination.
+    $.ajax({
+        url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?f=json&token=" + token,
+        type: "POST",
+        data: postParams,
+        dataType: "json",
+        success: function (response) {
+            callback(response);
+        },
+        error: function (data, textStatus, xhr) {
+            callback(data, textStatus, xhr);
+        }
+    });
+}
+
 function arrayToString(array) {
     // Convert an array to a comma separated string.
     var arrayString;
