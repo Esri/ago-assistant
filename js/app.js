@@ -302,18 +302,32 @@ function viewStats() {
             quota = (user.storageQuota * gigabyteConstant).toFixed(2),
             usageRate = (usage / quota).toFixed(2) * 100;
 
-        var data = {
+        var templateData = {
             username: user.username,
             thumbnail: thumbnailUrl,
             usage: usage,
             quota: quota,
             usageRate: usageRate
         }
-        html = Mustache.to_html(template, data);
+
+        html = Mustache.to_html(template, templateData);
         $("body").append(html);
         statsCalendar(app.stats.activities);
 
         $("#statsModal").modal("show");
+
+        // Get the user's 3 most viewed items.
+        var searchQuery = "owner:" + sessionStorage["sourceUsername"];
+        $.when(searchPortal(sessionStorage["sourceUrl"], searchQuery, 3, "numViews", "desc", sessionStorage["sourceToken"], function (results) {
+            $.each(results.results, function (result) {
+                results.results[result].numViews = results.results[result].numViews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                results.results[result].itemUrl = sessionStorage["sourceUrl"] + "home/item.html?id=" + results.results[result].id;
+            });
+            var tableTemplate = $("#mostViewedContentTemplate").html();
+            $("#mostViewedContent").html(Mustache.to_html(tableTemplate, {
+                searchResults: results.results
+            }));
+        }));
 
         $("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.

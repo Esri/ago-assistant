@@ -164,15 +164,20 @@
                                 <div class="col-md-10" id="statsCalendar" style="width: auto">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <p class="muted" style="text-align: center">Recent Activity</p>
+                                            <h4 class="text-center muted">Recent Activity</h4>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
                             </div>
                         </div>
-                        </br>
+                        <br>
                         <div class="row">
+                            <h4 class="text-center">Most Popular Content</h4>
+                            <div id="mostViewedContent"><!--Most Viewed Content table--></div>
+                        </div>
+                        <div class="row">
+                            <h4 class="text-center">Storage Quota</h4>
                             <div class="progress progress-striped">
                                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ usageRate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ usageRate }}%">
                                     <span class="sr-only">{{ usage }} of {{ quota }} GB used</span>
@@ -189,6 +194,25 @@
         </div>
     </div>
             
+</script>
+
+<script type="text/template" id="mostViewedContentTemplate">
+
+    <table class="table table-condensed">
+        <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Views</th>
+        </tr>
+        {{#searchResults}}
+        <tr>
+            <td><a href="{{ itemUrl }}" target="_blank">{{ title }}</a></td>
+            <td>{{ type }}</td>
+            <td>{{ numViews }}</td>
+        </tr>
+        {{/searchResults}}
+    </table>
+
 </script>
 
 <script type="text/template" id="webmapServicesTemplate">
