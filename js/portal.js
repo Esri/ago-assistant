@@ -148,6 +148,28 @@ function updateWebmapData(portal, username, folder, id, data, token, callback) {
     });
 }
 
+function updateContentUrl(portal, username, folder, id, url, token, callback) {
+    // Update content description.
+    var updateParams = {
+        url: url
+    };
+    var postParams = $.param(updateParams);
+
+    // Post it to the destination.
+    $.ajax({
+        url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?f=json&token=" + token,
+        type: "POST",
+        data: postParams,
+        dataType: "json",
+        success: function (response) {
+            callback(response);
+        },
+        error: function (data, textStatus, xhr) {
+            callback(data, textStatus, xhr);
+        }
+    });
+}
+
 function arrayToString(array) {
     // Convert an array to a comma separated string.
     var arrayString;

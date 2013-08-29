@@ -210,8 +210,11 @@ function updateWebmapServices() {
             folder = $(".content.active.btn-primary").parent().attr("data-folder"),
             itemData = JSON.parse(webmapData);
         $.when(updateWebmapData(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, webmapId, itemData, sessionStorage["sourceToken"], function (response) {
-            if (response.success === true) {
-                var html = Mustache.to_html($("#updateWebmapSuccessTemplate").html());
+            if (response.success) {
+                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                $("#btnResetWebmapServices").before(html);
+            } else if (response.error.code === 400) {
+                var html = Mustache.to_html($("#updateErrorTemplate").html());
                 $("#btnResetWebmapServices").before(html);
             }
         }));
@@ -225,6 +228,59 @@ function updateWebmapServices() {
             $(webmapServices[service]).val(originalUrl);
             $(webmapServices[service]).attr("data-original", currentUrl);
         });
+    }));
+
+}
+
+function updateContentUrls() {
+    var folder,
+        supportedContent = $(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
+    supportedContent.addClass("data-toggle btn-info"); // Highlight support content
+    supportedContent.removeClass("disabled");
+    supportedContent.attr("data-toggle", "button");
+
+    // Add a listener for clicking on content buttons.
+    $(".content").click(function () {
+        // Display the selected item's URL.
+        supportedContent.addClass("btn-info"); // Highlight Web Maps
+        $(".content").removeClass("active");
+        $(".content").removeClass("btn-primary");
+        $(this).addClass("btn-primary");
+        $(this).removeClass("btn-info");
+        var id = $(this).attr("data-id"),
+            title = $(this).text();
+        $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
+            if (description.statusText) {
+                // No description was returned.
+                description = "";
+            } else {
+                var html = Mustache.to_html($("#itemContentTemplate").html(), description);
+                // Add the HTML container with the item JSON.
+                $("#dropArea").html(html);
+            }
+        }));
+    });
+
+    $(document).on("click", "#btnUpdateContentUrl", (function () {
+        var contentId = $(".content.active.btn-primary").attr("data-id"),
+            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
+            url = $("[data-original]").val();
+        $.when(updateContentUrl(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, contentId, url, sessionStorage["sourceToken"], function (response) {
+            if (response.success) {
+                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                $("#btnResetContentUrl").before(html);
+            } else if (response.error.code === 400) {
+                var html = Mustache.to_html($("#updateErrorTemplate").html());
+                $("#btnResetContentUrl").before(html);
+            }
+        }));
+    }));
+
+    $(document).on("click", "#btnResetContentUrl", (function () {
+        var originalUrl = $("[data-original]").attr("data-original"),
+            currentUrl = $("[data-original]").val();
+        $("[data-original]").val(originalUrl);
+        $("[data-original]").attr("data-original", currentUrl);
     }));
 
 }

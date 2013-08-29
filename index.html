@@ -39,6 +39,9 @@
                                 <li data-action="updateWebmapServices">
                                     <a>Update Web Map Service URLs</a>
                                 </li>
+                                <li data-action="updateContentUrl">
+                                    <a>Update Content URL</a>
+                                </li>
                                 <li data-action="stats">
                                     <a>View My Stats</a>
                                 </li>
@@ -298,6 +301,13 @@
                 cleanUp();
                 $("#currentAction").html("<a>update web map service URLs</a>");
                 updateWebmapServices();
+            });
+            
+            // Add a listener for the "Update map services" action.
+            $("li[data-action='updateContentUrl']").click(function() {
+                cleanUp();
+                $("#currentAction").html("<a>update content URL</a>");
+                updateContentUrls();
             });
         </script>
         <!-- loaded here to speed up the page load -->
