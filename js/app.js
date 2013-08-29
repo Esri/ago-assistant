@@ -94,6 +94,7 @@ function loginDestination() {
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 cleanUp();
+                $("#currentAction").html("<a>copy content</a>");
                 showDestinationFolders();
             }));
         } else if (response.error.code === 400) {
@@ -108,6 +109,7 @@ function loginDestination() {
 
 function logout() {
     sessionStorage.clear();
+    $("#currentAction").html("");
     $("#itemsArea").empty(); //Clear any old items.
     $("#dropArea").empty(); //Clear any old items.
     $("#sessionDropdown").remove();
@@ -264,6 +266,7 @@ function viewStats() {
         });
 
         $("#statsModal").on("hidden.bs.modal", function () {
+            $("#currentAction").html("");
             // Destroy the stats modal so it can be properly rendered next time.
             $("#statsModal").remove();
         });
@@ -297,8 +300,8 @@ function makeDroppable(id) {
 function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
-    $(".content").removeClass("active");
-    $(".content").removeClass("btn-primary btn-info");
+    $(".content").removeClass("active btn-primary btn-info");
+    $(".content").addClass("disabled");
 }
 
 function isSupported(type) {
