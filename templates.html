@@ -190,3 +190,71 @@
     </div>
             
 </script>
+
+<script type="text/template" id="webmapServicesTemplate">
+    
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ descriptionTitle }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <form role="form">
+                <div class="form-group">
+                    {{#services}}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{/services}}
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn" id="btnResetWebmapServices">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateWebmapServices">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateSuccessTemplate">
+
+    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99"">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Success!</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Update failed!</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="itemContentTemplate">
+    
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <form role="form">
+                <div class="form-group">
+                    <div class="form-group">
+                        <label for="{{ id }}">URL</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn" id="btnResetContentUrl">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateContentUrl">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>

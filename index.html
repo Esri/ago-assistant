@@ -36,11 +36,18 @@
                                 <li data-action="inspectContent">
                                     <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
                                 </li>
+                                <li data-action="updateWebmapServices">
+                                    <a>Update the URLs of a Service in a Web Map</a>
+                                </li>
+                                <li data-action="updateContentUrl">
+                                    <a>Update Content URL (Registered Apps and Services)</a>
+                                </li>
                                 <li data-action="stats">
                                     <a>View My Stats</a>
                                 </li>
                             </ul>
                         </li>
+                        <li id="currentAction"></li>
                     </ul>
                     <form class="navbar-form navbar-right" id="sourceLoginForm">
                         <div class="form-group">
@@ -73,6 +80,8 @@
                             <ul>
                                 <li>Copy content between accounts (even on different organizations or Portals)</li>
                                 <li>Inspect content</li>
+                                <li>Update the URLs for services in a Web Map</li>
+                                <li>Update the URL for registered Web Apps and Map Services</li>
                                 <li>View user stats</li>
                             </ul>
                             <p>The code is available on GitHub. Please <a href="https://github.com/esri/ago-assistant" target="_blank">contribute to this project</a> or <a href="https://github.com/esri/ago-assistant/issues" target="_blank">submit ideas, feeback, or issues</a>.</p>
@@ -278,13 +287,30 @@
              // Enable inspecting of content.
             $("#inspectBtn").click(function() {
                 cleanUp();
+                $("#currentAction").html("<a>inspect content</a>");
                 inspectContent();
             });
 
-             // Add a listener for the future stats button.
-            $(document).on("click", "li[data-action='stats']", (function() {
+             // Add a listener for the "View my stats" action.
+            $("li[data-action='stats']").click(function() {
+                cleanUp();
+                $("#currentAction").html("<a>view stats</a>");
                 viewStats();
-            }));
+            });
+            
+            // Add a listener for the "Update map services" action.
+            $("li[data-action='updateWebmapServices']").click(function() {
+                cleanUp();
+                $("#currentAction").html("<a>update web map service URLs</a>");
+                updateWebmapServices();
+            });
+            
+            // Add a listener for the "Update map services" action.
+            $("li[data-action='updateContentUrl']").click(function() {
+                cleanUp();
+                $("#currentAction").html("<a>update content URL</a>");
+                updateContentUrls();
+            });
         </script>
         <!-- loaded here to speed up the page load -->
         <script src="lib/jquery-ui-1.9.2.min.js"></script>

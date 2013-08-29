@@ -94,6 +94,7 @@ function loginDestination() {
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 cleanUp();
+                $("#currentAction").html("<a>copy content</a>");
                 showDestinationFolders();
             }));
         } else if (response.error.code === 400) {
@@ -108,6 +109,7 @@ function loginDestination() {
 
 function logout() {
     sessionStorage.clear();
+    $("#currentAction").html("");
     $("#itemsArea").empty(); //Clear any old items.
     $("#dropArea").empty(); //Clear any old items.
     $("#sessionDropdown").remove();
@@ -153,6 +155,136 @@ function inspectContent() {
     });
 }
 
+function updateWebmapServices() {
+    var webmapData, // make a couple globals so we can access them in other parts of the function
+        folder;
+    $(".content").addClass("data-toggle");
+    $(".content").removeClass("disabled");
+    $(".content").attr("data-toggle", "button");
+    $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+
+    // Add a listener for clicking on content buttons.
+    $(".content").click(function () {
+        // Display the selected Web Map's operational layers with a URL component.
+        $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+        $(".content").removeClass("active");
+        $(".content").removeClass("btn-primary");
+        $(this).addClass("btn-primary");
+        $(this).removeClass("btn-info");
+        var id = $(this).attr("data-id"),
+            title = $(this).text();
+        $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
+            if (data.statusText) {
+                // No data was returned.
+                data = "";
+            } else {
+                webmapData = JSON.stringify(data);
+                var services = [];
+                $.each(data.operationalLayers, function (layer) {
+                    if (data.operationalLayers[layer].hasOwnProperty("url")) {
+                        services.push(data.operationalLayers[layer]);
+                    }
+                });
+
+                var templateData = {
+                    descriptionTitle: title,
+                    services: services
+                }
+                var html = Mustache.to_html($("#webmapServicesTemplate").html(), templateData);
+                // Add the HTML container with the item JSON.
+                $("#dropArea").html(html);
+            }
+        }));
+    });
+
+    $(document).on("click", "#btnUpdateWebmapServices", (function () {
+        var webmapServices = $("[data-original]");
+        $.each(webmapServices, function (service) {
+            var originalUrl = $(webmapServices[service]).attr("data-original"),
+                newUrl = $(webmapServices[service]).val();
+            // Find and replace each URL.
+            webmapData = webmapData.replace(originalUrl, newUrl);
+            $(webmapServices[service]).val(newUrl);
+        });
+        var webmapId = $(".content.active.btn-primary").attr("data-id"),
+            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
+            itemData = JSON.parse(webmapData);
+        $.when(updateWebmapData(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, webmapId, itemData, sessionStorage["sourceToken"], function (response) {
+            if (response.success) {
+                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                $("#btnResetWebmapServices").before(html);
+            } else if (response.error.code === 400) {
+                var html = Mustache.to_html($("#updateErrorTemplate").html());
+                $("#btnResetWebmapServices").before(html);
+            }
+        }));
+    }));
+
+    $(document).on("click", "#btnResetWebmapServices", (function () {
+        var webmapServices = $("[data-original]");
+        $.each(webmapServices, function (service) {
+            var originalUrl = $(webmapServices[service]).attr("data-original"),
+                currentUrl = $(webmapServices[service]).val();
+            $(webmapServices[service]).val(originalUrl);
+            $(webmapServices[service]).attr("data-original", currentUrl);
+        });
+    }));
+
+}
+
+function updateContentUrls() {
+    var folder,
+        supportedContent = $(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
+    supportedContent.addClass("data-toggle btn-info"); // Highlight support content
+    supportedContent.removeClass("disabled");
+    supportedContent.attr("data-toggle", "button");
+
+    // Add a listener for clicking on content buttons.
+    $(".content").click(function () {
+        // Display the selected item's URL.
+        supportedContent.addClass("btn-info"); // Highlight Web Maps
+        $(".content").removeClass("active");
+        $(".content").removeClass("btn-primary");
+        $(this).addClass("btn-primary");
+        $(this).removeClass("btn-info");
+        var id = $(this).attr("data-id"),
+            title = $(this).text();
+        $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
+            if (description.statusText) {
+                // No description was returned.
+                description = "";
+            } else {
+                var html = Mustache.to_html($("#itemContentTemplate").html(), description);
+                // Add the HTML container with the item JSON.
+                $("#dropArea").html(html);
+            }
+        }));
+    });
+
+    $(document).on("click", "#btnUpdateContentUrl", (function () {
+        var contentId = $(".content.active.btn-primary").attr("data-id"),
+            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
+            url = $("[data-original]").val();
+        $.when(updateContentUrl(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, contentId, url, sessionStorage["sourceToken"], function (response) {
+            if (response.success) {
+                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                $("#btnResetContentUrl").before(html);
+            } else if (response.error.code === 400) {
+                var html = Mustache.to_html($("#updateErrorTemplate").html());
+                $("#btnResetContentUrl").before(html);
+            }
+        }));
+    }));
+
+    $(document).on("click", "#btnResetContentUrl", (function () {
+        var originalUrl = $("[data-original]").attr("data-original"),
+            currentUrl = $("[data-original]").val();
+        $("[data-original]").val(originalUrl);
+        $("[data-original]").attr("data-original", currentUrl);
+    }));
+
+}
+
 function viewStats() {
     $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function (user) {
 
@@ -190,6 +322,7 @@ function viewStats() {
         });
 
         $("#statsModal").on("hidden.bs.modal", function () {
+            $("#currentAction").html("");
             // Destroy the stats modal so it can be properly rendered next time.
             $("#statsModal").remove();
         });
@@ -223,8 +356,8 @@ function makeDroppable(id) {
 function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
-    $(".content").removeClass("active");
-    $(".content").removeClass("btn-primary");
+    $(".content").removeClass("active btn-primary btn-info");
+    $(".content").addClass("disabled");
 }
 
 function isSupported(type) {
