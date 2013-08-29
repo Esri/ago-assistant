@@ -47,6 +47,36 @@ function generateToken(portal, username, password, callback) {
     });
 }
 
+function searchPortal(portal, keyword, numResults, sortField, sortOrder, token, callback) {
+    // Search a portal with the given parameters.
+    // token is optional and will add an authenticated search to reveal content shared with that user.
+    var searchParams = {
+        q: keyword,
+        num: numResults,
+        sortField: sortField,
+        sortOrder: sortOrder,
+        f: "json"
+    },
+        searchUrl = portal + "sharing/rest/search?" + $.param(searchParams);
+
+    if (token) {
+        searchUrl = searchUrl + "&token=" + token;
+    }
+
+    // Search using the provided query.
+    $.ajax({
+        url: searchUrl,
+        type: "GET",
+        dataType: "json",
+        success: function (results) {
+            callback(results)
+        },
+        error: function (response) {
+            callback(response);
+        }
+    });
+}
+
 function userProfile(portal, username, token, callback) {
     $.getJSON(portal + "sharing/rest/community/users/" + username + "?" + $.param({
         token: token,

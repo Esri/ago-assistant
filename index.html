@@ -24,7 +24,9 @@
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a data-toggle="modal" data-target="#aboutModal">About</a></li>
+                        <li>
+                            <a data-toggle="modal" data-target="#aboutModal">About</a>
+                        </li>
                         <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
                                 <b class="caret"></b>
@@ -75,8 +77,7 @@
                             <h3 id="copyModalLabel">About this application</h3>
                         </div>
                         <div class="modal-body">
-                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to let you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>
-                            The key features are: 
+                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>The key features are:
                             <ul>
                                 <li>Copy content between accounts (even on different organizations or Portals)</li>
                                 <li>Inspect content</li>
@@ -297,15 +298,15 @@
                 $("#currentAction").html("<a>view stats</a>");
                 viewStats();
             });
-            
-            // Add a listener for the "Update map services" action.
+
+             // Add a listener for the "Update map services" action.
             $("li[data-action='updateWebmapServices']").click(function() {
                 cleanUp();
                 $("#currentAction").html("<a>update web map service URLs</a>");
                 updateWebmapServices();
             });
-            
-            // Add a listener for the "Update map services" action.
+
+             // Add a listener for the "Update map services" action.
             $("li[data-action='updateContentUrl']").click(function() {
                 cleanUp();
                 $("#currentAction").html("<a>update content URL</a>");
