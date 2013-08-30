@@ -93,7 +93,6 @@ function loginDestination() {
                     makeDraggable($(this)); //Make the content draggable.
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
-                cleanUp();
                 $("#currentAction").html("<a>copy content</a>");
                 showDestinationFolders();
             }));
@@ -372,7 +371,7 @@ function makeDroppable(id) {
 function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
-    $(".content").removeClass("active btn-primary btn-info");
+    $(".content").removeClass("active btn-primary btn-info ui-draggable");
     $(".content").addClass("disabled");
 }
 
