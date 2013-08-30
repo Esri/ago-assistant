@@ -22,7 +22,7 @@ function validateUrl(el) {
         portal = portal.substr(0, portal.search("/sharing/")) + "/";
     } else if (portal.charAt(portal.length - 1) !== "/") {
         // Add the trailing slash.
-        portal = portal + "/"
+        portal = portal + "/";
     }
     $(el).val(portal);
 
@@ -57,8 +57,8 @@ function loginSource() {
 
 function startSession() {
     "use strict";
-    var portal = sessionStorage["sourceUrl"],
-        token = sessionStorage["sourceToken"];
+    var portal = sessionStorage.sourceUrl,
+        token = sessionStorage.sourceToken;
     $.when(portalInfo(portal, token, function (info) {
         var template = $("#sessionTemplate").html(),
             html = Mustache.to_html(template, info);
@@ -93,7 +93,6 @@ function loginDestination() {
                     makeDraggable($(this)); //Make the content draggable.
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
-                cleanUp();
                 $("#currentAction").html("<a>copy content</a>");
                 showDestinationFolders();
             }));
@@ -135,9 +134,9 @@ function inspectContent() {
         $(this).addClass("btn-primary");
         var id = $(this).attr("data-id"),
             title = $(this).text();
-        $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
+        $.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
             var descriptionString = JSON.stringify(description, undefined, 2);
-            $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
+            $.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
                 if (data.statusText) {
                     // No data was returned.
                     data = "";
@@ -146,7 +145,7 @@ function inspectContent() {
                     title: title,
                     description: descriptionString,
                     data: JSON.stringify(data, undefined, 2)
-                }
+                };
                 var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
                 $("#dropArea").html(html);
@@ -173,7 +172,7 @@ function updateWebmapServices() {
         $(this).removeClass("btn-info");
         var id = $(this).attr("data-id"),
             title = $(this).text();
-        $.when(itemData(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (data) {
+        $.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
             if (data.statusText) {
                 // No data was returned.
                 data = "";
@@ -189,7 +188,7 @@ function updateWebmapServices() {
                 var templateData = {
                     descriptionTitle: title,
                     services: services
-                }
+                };
                 var html = Mustache.to_html($("#webmapServicesTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
                 $("#dropArea").html(html);
@@ -209,12 +208,13 @@ function updateWebmapServices() {
         var webmapId = $(".content.active.btn-primary").attr("data-id"),
             folder = $(".content.active.btn-primary").parent().attr("data-folder"),
             itemData = JSON.parse(webmapData);
-        $.when(updateWebmapData(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, webmapId, itemData, sessionStorage["sourceToken"], function (response) {
+        $.when(updateWebmapData(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, webmapId, itemData, sessionStorage.sourceToken, function (response) {
+            var html;
             if (response.success) {
-                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                html = Mustache.to_html($("#updateSuccessTemplate").html());
                 $("#btnResetWebmapServices").before(html);
             } else if (response.error.code === 400) {
-                var html = Mustache.to_html($("#updateErrorTemplate").html());
+                html = Mustache.to_html($("#updateErrorTemplate").html());
                 $("#btnResetWebmapServices").before(html);
             }
         }));
@@ -249,7 +249,7 @@ function updateContentUrls() {
         $(this).removeClass("btn-info");
         var id = $(this).attr("data-id"),
             title = $(this).text();
-        $.when(itemDescription(sessionStorage["sourceUrl"], id, sessionStorage["sourceToken"], function (description) {
+        $.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
             if (description.statusText) {
                 // No description was returned.
                 description = "";
@@ -265,12 +265,13 @@ function updateContentUrls() {
         var contentId = $(".content.active.btn-primary").attr("data-id"),
             folder = $(".content.active.btn-primary").parent().attr("data-folder"),
             url = $("[data-original]").val();
-        $.when(updateContentUrl(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], folder, contentId, url, sessionStorage["sourceToken"], function (response) {
+        $.when(updateContentUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken, function (response) {
+            var html;
             if (response.success) {
-                var html = Mustache.to_html($("#updateSuccessTemplate").html());
+                html = Mustache.to_html($("#updateSuccessTemplate").html());
                 $("#btnResetContentUrl").before(html);
             } else if (response.error.code === 400) {
-                var html = Mustache.to_html($("#updateErrorTemplate").html());
+                html = Mustache.to_html($("#updateErrorTemplate").html());
                 $("#btnResetContentUrl").before(html);
             }
         }));
@@ -286,13 +287,13 @@ function updateContentUrls() {
 }
 
 function viewStats() {
-    $.when(userProfile(sessionStorage["sourceUrl"], sessionStorage["sourceUsername"], sessionStorage["sourceToken"], function (user) {
+    $.when(userProfile(sessionStorage.sourceUrl, sessionStorage.sourceUsername, sessionStorage.sourceToken, function (user) {
 
         var template = $("#statsTemplate").html();
         var thumbnailUrl;
         // Check that the user has a thumbnail image.
         if (user.thumbnail) {
-            thumbnailUrl = sessionStorage["sourceUrl"] + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage["sourceToken"];
+            thumbnailUrl = sessionStorage.sourceUrl + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage.sourceToken;
         } else {
             thumbnailUrl = "assets/images/no-user-thumb.jpg";
         }
@@ -308,7 +309,7 @@ function viewStats() {
             usage: usage,
             quota: quota,
             usageRate: usageRate
-        }
+        };
 
         html = Mustache.to_html(template, templateData);
         $("body").append(html);
@@ -317,11 +318,11 @@ function viewStats() {
         $("#statsModal").modal("show");
 
         // Get the user's 3 most viewed items.
-        var searchQuery = "owner:" + sessionStorage["sourceUsername"];
-        $.when(searchPortal(sessionStorage["sourceUrl"], searchQuery, 3, "numViews", "desc", sessionStorage["sourceToken"], function (results) {
+        var searchQuery = "owner:" + sessionStorage.sourceUsername;
+        $.when(searchPortal(sessionStorage.sourceUrl, searchQuery, 3, "numViews", "desc", sessionStorage.sourceToken, function (results) {
             $.each(results.results, function (result) {
                 results.results[result].numViews = results.results[result].numViews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                results.results[result].itemUrl = sessionStorage["sourceUrl"] + "home/item.html?id=" + results.results[result].id;
+                results.results[result].itemUrl = sessionStorage.sourceUrl + "home/item.html?id=" + results.results[result].id;
             });
             var tableTemplate = $("#mostViewedContentTemplate").html();
             $("#mostViewedContent").html(Mustache.to_html(tableTemplate, {
@@ -370,7 +371,7 @@ function makeDroppable(id) {
 function cleanUp() {
     $("#dropArea").empty(); //Clear any old items.
     $(".content").unbind("click"); // Remove old event handlers.
-    $(".content").removeClass("active btn-primary btn-info");
+    $(".content").removeClass("active btn-primary btn-info ui-draggable");
     $(".content").addClass("disabled");
 }
 
@@ -428,9 +429,9 @@ function storeActivity(activityTime) {
 
 function listItems() {
     "use strict";
-    var url = sessionStorage["sourceUrl"],
-        username = sessionStorage["sourceUsername"],
-        token = sessionStorage["sourceToken"];
+    var url = sessionStorage.sourceUrl,
+        username = sessionStorage.sourceUsername,
+        token = sessionStorage.sourceToken;
 
     $.when(userContent(url, username, token, "/", function (content) {
         // Append the root folder accordion.
@@ -439,7 +440,7 @@ function listItems() {
             id: "",
             count: content.items.length
         };
-        var html = Mustache.to_html($("#folderTemplate").html(), folderData)
+        var html = Mustache.to_html($("#folderTemplate").html(), folderData);
         $("#itemsArea").append(html);
         // Append the root items to the Root folder.
         $.each(content.items, function (item) {
@@ -455,7 +456,7 @@ function listItems() {
                     count: content.items.length
                 };
                 // Append an accordion for the folder.
-                var html = Mustache.to_html($("#folderTemplate").html(), folderData)
+                var html = Mustache.to_html($("#folderTemplate").html(), folderData);
                 $("#itemsArea").append(html);
                 // Append the items to the folder.
                 $.each(content.items, function (item) {
@@ -470,11 +471,11 @@ function listItems() {
     }));
 }
 
-function showDestinationFolders(url, token) {
+function showDestinationFolders() {
     "use strict";
-    var url = sessionStorage["destinationUrl"],
-        username = sessionStorage["destinationUsername"],
-        token = sessionStorage["destinationToken"];
+    var url = sessionStorage.destinationUrl,
+        username = sessionStorage.destinationUsername,
+        token = sessionStorage.destinationToken;
 
     $.when(userContent(url, username, token, "/", function (content) {
         var folderData = {
@@ -483,7 +484,7 @@ function showDestinationFolders(url, token) {
             count: content.items.length
         };
         // Append the root folder accordion.
-        var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData)
+        var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData);
         $("#dropArea").append(html);
         makeDroppable(""); // Enable the droppable area.
         // Append the other folders.
@@ -495,7 +496,7 @@ function showDestinationFolders(url, token) {
                     count: content.items.length
                 };
                 // Append an accordion for the folder.
-                var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData)
+                var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData);
                 $("#dropArea").append(html);
                 // Collapse the accordion to avoid cluttering the display.
                 $("#collapse" + content.currentFolder.id).collapse("hide");
@@ -519,11 +520,11 @@ function copyItem(id, folder) {
     // id: id of the source item
     // folder: id of the destination folder
     "use strict";
-    var sourcePortal = sessionStorage["sourceUrl"],
-        sourceToken = sessionStorage["sourceToken"],
-        destinationPortal = sessionStorage["destinationUrl"],
-        destinationUsername = sessionStorage["destinationUsername"],
-        destinationToken = sessionStorage["destinationToken"];
+    var sourcePortal = sessionStorage.sourceUrl,
+        sourceToken = sessionStorage.sourceToken,
+        destinationPortal = sessionStorage.destinationUrl,
+        destinationUsername = sessionStorage.destinationUsername,
+        destinationToken = sessionStorage.destinationToken;
 
     var type = $("#" + id).attr("data-type");
     // Ensure the content type is supported before trying to copy it.
@@ -538,19 +539,21 @@ function copyItem(id, folder) {
                 }
                 // Post it to the destination.
                 $.when(addItem(destinationPortal, destinationUsername, folder, destinationToken, description, data, thumbnailUrl, function (response) {
+                    var message,
+                        html;
                     if (response.success === true) {
                         $("#" + id).addClass("btn-success");
                     } else if (response.error) {
                         $("#" + id).addClass("btn-danger");
-                        var message = response.error.message
-                        var html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
+                        message = response.error.message;
+                        html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
                         });
                         $("#" + id).before(html);
                     } else {
-                        var message = "Something went wrong."
-                        var html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
+                        message = "Something went wrong.";
+                        html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
                         });
