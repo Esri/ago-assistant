@@ -39,7 +39,7 @@ function generateToken(portal, username, password, callback) {
         dataType: "json",
         data: tokenParams,
         success: function (data) {
-            callback(data)
+            callback(data);
         },
         error: function (response) {
             callback(response);
@@ -69,7 +69,7 @@ function searchPortal(portal, keyword, numResults, sortField, sortOrder, token, 
         type: "GET",
         dataType: "json",
         success: function (results) {
-            callback(results)
+            callback(results);
         },
         error: function (response) {
             callback(response);
