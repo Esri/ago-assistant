@@ -69,7 +69,9 @@ function startSession() {
         $("#actionDropdown").css({
             "visibility": "visible"
         });
+        NProgress.start();
         listItems();
+        NProgress.done();
     }));
 }
 
@@ -94,7 +96,9 @@ function loginDestination() {
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 $("#currentAction").html("<a>copy content</a>");
+                NProgress.start();
                 showDestinationFolders();
+                NProgress.done();
             }));
         } else if (response.error.code === 400) {
             var html = $("#loginErrorTemplate").html();
