@@ -219,17 +219,31 @@
     
     <div class="panel panel-primary">
         <div class="panel-heading">
-            <h2 class="panel-title">{{ descriptionTitle }}</h2>
+            <h2 class="panel-title">{{ webmapTitle }}</h2>
         </div>
         <div class="panel-body" id="itemDescription>
             <form role="form">
                 <div class="form-group">
-                    {{#services}}
+                    <h4>Operational Layers</h4>
+                    {{ #operationalLayers }}
                     <div class="form-group">
                         <label for="{{ id }}">{{ title }}</label>
                         <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
                     </div>
-                    {{/services}}
+                    {{ /operationalLayers }}
+                    {{ ^operationalLayers }}
+                        No operational layers in this web map.
+                    {{ /operationalLayers }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Basemap Layers <small>{{ basemapTitle }}</small></h4>
+                    {{#basemapLayers}}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ id }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{/basemapLayers}}
                 </div>
                 <div class="pull-right">
                     <button type="submit" class="btn" id="btnResetWebmapServices">Reset</button>

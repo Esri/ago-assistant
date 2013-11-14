@@ -175,23 +175,32 @@ function updateWebmapServices() {
         $(this).addClass("btn-primary");
         $(this).removeClass("btn-info");
         var id = $(this).attr("data-id"),
-            title = $(this).text();
+            webmapTitle = $(this).text();
         $.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
             if (data.statusText) {
                 // No data was returned.
                 data = "";
             } else {
                 webmapData = JSON.stringify(data);
-                var services = [];
+                var operationalLayers = [];
                 $.each(data.operationalLayers, function (layer) {
                     if (data.operationalLayers[layer].hasOwnProperty("url")) {
-                        services.push(data.operationalLayers[layer]);
+                        operationalLayers.push(data.operationalLayers[layer]);
+                    }
+                });
+                var basemapTitle = data.baseMap.title,
+                    basemapLayers = [];
+                $.each(data.baseMap.baseMapLayers, function (layer) {
+                    if (data.baseMap.baseMapLayers[layer].hasOwnProperty("url")) {
+                        basemapLayers.push(data.baseMap.baseMapLayers[layer]);
                     }
                 });
 
                 var templateData = {
-                    descriptionTitle: title,
-                    services: services
+                    webmapTitle: webmapTitle,
+                    operationalLayers: operationalLayers,
+                    basemapTitle: basemapTitle,
+                    basemapLayers: basemapLayers
                 };
                 var html = Mustache.to_html($("#webmapServicesTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
