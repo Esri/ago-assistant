@@ -9,6 +9,8 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 ## Features
 * Copy content between accounts
 * Inspect content (view JSON)
+* Update the URLs of services in a web map
+* Update the URL of a registered application or service
 * View user stats
 
 ## Instructions
@@ -22,9 +24,13 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 * Web browser with access to the Internet
 
 ## Dependencies
-* [jQuery](http://jquery.com/)  
-* [jQuery-UI](http://jqueryui.com/)  
+* [jQuery](http://jquery.com/)
+* [Bootstrap](http://getbootstrap.com/)
+* [jQuery-UI](http://jqueryui.com/)
+* [D3](http://d3js.org/)
 * [mustache.js](https://github.com/janl/mustache.js)
+* [Cal-Heatmap.js](http://kamisama.github.io/cal-heatmap/)
+* [highlight.js](http://highlightjs.org/)
 
 ## Resources
 
