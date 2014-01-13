@@ -4,7 +4,7 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 
 [View it live](https://s3.amazonaws.com/dtc-apps/AgolAssistant/index.html)
 
-![App](https://raw.github.com/Esri/ago-assistant/master/ago-assistant.png)
+![App](ago-assistant.png)
 
 ## Features
 * Copy content between accounts
@@ -62,7 +62,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/ago-assistant/master/license.txt) file.
+A copy of the license is available in the repository's [license.txt](license.txt) file.
 
 [](Esri Tags: ArcGIS-Online Portal Assistant Copy Javascript)
 [](Esri Language: JavaScript)
