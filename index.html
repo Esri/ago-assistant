@@ -55,7 +55,7 @@
                     </ul>
                     <form class="navbar-form navbar-right" id="sourceLoginForm">
                         <div class="form-group">
-                            <input class="form-control" type="text" value="https://arcgis.com/" id="sourceUrl">
+                            <input class="form-control" type="text" value="https://www.arcgis.com/" id="sourceUrl">
                         </div>
                         <div class="form-group">
                             <input class="form-control" type="text" placeholder="username" id="sourceUsername">
@@ -114,7 +114,7 @@
                                         <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
                                     </div>
                                     <div class="form-group">
-                                        <input class="form-control" type="text" value="https://arcgis.com/" id="destinationUrl">
+                                        <input class="form-control" type="text" value="https://www.arcgis.com/" id="destinationUrl">
                                     </div>
                                 </div>
                                 <br>
@@ -186,7 +186,7 @@
 
                 $("#sourceUrl").tooltip({
                     trigger: "hover",
-                    title: "Use https://arcgis.com/ for AGOL Organization accounts.",
+                    title: "Use https://www.arcgis.com/ for AGOL Organization accounts.",
                     placement: "bottom"
                 });
 
@@ -206,9 +206,9 @@
                 $("#destinationAgolBtn").click(function() {
                     $("#destinationUrl").attr({
                         "placeholder": "",
-                        "value": "https://arcgis.com/"
+                        "value": "https://www.arcgis.com/"
                     });
-                    $("#destinationUrl").val("https://arcgis.com/");
+                    $("#destinationUrl").val("https://www.arcgis.com/");
                     $("#destinationUrl").css({
                         "visibility": "hidden"
                     });
@@ -315,15 +315,23 @@
                 updateContentUrls();
             });
         </script>
-        <!-- loaded here to speed up the page load -->
+        <!-- Load dependencies. -->
+        <!-- jquery -->
         <script src="lib/jquery-ui-1.9.2.min.js"></script>
+        <!-- bootstrap -->
         <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="lib/mustache.js"></script>
         <script type="text/javascript" src="js/portal.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
+        <!-- mustache -->
+        <script type="text/javascript" src="lib/mustache-0.7.2.js"></script>
+        <!-- d3 -->
         <script type="text/javascript" src="lib/d3.v3-3.2.7.min.js"></script>
+        <!-- cal-heatmap -->
         <link rel="stylesheet" href="lib/cal-heatmap/cal-heatmap-3.0.7.css" />
         <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap-3.0.7.min.js"></script>
+        <!-- highlight.js -->
+        <link rel="stylesheet" href="lib/highlight/tomorrow.min.css">
+        <script src="lib/highlight/highlight.min.js"></script>
     </body>
 
 </html>

@@ -4,11 +4,13 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 
 [View it live](https://s3.amazonaws.com/dtc-apps/AgolAssistant/index.html)
 
-![App](https://raw.github.com/Esri/ago-assistant/master/ago-assistant.png)
+![App](ago-assistant.png)
 
 ## Features
 * Copy content between accounts
 * Inspect content (view JSON)
+* Update the URLs of services in a web map
+* Update the URL of a registered application or service
 * View user stats
 
 ## Instructions
@@ -22,9 +24,13 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 * Web browser with access to the Internet
 
 ## Dependencies
-* [jQuery](http://jquery.com/)  
-* [jQuery-UI](http://jqueryui.com/)  
+* [jQuery](http://jquery.com/)
+* [Bootstrap](http://getbootstrap.com/)
+* [jQuery-UI](http://jqueryui.com/)
+* [D3](http://d3js.org/)
 * [mustache.js](https://github.com/janl/mustache.js)
+* [Cal-Heatmap.js](http://kamisama.github.io/cal-heatmap/)
+* [highlight.js](http://highlightjs.org/)
 
 ## Resources
 
@@ -56,7 +62,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/ago-assistant/master/license.txt) file.
+A copy of the license is available in the repository's [license.txt](license.txt) file.
 
 [](Esri Tags: ArcGIS-Online Portal Assistant Copy Javascript)
 [](Esri Language: JavaScript)

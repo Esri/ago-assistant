@@ -153,6 +153,8 @@ function inspectContent() {
                 var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
                 $("#dropArea").html(html);
+                // Color code the JSON to make it easier to read (uses highlight.js).
+                $("pre").each(function(i, e) {hljs.highlightBlock(e)});
             }));
         }));
     });
