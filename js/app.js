@@ -412,7 +412,7 @@ function statsCalendar(activities) {
     var startDate = new Date();
     startDate.setMonth(today.getMonth() - 2);
     if (today.getMonth() < 2) {
-        startDate.setYear(today.getYear() - 1);
+        startDate.setYear(today.getFullYear() - 1);
     }
 
     var cal = new CalHeatMap();
@@ -427,6 +427,7 @@ function statsCalendar(activities) {
         range: 3,
         legend: [1, 2, 5, 10],
         displayLegend: false,
+        tooltip: true,
         itemNamespace: "cal",
         previousSelector: "#calPrev",
         nextSelector: "#calNext",
