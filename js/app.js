@@ -128,11 +128,13 @@ function inspectContent() {
     $(".content").addClass("data-toggle");
     $(".content").removeClass("disabled");
     $(".content").attr("data-toggle", "button");
+    $(".content").addClass("btn-info"); // Highlight everything
 
     $("#inspectModal").modal("hide");
     $("#inspectBtn").button("reset");
     // Add a listener for clicking on content buttons.
     $(".content").click(function () {
+        NProgress.start();
         $(".content").removeClass("active");
         $(".content").removeClass("btn-primary");
         $(this).addClass("btn-primary");
@@ -155,6 +157,7 @@ function inspectContent() {
                 $("#dropArea").html(html);
                 // Color code the JSON to make it easier to read (uses highlight.js).
                 $("pre").each(function(i, e) {hljs.highlightBlock(e)});
+                NProgress.done();
             }));
         }));
     });

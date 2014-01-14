@@ -38,7 +38,7 @@
                                     <a href="#copyModal" data-toggle="modal">Copy Content</a>
                                 </li>
                                 <li data-action="inspectContent">
-                                    <a href="#inspectModal" data-toggle="modal">Inspect Content (View JSON)</a>
+                                    <a>Inspect Content (View JSON)</a>
                                 </li>
                                 <li data-action="updateWebmapServices">
                                     <a>Update the URLs of a Service in a Web Map</a>
@@ -132,24 +132,6 @@
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
                             <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Inspect content modal -->
-            <div id="inspectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="inspectModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                            <h3 id="copyModalLabel">Inspect my content</h3>
-                        </div>
-                        <div class="modal-body">
-                            <p>Select any of your items to see the
-                                <abbr title="JavaScript Object Notation" class="initialism">JSON</abbr> contents.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="inspectBtn" class="btn btn-primary">Got it!</button>
                         </div>
                     </div>
                 </div>
@@ -288,7 +270,7 @@
             });
 
              // Enable inspecting of content.
-            $("#inspectBtn").click(function() {
+            $("li[data-action='inspectContent']").click(function() {
                 cleanUp();
                 $("#currentAction").html("<a>inspect content</a>");
                 inspectContent();
