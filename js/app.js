@@ -128,11 +128,13 @@ function inspectContent() {
     $(".content").addClass("data-toggle");
     $(".content").removeClass("disabled");
     $(".content").attr("data-toggle", "button");
+    $(".content").addClass("btn-info"); // Highlight everything
 
     $("#inspectModal").modal("hide");
     $("#inspectBtn").button("reset");
     // Add a listener for clicking on content buttons.
     $(".content").click(function () {
+        NProgress.start();
         $(".content").removeClass("active");
         $(".content").removeClass("btn-primary");
         $(this).addClass("btn-primary");
@@ -155,6 +157,7 @@ function inspectContent() {
                 $("#dropArea").html(html);
                 // Color code the JSON to make it easier to read (uses highlight.js).
                 $("pre").each(function(i, e) {hljs.highlightBlock(e)});
+                NProgress.done();
             }));
         }));
     });
@@ -348,6 +351,9 @@ function viewStats() {
         $("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.
             var calHeight = $(".calContainer").height();
+            // Center the calendar.
+            $(".cal-heatmap-container").css("margin", "auto");
+            // Adjust the arrows.
             $(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
@@ -409,7 +415,7 @@ function statsCalendar(activities) {
     var startDate = new Date();
     startDate.setMonth(today.getMonth() - 2);
     if (today.getMonth() < 2) {
-        startDate.setYear(today.getYear() - 1);
+        startDate.setYear(today.getFullYear() - 1);
     }
 
     var cal = new CalHeatMap();
@@ -424,6 +430,7 @@ function statsCalendar(activities) {
         range: 3,
         legend: [1, 2, 5, 10],
         displayLegend: false,
+        tooltip: true,
         itemNamespace: "cal",
         previousSelector: "#calPrev",
         nextSelector: "#calNext",

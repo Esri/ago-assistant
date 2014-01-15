@@ -30,6 +30,7 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 * [D3](http://d3js.org/)
 * [mustache.js](https://github.com/janl/mustache.js)
 * [Cal-Heatmap.js](http://kamisama.github.io/cal-heatmap/)
+* [NProgress.js](http://ricostacruz.com/nprogress/)
 * [highlight.js](http://highlightjs.org/)
 
 ## Resources
