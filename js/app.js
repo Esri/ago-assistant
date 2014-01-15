@@ -351,6 +351,9 @@ function viewStats() {
         $("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.
             var calHeight = $(".calContainer").height();
+            // Center the calendar.
+            $(".cal-heatmap-container").css("margin", "auto");
+            // Adjust the arrows.
             $(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
