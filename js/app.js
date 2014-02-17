@@ -160,7 +160,9 @@ function inspectContent() {
                 // Add the HTML container with the item JSON.
                 $("#dropArea").html(html);
                 // Color code the JSON to make it easier to read (uses highlight.js).
-                $("pre").each(function(i, e) {hljs.highlightBlock(e)});
+                $("pre").each(function (i, e) {
+                    hljs.highlightBlock(e);
+                });
                 NProgress.done();
             }));
         }));
