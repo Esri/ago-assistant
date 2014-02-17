@@ -92,7 +92,11 @@ function loginDestination() {
             $.when(storeCredentials("destination", $("#destinationUrl").val(), $("#destinationUsername").val(), response.token, function (callback) {
                 $("#copyModal").modal("hide");
                 $(".content").each(function (i) {
-                    makeDraggable($(this)); //Make the content draggable.
+                    var type = $(this).attr("data-type");
+                    if (isSupported(type)) {
+                        $(this).addClass("btn-info"); // Highlight supported content.
+                        makeDraggable($(this)); //Make the content draggable.
+                    }
                     $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
                 $("#currentAction").html("<a>copy content</a>");
@@ -535,6 +539,7 @@ function moveItem(item, destination) {
     item.prependTo(destination);
     var itemId = $(item).attr("data-id");
     var destinationFolder = $(item).parent().attr("data-folder");
+    $(item).removeClass("active btn-primary btn-info");
     copyItem(itemId, destinationFolder);
 }
 
