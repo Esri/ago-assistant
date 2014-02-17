@@ -412,6 +412,21 @@ function isSupported(type) {
     }
 }
 
+function isTypeText(type) {
+    var textTypes = ["Web Map", "Feature Collection", "Feature Collection Template", "Operation View", "Symbol Set", "Color Set", "Document Link"];
+    if ($.inArray(type, textTypes) > -1) {
+        return true;
+    }
+}
+
+function isTypeUrl(type) {
+    var urlTypes = ["Feature Service", "Map Service", "Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
+                   "Geocoding Service", "Network Analysis Service", "Geoprocessing Service", "Web Mapping Application", "Mobile Application"];
+    if ($.inArray(type, urlTypes) > -1) {
+        return true;
+    }
+}
+
 function statsCalendar(activities) {
 
     // Create a date object for three months ago.
@@ -470,7 +485,21 @@ function listItems() {
         $("#itemsArea").append(html);
         // Append the root items to the Root folder.
         $.each(content.items, function (item) {
-            var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
+            var icon;
+            if (isTypeText(this.type)) {
+                icon = "globe";
+            } else if (isTypeUrl(this.type)) {
+                icon = "link";
+            } else {
+                icon = "file";
+            }
+            var templateData = {
+                "id": this.id,
+                "title": this.title,
+                "type": this.type,
+                "icon": icon
+            };
+            var html = Mustache.to_html($("#contentTemplate").html(), templateData);
             $("#collapse_").append(html);
             storeActivity(content.items[item].modified);
         });
@@ -486,7 +515,21 @@ function listItems() {
                 $("#itemsArea").append(html);
                 // Append the items to the folder.
                 $.each(content.items, function (item) {
-                    var html = Mustache.to_html($("#contentTemplate").html(), content.items[item]);
+                    var icon;
+                    if (isTypeText(this.type)) {
+                        icon = "globe";
+                    } else if (isTypeUrl(this.type)) {
+                        icon = "link";
+                    } else {
+                        icon = "file";
+                    }
+                    var templateData = {
+                        "id": this.id,
+                        "title": this.title,
+                        "type": this.type,
+                        "icon": icon
+                    };
+                    var html = Mustache.to_html($("#contentTemplate").html(), templateData);
                     $("#collapse_" + content.currentFolder.id).append(html);
                     storeActivity(content.items[item].modified);
                 });
