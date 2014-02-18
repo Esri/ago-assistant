@@ -1,3 +1,162 @@
+function resizeContentAreas() {
+    "use strict";
+    var height = jQuery(window).height() - 50;
+    jQuery("#itemsArea").height(height);
+    jQuery("#dropArea").height(height);
+}
+
+ // Do stuff when DOM is ready.
+jQuery(document).ready(function() {
+
+    // Detect IE.
+    if (navigator.appName == 'Microsoft Internet Explorer') {
+        alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
+    }
+
+    jQuery("#logout").hide();
+
+    resizeContentAreas(); // Resize the content areas based on the window size.
+
+    jQuery("#sourceUrl").tooltip({
+        trigger: "hover",
+        title: "Use https://www.arcgis.com/ for AGOL Organization accounts.",
+        placement: "bottom"
+    });
+
+    jQuery("#destinationAgolBtn").tooltip({
+        trigger: "hover",
+        title: "Use this for AGOL Organization accounts.",
+        placement: "bottom"
+    });
+
+    // Preformat the copy login screen.
+    jQuery("#destinationAgolBtn").button("toggle");
+    jQuery("#destinationAgolBtn").addClass("btn-primary");
+    jQuery("#destinationUrl").css({
+        "visibility": "hidden"
+    });
+
+    jQuery("#destinationAgolBtn").click(function() {
+        jQuery("#destinationUrl").attr({
+            "placeholder": "",
+            "value": "https://www.arcgis.com/"
+        });
+        jQuery("#destinationUrl").val("https://www.arcgis.com/");
+        jQuery("#destinationUrl").css({
+            "visibility": "hidden"
+        });
+        jQuery("#destinationAgolBtn").addClass("btn-primary active");
+        jQuery("#destinationPortalBtn").removeClass("btn-primary active");
+    });
+    jQuery("#destinationPortalBtn").click(function() {
+        jQuery("#destinationUrl").attr({
+            "placeholder": "https://myportal.com/",
+            "value": ""
+        });
+        jQuery("#destinationUrl").val("");
+        jQuery("#destinationUrl").css({
+            "visibility": "visible"
+        });
+        jQuery("#destinationPortalBtn").addClass("btn-primary active");
+        jQuery("#destinationAgolBtn").removeClass("btn-primary active");
+    });
+
+});
+
+ // Do stuff when the window is resized.
+jQuery(window).resize(function() {
+    resizeContentAreas(); // Resize the content areas based on the window size.
+});
+
+ // Validate the url when the input loses focus.
+jQuery("#sourceUrl").blur(function() {
+    validateUrl("#sourceUrl");
+});
+jQuery("#destinationUrl").blur(function() {
+    // Give the DOM time to update before firing the validation.
+    setTimeout(function() {
+        if (jQuery("#destinationPortalBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+    }, 500);
+});
+
+ // Source Login.
+jQuery("#sourceLoginBtn").click(function() {
+    loginSource();
+});
+
+ // Destination Login.
+jQuery("#destinationLoginBtn").click(function() {
+    loginDestination();
+});
+
+ // Reset the destination login form when the modal is canceled.
+jQuery("#destinationLoginBtn").click(function() {
+    jQuery("#destinationLoginBtn").button("reset");
+});
+
+ // Add a listener for the enter key on the source login form.
+jQuery("#sourceLoginForm").keypress(function(e) {
+    if (e.which == 13) {
+        jQuery("#sourceLoginBtn").focus().click();
+    }
+});
+
+ // Add a listener for the enter key on the destination login form.
+jQuery("#destinationLoginForm").keypress(function(e) {
+    if (e.which == 13) {
+        jQuery("#destinationLoginBtn").focus().click();
+    }
+});
+
+ // Add a listener for the future logout button.
+jQuery(document).on("click", "li[data-action='logout']", (function() {
+    logout();
+}));
+
+ // Load the html templates.
+jQuery.get("templates.html", function(templates) {
+    jQuery("body").append(templates);
+});
+
+ // Clean up the lists when copy content is selected.
+jQuery("#copyModal").on("show.bs.modal", function () {
+    cleanUp();
+});
+
+ // Enable inspecting of content.
+jQuery("li[data-action='inspectContent']").click(function() {
+    cleanUp();
+    jQuery("#currentAction").html("<a>inspect content</a>");
+    inspectContent();
+});
+
+ // Add a listener for the "View my stats" action.
+jQuery("li[data-action='stats']").click(function() {
+    cleanUp();
+    jQuery("#currentAction").html("<a>view stats</a>");
+    viewStats();
+});
+
+ // Add a listener for the "Update map services" action.
+jQuery("li[data-action='updateWebmapServices']").click(function() {
+    cleanUp();
+    jQuery("#currentAction").html("<a>update web map service URLs</a>");
+    updateWebmapServices();
+});
+
+ // Add a listener for the "Update map services" action.
+jQuery("li[data-action='updateContentUrl']").click(function() {
+    cleanUp();
+    jQuery("#currentAction").html("<a>update content URL</a>");
+    updateContentUrls();
+});
+
+
+
+
+
 var app = {
     user: {},
     stats: {
@@ -9,8 +168,8 @@ function validateUrl(el) {
     // Check the url for errors (e.g. no trailing slash)
     // and update it before sending.
     "use strict";
-    var portal = $.trim($(el).val()), // trim whitespace
-        html = $("#urlErrorTemplate").html();
+    var portal = jQuery.trim(jQuery(el).val()), // trim whitespace
+        html = jQuery("#urlErrorTemplate").html();
     if (portal === "") {
         // Default to ArcGIS Online.
         portal = "https://arcgis.com/";
@@ -24,11 +183,11 @@ function validateUrl(el) {
         // Add the trailing slash.
         portal = portal + "/";
     }
-    $(el).val(portal);
+    jQuery(el).val(portal);
 
-    $.when(portalVersion(portal, function (response) {
+    jQuery.when(portalVersion(portal, function (response) {
         if (response === "error") {
-            $(el).parent().after(html);
+            jQuery(el).parent().after(html);
         } else {
             console.log("API v" + response);
         }
@@ -36,18 +195,18 @@ function validateUrl(el) {
 }
 
 function loginSource() {
-    $("#sourceLoginBtn").button("loading");
-    $("#itemsArea").empty(); //Clear any old items.
-    $.when(generateToken($("#sourceUrl").val(), $("#sourceUsername").val(), $("#sourcePassword").val(), function (response) {
-        $("#sourceLoginBtn").button("reset");
+    jQuery("#sourceLoginBtn").button("loading");
+    jQuery("#itemsArea").empty(); //Clear any old items.
+    jQuery.when(generateToken(jQuery("#sourceUrl").val(), jQuery("#sourceUsername").val(), jQuery("#sourcePassword").val(), function (response) {
+        jQuery("#sourceLoginBtn").button("reset");
         if (response.token) {
             // Store the portal info in the browser's sessionStorage.
-            $.when(storeCredentials("source", $("#sourceUrl").val(), $("#sourceUsername").val(), response.token, function (callback) {
+            jQuery.when(storeCredentials("source", jQuery("#sourceUrl").val(), jQuery("#sourceUsername").val(), response.token, function (callback) {
                 startSession();
             }));
         } else if (response.error.code === 400) {
-            var html = $("#loginErrorTemplate").html();
-            $("#sourceLoginForm").before(html);
+            var html = jQuery("#loginErrorTemplate").html();
+            jQuery("#sourceLoginForm").before(html);
         } else {
             console.log("Unhandled error.");
             console.log(response);
@@ -59,14 +218,14 @@ function startSession() {
     "use strict";
     var portal = sessionStorage.sourceUrl,
         token = sessionStorage.sourceToken;
-    $.when(portalInfo(portal, token, function (info) {
-        var template = $("#sessionTemplate").html(),
+    jQuery.when(portalInfo(portal, token, function (info) {
+        var template = jQuery("#sessionTemplate").html(),
             html = Mustache.to_html(template, info);
-        $("#sourceLoginForm").before(html);
-        $("#sourceLoginForm").hide();
-        $("#sourceLoginBtn").hide();
-        $("#logout").show();
-        $("#actionDropdown").css({
+        jQuery("#sourceLoginForm").before(html);
+        jQuery("#sourceLoginForm").hide();
+        jQuery("#sourceLoginBtn").hide();
+        jQuery("#logout").show();
+        jQuery("#actionDropdown").css({
             "visibility": "visible"
         });
         NProgress.start();
@@ -84,29 +243,29 @@ function storeCredentials(direction, portal, username, token, callback) {
 }
 
 function loginDestination() {
-    $("#destinationLoginBtn").button("loading");
-    $("#dropArea").empty(); //Clear any old items.
-    $.when(generateToken($("#destinationUrl").val(), $("#destinationUsername").val(), $("#destinationPassword").val(), function (response) {
-        $("#destinationLoginBtn").button("reset");
+    jQuery("#destinationLoginBtn").button("loading");
+    jQuery("#dropArea").empty(); //Clear any old items.
+    jQuery.when(generateToken(jQuery("#destinationUrl").val(), jQuery("#destinationUsername").val(), jQuery("#destinationPassword").val(), function (response) {
+        jQuery("#destinationLoginBtn").button("reset");
         if (response.token) {
-            $.when(storeCredentials("destination", $("#destinationUrl").val(), $("#destinationUsername").val(), response.token, function (callback) {
-                $("#copyModal").modal("hide");
-                $(".content").each(function (i) {
-                    var type = $(this).attr("data-type");
+            jQuery.when(storeCredentials("destination", jQuery("#destinationUrl").val(), jQuery("#destinationUsername").val(), response.token, function (callback) {
+                jQuery("#copyModal").modal("hide");
+                jQuery(".content").each(function (i) {
+                    var type = jQuery(this).attr("data-type");
                     if (isSupported(type)) {
-                        $(this).addClass("btn-info"); // Highlight supported content.
-                        makeDraggable($(this)); //Make the content draggable.
+                        jQuery(this).addClass("btn-info"); // Highlight supported content.
+                        makeDraggable(jQuery(this)); //Make the content draggable.
                     }
-                    $(this).css("max-width", $("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
+                    jQuery(this).css("max-width", jQuery("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                 });
-                $("#currentAction").html("<a>copy content</a>");
+                jQuery("#currentAction").html("<a>copy content</a>");
                 NProgress.start();
                 showDestinationFolders();
                 NProgress.done();
             }));
         } else if (response.error.code === 400) {
-            var html = $("#loginErrorTemplate").html();
-            $("#destinationLoginForm").before(html);
+            var html = jQuery("#loginErrorTemplate").html();
+            jQuery("#destinationLoginForm").before(html);
         } else {
             console.log("Unhandled error.");
             console.log(response);
@@ -116,37 +275,37 @@ function loginDestination() {
 
 function logout() {
     sessionStorage.clear();
-    $("#currentAction").html("");
-    $("#itemsArea").empty(); //Clear any old items.
-    $("#dropArea").empty(); //Clear any old items.
-    $("#sessionDropdown").remove();
-    $("#loginSuccess").remove();
-    $("#actionDropdown").css({
+    jQuery("#currentAction").html("");
+    jQuery("#itemsArea").empty(); //Clear any old items.
+    jQuery("#dropArea").empty(); //Clear any old items.
+    jQuery("#sessionDropdown").remove();
+    jQuery("#loginSuccess").remove();
+    jQuery("#actionDropdown").css({
         "visibility": "hidden"
     });
-    $("#sourceLoginForm").show();
-    $("#sourceLoginBtn").show();
+    jQuery("#sourceLoginForm").show();
+    jQuery("#sourceLoginBtn").show();
 }
 
 function inspectContent() {
-    $(".content").addClass("data-toggle");
-    $(".content").removeClass("disabled");
-    $(".content").attr("data-toggle", "button");
-    $(".content").addClass("btn-info"); // Highlight everything
+    jQuery(".content").addClass("data-toggle");
+    jQuery(".content").removeClass("disabled");
+    jQuery(".content").attr("data-toggle", "button");
+    jQuery(".content").addClass("btn-info"); // Highlight everything
 
-    $("#inspectModal").modal("hide");
-    $("#inspectBtn").button("reset");
+    jQuery("#inspectModal").modal("hide");
+    jQuery("#inspectBtn").button("reset");
     // Add a listener for clicking on content buttons.
-    $(".content").click(function () {
+    jQuery(".content").click(function () {
         NProgress.start();
-        $(".content").removeClass("active");
-        $(".content").removeClass("btn-primary");
-        $(this).addClass("btn-primary");
-        var id = $(this).attr("data-id"),
-            title = $(this).text();
-        $.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
+        jQuery(".content").removeClass("active");
+        jQuery(".content").removeClass("btn-primary");
+        jQuery(this).addClass("btn-primary");
+        var id = jQuery(this).attr("data-id"),
+            title = jQuery(this).text();
+        jQuery.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
             var descriptionString = JSON.stringify(description, undefined, 2);
-            $.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
+            jQuery.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
                 if (data.statusText) {
                     // No data was returned.
                     data = "";
@@ -156,11 +315,11 @@ function inspectContent() {
                     description: descriptionString,
                     data: JSON.stringify(data, undefined, 2)
                 };
-                var html = Mustache.to_html($("#inspectTemplate").html(), templateData);
+                var html = Mustache.to_html(jQuery("#inspectTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
-                $("#dropArea").html(html);
+                jQuery("#dropArea").html(html);
                 // Color code the JSON to make it easier to read (uses highlight.js).
-                $("pre").each(function (i, e) {
+                jQuery("pre").each(function (i, e) {
                     hljs.highlightBlock(e);
                 });
                 NProgress.done();
@@ -172,36 +331,36 @@ function inspectContent() {
 function updateWebmapServices() {
     var webmapData, // make a couple globals so we can access them in other parts of the function
         folder;
-    $(".content").addClass("data-toggle");
-    $(".content").removeClass("disabled");
-    $(".content").attr("data-toggle", "button");
-    $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+    jQuery(".content").addClass("data-toggle");
+    jQuery(".content").removeClass("disabled");
+    jQuery(".content").attr("data-toggle", "button");
+    jQuery(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
 
     // Add a listener for clicking on content buttons.
-    $(".content").click(function () {
+    jQuery(".content").click(function () {
         // Display the selected Web Map's operational layers with a URL component.
-        $(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
-        $(".content").removeClass("active");
-        $(".content").removeClass("btn-primary");
-        $(this).addClass("btn-primary");
-        $(this).removeClass("btn-info");
-        var id = $(this).attr("data-id"),
-            webmapTitle = $(this).text();
-        $.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
+        jQuery(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+        jQuery(".content").removeClass("active");
+        jQuery(".content").removeClass("btn-primary");
+        jQuery(this).addClass("btn-primary");
+        jQuery(this).removeClass("btn-info");
+        var id = jQuery(this).attr("data-id"),
+            webmapTitle = jQuery(this).text();
+        jQuery.when(itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (data) {
             if (data.statusText) {
                 // No data was returned.
                 data = "";
             } else {
                 webmapData = JSON.stringify(data);
                 var operationalLayers = [];
-                $.each(data.operationalLayers, function (layer) {
+                jQuery.each(data.operationalLayers, function (layer) {
                     if (data.operationalLayers[layer].hasOwnProperty("url")) {
                         operationalLayers.push(data.operationalLayers[layer]);
                     }
                 });
                 var basemapTitle = data.baseMap.title,
                     basemapLayers = [];
-                $.each(data.baseMap.baseMapLayers, function (layer) {
+                jQuery.each(data.baseMap.baseMapLayers, function (layer) {
                     if (data.baseMap.baseMapLayers[layer].hasOwnProperty("url")) {
                         basemapLayers.push(data.baseMap.baseMapLayers[layer]);
                     }
@@ -213,44 +372,44 @@ function updateWebmapServices() {
                     basemapTitle: basemapTitle,
                     basemapLayers: basemapLayers
                 };
-                var html = Mustache.to_html($("#webmapServicesTemplate").html(), templateData);
+                var html = Mustache.to_html(jQuery("#webmapServicesTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
-                $("#dropArea").html(html);
+                jQuery("#dropArea").html(html);
             }
         }));
     });
 
-    $(document).on("click", "#btnUpdateWebmapServices", (function () {
-        var webmapServices = $("[data-original]");
-        $.each(webmapServices, function (service) {
-            var originalUrl = $(webmapServices[service]).attr("data-original"),
-                newUrl = $(webmapServices[service]).val();
+    jQuery(document).on("click", "#btnUpdateWebmapServices", (function () {
+        var webmapServices = jQuery("[data-original]");
+        jQuery.each(webmapServices, function (service) {
+            var originalUrl = jQuery(webmapServices[service]).attr("data-original"),
+                newUrl = jQuery(webmapServices[service]).val();
             // Find and replace each URL.
             webmapData = webmapData.replace(originalUrl, newUrl);
-            $(webmapServices[service]).val(newUrl);
+            jQuery(webmapServices[service]).val(newUrl);
         });
-        var webmapId = $(".content.active.btn-primary").attr("data-id"),
-            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
+        var webmapId = jQuery(".content.active.btn-primary").attr("data-id"),
+            folder = jQuery(".content.active.btn-primary").parent().attr("data-folder"),
             itemData = JSON.parse(webmapData);
-        $.when(updateWebmapData(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, webmapId, itemData, sessionStorage.sourceToken, function (response) {
+        jQuery.when(updateWebmapData(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, webmapId, itemData, sessionStorage.sourceToken, function (response) {
             var html;
             if (response.success) {
-                html = Mustache.to_html($("#updateSuccessTemplate").html());
-                $("#btnResetWebmapServices").before(html);
+                html = Mustache.to_html(jQuery("#updateSuccessTemplate").html());
+                jQuery("#btnResetWebmapServices").before(html);
             } else if (response.error.code === 400) {
-                html = Mustache.to_html($("#updateErrorTemplate").html());
-                $("#btnResetWebmapServices").before(html);
+                html = Mustache.to_html(jQuery("#updateErrorTemplate").html());
+                jQuery("#btnResetWebmapServices").before(html);
             }
         }));
     }));
 
-    $(document).on("click", "#btnResetWebmapServices", (function () {
-        var webmapServices = $("[data-original]");
-        $.each(webmapServices, function (service) {
-            var originalUrl = $(webmapServices[service]).attr("data-original"),
-                currentUrl = $(webmapServices[service]).val();
-            $(webmapServices[service]).val(originalUrl);
-            $(webmapServices[service]).attr("data-original", currentUrl);
+    jQuery(document).on("click", "#btnResetWebmapServices", (function () {
+        var webmapServices = jQuery("[data-original]");
+        jQuery.each(webmapServices, function (service) {
+            var originalUrl = jQuery(webmapServices[service]).attr("data-original"),
+                currentUrl = jQuery(webmapServices[service]).val();
+            jQuery(webmapServices[service]).val(originalUrl);
+            jQuery(webmapServices[service]).attr("data-original", currentUrl);
         });
     }));
 
@@ -258,62 +417,62 @@ function updateWebmapServices() {
 
 function updateContentUrls() {
     var folder,
-        supportedContent = $(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
+        supportedContent = jQuery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
     supportedContent.addClass("data-toggle btn-info"); // Highlight support content
     supportedContent.removeClass("disabled");
     supportedContent.attr("data-toggle", "button");
 
     // Add a listener for clicking on content buttons.
-    $(".content").click(function () {
+    jQuery(".content").click(function () {
         // Display the selected item's URL.
         supportedContent.addClass("btn-info"); // Highlight Web Maps
-        $(".content").removeClass("active");
-        $(".content").removeClass("btn-primary");
-        $(this).addClass("btn-primary");
-        $(this).removeClass("btn-info");
-        var id = $(this).attr("data-id"),
-            title = $(this).text();
-        $.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
+        jQuery(".content").removeClass("active");
+        jQuery(".content").removeClass("btn-primary");
+        jQuery(this).addClass("btn-primary");
+        jQuery(this).removeClass("btn-info");
+        var id = jQuery(this).attr("data-id"),
+            title = jQuery(this).text();
+        jQuery.when(itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken, function (description) {
             if (description.statusText) {
                 // No description was returned.
                 description = "";
             } else {
-                var html = Mustache.to_html($("#itemContentTemplate").html(), description);
+                var html = Mustache.to_html(jQuery("#itemContentTemplate").html(), description);
                 // Add the HTML container with the item JSON.
-                $("#dropArea").html(html);
+                jQuery("#dropArea").html(html);
             }
         }));
     });
 
-    $(document).on("click", "#btnUpdateContentUrl", (function () {
-        var contentId = $(".content.active.btn-primary").attr("data-id"),
-            folder = $(".content.active.btn-primary").parent().attr("data-folder"),
-            url = $("[data-original]").val();
-        $.when(updateContentUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken, function (response) {
+    jQuery(document).on("click", "#btnUpdateContentUrl", (function () {
+        var contentId = jQuery(".content.active.btn-primary").attr("data-id"),
+            folder = jQuery(".content.active.btn-primary").parent().attr("data-folder"),
+            url = jQuery("[data-original]").val();
+        jQuery.when(updateContentUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken, function (response) {
             var html;
             if (response.success) {
-                html = Mustache.to_html($("#updateSuccessTemplate").html());
-                $("#btnResetContentUrl").before(html);
+                html = Mustache.to_html(jQuery("#updateSuccessTemplate").html());
+                jQuery("#btnResetContentUrl").before(html);
             } else if (response.error.code === 400) {
-                html = Mustache.to_html($("#updateErrorTemplate").html());
-                $("#btnResetContentUrl").before(html);
+                html = Mustache.to_html(jQuery("#updateErrorTemplate").html());
+                jQuery("#btnResetContentUrl").before(html);
             }
         }));
     }));
 
-    $(document).on("click", "#btnResetContentUrl", (function () {
-        var originalUrl = $("[data-original]").attr("data-original"),
-            currentUrl = $("[data-original]").val();
-        $("[data-original]").val(originalUrl);
-        $("[data-original]").attr("data-original", currentUrl);
+    jQuery(document).on("click", "#btnResetContentUrl", (function () {
+        var originalUrl = jQuery("[data-original]").attr("data-original"),
+            currentUrl = jQuery("[data-original]").val();
+        jQuery("[data-original]").val(originalUrl);
+        jQuery("[data-original]").attr("data-original", currentUrl);
     }));
 
 }
 
 function viewStats() {
-    $.when(userProfile(sessionStorage.sourceUrl, sessionStorage.sourceUsername, sessionStorage.sourceToken, function (user) {
+    jQuery.when(userProfile(sessionStorage.sourceUrl, sessionStorage.sourceUsername, sessionStorage.sourceToken, function (user) {
 
-        var template = $("#statsTemplate").html();
+        var template = jQuery("#statsTemplate").html();
         var thumbnailUrl;
         // Check that the user has a thumbnail image.
         if (user.thumbnail) {
@@ -336,37 +495,37 @@ function viewStats() {
         };
 
         html = Mustache.to_html(template, templateData);
-        $("body").append(html);
+        jQuery("body").append(html);
         statsCalendar(app.stats.activities);
 
-        $("#statsModal").modal("show");
+        jQuery("#statsModal").modal("show");
 
         // Get the user's 3 most viewed items.
         var searchQuery = "owner:" + sessionStorage.sourceUsername;
-        $.when(searchPortal(sessionStorage.sourceUrl, searchQuery, 3, "numViews", "desc", sessionStorage.sourceToken, function (results) {
-            $.each(results.results, function (result) {
+        jQuery.when(searchPortal(sessionStorage.sourceUrl, searchQuery, 3, "numViews", "desc", sessionStorage.sourceToken, function (results) {
+            jQuery.each(results.results, function (result) {
                 results.results[result].numViews = results.results[result].numViews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 results.results[result].itemUrl = sessionStorage.sourceUrl + "home/item.html?id=" + results.results[result].id;
             });
-            var tableTemplate = $("#mostViewedContentTemplate").html();
-            $("#mostViewedContent").html(Mustache.to_html(tableTemplate, {
+            var tableTemplate = jQuery("#mostViewedContentTemplate").html();
+            jQuery("#mostViewedContent").html(Mustache.to_html(tableTemplate, {
                 searchResults: results.results
             }));
         }));
 
-        $("#statsModal").on("shown.bs.modal", function () {
+        jQuery("#statsModal").on("shown.bs.modal", function () {
             // Apply CSS to style the calendar arrows.
-            var calHeight = $(".calContainer").height();
+            var calHeight = jQuery(".calContainer").height();
             // Center the calendar.
-            $(".cal-heatmap-container").css("margin", "auto");
+            jQuery(".cal-heatmap-container").css("margin", "auto");
             // Adjust the arrows.
-            $(".calArrow").css("margin-top", (calHeight - 20) + "px");
+            jQuery(".calArrow").css("margin-top", (calHeight - 20) + "px");
         });
 
-        $("#statsModal").on("hidden.bs.modal", function () {
-            $("#currentAction").html("");
+        jQuery("#statsModal").on("hidden.bs.modal", function () {
+            jQuery("#currentAction").html("");
             // Destroy the stats modal so it can be properly rendered next time.
-            $("#statsModal").remove();
+            jQuery("#statsModal").remove();
         });
 
     }));
@@ -385,21 +544,21 @@ function makeDraggable(el) {
 
 function makeDroppable(id) {
     // Make the drop area accept content items.
-    $("#dropFolder_" + id).droppable({
+    jQuery("#dropFolder_" + id).droppable({
         accept: ".content",
         activeClass: "ui-state-hover",
         hoverClass: "ui-state-active",
         drop: function (event, ui) {
-            moveItem(ui.draggable, $(this).parent().parent());
+            moveItem(ui.draggable, jQuery(this).parent().parent());
         }
     });
 }
 
 function cleanUp() {
-    $("#dropArea").empty(); //Clear any old items.
-    $(".content").unbind("click"); // Remove old event handlers.
-    $(".content").removeClass("active btn-primary btn-info ui-draggable");
-    $(".content").addClass("disabled");
+    jQuery("#dropArea").empty(); //Clear any old items.
+    jQuery(".content").unbind("click"); // Remove old event handlers.
+    jQuery(".content").removeClass("active btn-primary btn-info ui-draggable");
+    jQuery(".content").addClass("disabled");
 }
 
 function isSupported(type) {
@@ -409,14 +568,14 @@ function isSupported(type) {
                           "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
                           "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
                           "Color Set", "Document Link"];
-    if ($.inArray(type, supportedTypes) > -1) {
+    if (jQuery.inArray(type, supportedTypes) > -1) {
         return true;
     }
 }
 
 function isTypeText(type) {
     var textTypes = ["Web Map", "Feature Collection", "Feature Collection Template", "Operation View", "Symbol Set", "Color Set", "Document Link"];
-    if ($.inArray(type, textTypes) > -1) {
+    if (jQuery.inArray(type, textTypes) > -1) {
         return true;
     }
 }
@@ -424,7 +583,7 @@ function isTypeText(type) {
 function isTypeUrl(type) {
     var urlTypes = ["Feature Service", "Map Service", "Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
                    "Geocoding Service", "Network Analysis Service", "Geoprocessing Service", "Web Mapping Application", "Mobile Application"];
-    if ($.inArray(type, urlTypes) > -1) {
+    if (jQuery.inArray(type, urlTypes) > -1) {
         return true;
     }
 }
@@ -476,17 +635,17 @@ function listItems() {
         username = sessionStorage.sourceUsername,
         token = sessionStorage.sourceToken;
 
-    $.when(userContent(url, username, token, "/", function (content) {
+    jQuery.when(userContent(url, username, token, "/", function (content) {
         // Append the root folder accordion.
         var folderData = {
             title: "Root",
             id: "",
             count: content.items.length
         };
-        var html = Mustache.to_html($("#folderTemplate").html(), folderData);
-        $("#itemsArea").append(html);
+        var html = Mustache.to_html(jQuery("#folderTemplate").html(), folderData);
+        jQuery("#itemsArea").append(html);
         // Append the root items to the Root folder.
-        $.each(content.items, function (item) {
+        jQuery.each(content.items, function (item) {
             var icon;
             if (isTypeText(this.type)) {
                 icon = "globe";
@@ -501,22 +660,22 @@ function listItems() {
                 "type": this.type,
                 "icon": icon
             };
-            var html = Mustache.to_html($("#contentTemplate").html(), templateData);
-            $("#collapse_").append(html);
+            var html = Mustache.to_html(jQuery("#contentTemplate").html(), templateData);
+            jQuery("#collapse_").append(html);
             storeActivity(content.items[item].modified);
         });
-        $.each(content.folders, function (folder) {
-            $.when(userContent(url, username, token, content.folders[folder].id, function (content) {
+        jQuery.each(content.folders, function (folder) {
+            jQuery.when(userContent(url, username, token, content.folders[folder].id, function (content) {
                 var folderData = {
                     title: content.currentFolder.title,
                     id: content.currentFolder.id,
                     count: content.items.length
                 };
                 // Append an accordion for the folder.
-                var html = Mustache.to_html($("#folderTemplate").html(), folderData);
-                $("#itemsArea").append(html);
+                var html = Mustache.to_html(jQuery("#folderTemplate").html(), folderData);
+                jQuery("#itemsArea").append(html);
                 // Append the items to the folder.
-                $.each(content.items, function (item) {
+                jQuery.each(content.items, function (item) {
                     var icon;
                     if (isTypeText(this.type)) {
                         icon = "globe";
@@ -531,12 +690,12 @@ function listItems() {
                         "type": this.type,
                         "icon": icon
                     };
-                    var html = Mustache.to_html($("#contentTemplate").html(), templateData);
-                    $("#collapse_" + content.currentFolder.id).append(html);
+                    var html = Mustache.to_html(jQuery("#contentTemplate").html(), templateData);
+                    jQuery("#collapse_" + content.currentFolder.id).append(html);
                     storeActivity(content.items[item].modified);
                 });
                 // Collapse the accordion to avoid cluttering the display.
-                $("#collapse_" + content.currentFolder.id).collapse("hide");
+                jQuery("#collapse_" + content.currentFolder.id).collapse("hide");
             }));
         });
     }));
@@ -548,29 +707,29 @@ function showDestinationFolders() {
         username = sessionStorage.destinationUsername,
         token = sessionStorage.destinationToken;
 
-    $.when(userContent(url, username, token, "/", function (content) {
+    jQuery.when(userContent(url, username, token, "/", function (content) {
         var folderData = {
             title: "Root",
             id: "",
             count: content.items.length
         };
         // Append the root folder accordion.
-        var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData);
-        $("#dropArea").append(html);
+        var html = Mustache.to_html(jQuery("#dropFolderTemplate").html(), folderData);
+        jQuery("#dropArea").append(html);
         makeDroppable(""); // Enable the droppable area.
         // Append the other folders.
-        $.each(content.folders, function (folder) {
-            $.when(userContent(url, username, token, content.folders[folder].id, function (content) {
+        jQuery.each(content.folders, function (folder) {
+            jQuery.when(userContent(url, username, token, content.folders[folder].id, function (content) {
                 var folderData = {
                     title: content.currentFolder.title,
                     id: content.currentFolder.id,
                     count: content.items.length
                 };
                 // Append an accordion for the folder.
-                var html = Mustache.to_html($("#dropFolderTemplate").html(), folderData);
-                $("#dropArea").append(html);
+                var html = Mustache.to_html(jQuery("#dropFolderTemplate").html(), folderData);
+                jQuery("#dropArea").append(html);
                 // Collapse the accordion to avoid cluttering the display.
-                $("#collapse" + content.currentFolder.id).collapse("hide");
+                jQuery("#collapse" + content.currentFolder.id).collapse("hide");
                 makeDroppable(content.currentFolder.id); // Enable the droppable area.
             }));
         });
@@ -580,11 +739,11 @@ function showDestinationFolders() {
 function moveItem(item, destination) {
     // Move the content DOM element from the source to the destination container on the page.
     "use strict";
-    $(item).css("max-width", ""); // Remove the max-width property so it fills the folder.
+    jQuery(item).css("max-width", ""); // Remove the max-width property so it fills the folder.
     item.prependTo(destination);
-    var itemId = $(item).attr("data-id");
-    var destinationFolder = $(item).parent().attr("data-folder");
-    $(item).removeClass("active btn-primary btn-info");
+    var itemId = jQuery(item).attr("data-id");
+    var destinationFolder = jQuery(item).parent().attr("data-folder");
+    jQuery(item).removeClass("active btn-primary btn-info");
     copyItem(itemId, destinationFolder);
 }
 
@@ -598,50 +757,50 @@ function copyItem(id, folder) {
         destinationUsername = sessionStorage.destinationUsername,
         destinationToken = sessionStorage.destinationToken;
 
-    var type = $("#" + id).attr("data-type");
+    var type = jQuery("#" + id).attr("data-type");
     // Ensure the content type is supported before trying to copy it.
     if (isSupported(type)) {
         // Get the full item description and data from the source.
-        $.when(itemDescription(sourcePortal, id, sourceToken, function (description) {
+        jQuery.when(itemDescription(sourcePortal, id, sourceToken, function (description) {
             var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-            $.when(itemData(sourcePortal, id, sourceToken, function (data) {
+            jQuery.when(itemData(sourcePortal, id, sourceToken, function (data) {
                 // Replace response object for items with no data component.
                 if (data.responseText === "") {
                     data = "";
                 }
                 // Post it to the destination.
-                $.when(addItem(destinationPortal, destinationUsername, folder, destinationToken, description, data, thumbnailUrl, function (response) {
+                jQuery.when(addItem(destinationPortal, destinationUsername, folder, destinationToken, description, data, thumbnailUrl, function (response) {
                     var message,
                         html;
                     if (response.success === true) {
-                        $("#" + id).addClass("btn-success");
+                        jQuery("#" + id).addClass("btn-success");
                     } else if (response.error) {
-                        $("#" + id).addClass("btn-danger");
+                        jQuery("#" + id).addClass("btn-danger");
                         message = response.error.message;
-                        html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
+                        html = Mustache.to_html(jQuery("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
                         });
-                        $("#" + id).before(html);
+                        jQuery("#" + id).before(html);
                     } else {
                         message = "Something went wrong.";
-                        html = Mustache.to_html($("#contentCopyErrorTemplate").html(), {
+                        html = Mustache.to_html(jQuery("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: message
                         });
-                        $("#" + id).before(html);
+                        jQuery("#" + id).before(html);
                     }
                 }));
             }));
         }));
     } else {
         // Not supported.
-        $("#" + id).addClass("btn-warning");
-        var html = Mustache.to_html($("#contentTypeErrorTemplate").html(), {
+        jQuery("#" + id).addClass("btn-warning");
+        var html = Mustache.to_html(jQuery("#contentTypeErrorTemplate").html(), {
             id: id,
             type: type
         });
-        $("#" + id).before(html);
-        $("#" + id + "_alert").fadeOut(6000);
+        jQuery("#" + id).before(html);
+        jQuery("#" + id + "_alert").fadeOut(6000);
     }
 }

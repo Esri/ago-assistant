@@ -5,12 +5,13 @@
         <meta charset="utf-8">
         <title>ArcGIS Online Assistant</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script type="text/javascript" src="lib/jquery-1.10.2.min.js"></script>
-        <link rel="stylesheet" href="css/jquery-ui-1.9.2.css" />
-        <link type="text/css" href="lib/bootstrap/css/bootstrap.min.css" rel="Stylesheet" />
-        <link type="text/css" href="css/styles.css" rel="Stylesheet" />
-        <script type="text/javascript" src="lib/nprogress/nprogress-0.1.2.js"></script>
-        <link rel="stylesheet" href="lib/nprogress/nprogress.css" />
+        <script src="lib/require-2.1.11.min.js" data-main="js/main"></script>
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.css" />
+        <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="css/styles.css"/>
+        <link rel="stylesheet" type="text/css" href="lib/nprogress/nprogress.css" />
+        <link rel="stylesheet" type="text/css" href="lib/cal-heatmap/cal-heatmap-3.3.10.css" />
+        <link rel="stylesheet" type="text/css" href="lib/highlight/tomorrow.min.css">
     </head>
     
     <body>
@@ -146,179 +147,6 @@
                 </div>
             </div>
         </div>
-        <script>
-            function resizeContentAreas() {
-                "use strict";
-                var height = $(window).height() - 50;
-                $("#itemsArea").height(height);
-                $("#dropArea").height(height);
-            }
-
-             // Do stuff when DOM is ready.
-            $(document).ready(function() {
-
-                // Detect IE.
-                if (navigator.appName == 'Microsoft Internet Explorer') {
-                    alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
-                }
-
-                $("#logout").hide();
-
-                resizeContentAreas() // Resize the content areas based on the window size.
-
-                $("#sourceUrl").tooltip({
-                    trigger: "hover",
-                    title: "Use https://www.arcgis.com/ for AGOL Organization accounts.",
-                    placement: "bottom"
-                });
-
-                $("#destinationAgolBtn").tooltip({
-                    trigger: "hover",
-                    title: "Use this for AGOL Organization accounts.",
-                    placement: "bottom"
-                });
-
-                // Preformat the copy login screen.
-                $("#destinationAgolBtn").button("toggle");
-                $("#destinationAgolBtn").addClass("btn-primary");
-                $("#destinationUrl").css({
-                    "visibility": "hidden"
-                });
-
-                $("#destinationAgolBtn").click(function() {
-                    $("#destinationUrl").attr({
-                        "placeholder": "",
-                        "value": "https://www.arcgis.com/"
-                    });
-                    $("#destinationUrl").val("https://www.arcgis.com/");
-                    $("#destinationUrl").css({
-                        "visibility": "hidden"
-                    });
-                    $("#destinationAgolBtn").addClass("btn-primary active");
-                    $("#destinationPortalBtn").removeClass("btn-primary active");
-                });
-                $("#destinationPortalBtn").click(function() {
-                    $("#destinationUrl").attr({
-                        "placeholder": "https://myportal.com/",
-                        "value": ""
-                    });
-                    $("#destinationUrl").val("");
-                    $("#destinationUrl").css({
-                        "visibility": "visible"
-                    });
-                    $("#destinationPortalBtn").addClass("btn-primary active");
-                    $("#destinationAgolBtn").removeClass("btn-primary active");
-                });
-
-            });
-
-             // Do stuff when the window is resized.
-            $(window).resize(function() {
-                resizeContentAreas() // Resize the content areas based on the window size.
-            });
-
-             // Validate the url when the input loses focus.
-            $("#sourceUrl").blur(function() {
-                validateUrl("#sourceUrl");
-            });
-            $("#destinationUrl").blur(function() {
-                // Give the DOM time to update before firing the validation.
-                setTimeout(function() {
-                    if ($("#destinationPortalBtn").hasClass("active")) {
-                        validateUrl("#destinationUrl");
-                    }
-                }, 500);
-            });
-
-             // Source Login.
-            $("#sourceLoginBtn").click(function() {
-                loginSource();
-            });
-
-             // Destination Login.
-            $("#destinationLoginBtn").click(function() {
-                loginDestination();
-            });
-
-             // Reset the destination login form when the modal is canceled.
-            $("#destinationLoginBtn").click(function() {
-                $("#destinationLoginBtn").button("reset");
-            });
-
-             // Add a listener for the enter key on the source login form.
-            $("#sourceLoginForm").keypress(function(e) {
-                if (e.which == 13) {
-                    $("#sourceLoginBtn").focus().click();
-                }
-            });
-
-             // Add a listener for the enter key on the destination login form.
-            $("#destinationLoginForm").keypress(function(e) {
-                if (e.which == 13) {
-                    $("#destinationLoginBtn").focus().click();
-                }
-            });
-
-             // Add a listener for the future logout button.
-            $(document).on("click", "li[data-action='logout']", (function() {
-                logout();
-            }));
-
-             // Load the html templates.
-            $.get("templates.html", function(templates) {
-                $("body").append(templates);
-            });
-            
-             // Clean up the lists when copy content is selected.
-            $("#copyModal").on("show.bs.modal", function () {
-                cleanUp();
-            })
-
-             // Enable inspecting of content.
-            $("li[data-action='inspectContent']").click(function() {
-                cleanUp();
-                $("#currentAction").html("<a>inspect content</a>");
-                inspectContent();
-            });
-
-             // Add a listener for the "View my stats" action.
-            $("li[data-action='stats']").click(function() {
-                cleanUp();
-                $("#currentAction").html("<a>view stats</a>");
-                viewStats();
-            });
-
-             // Add a listener for the "Update map services" action.
-            $("li[data-action='updateWebmapServices']").click(function() {
-                cleanUp();
-                $("#currentAction").html("<a>update web map service URLs</a>");
-                updateWebmapServices();
-            });
-
-             // Add a listener for the "Update map services" action.
-            $("li[data-action='updateContentUrl']").click(function() {
-                cleanUp();
-                $("#currentAction").html("<a>update content URL</a>");
-                updateContentUrls();
-            });
-        </script>
-        <!-- Load dependencies. -->
-        <!-- jquery -->
-        <script src="lib/jquery-ui-1.9.2.min.js"></script>
-        <!-- bootstrap -->
-        <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="js/portal.js"></script>
-        <script type="text/javascript" src="js/app.js"></script>
-        <!-- mustache -->
-        <script type="text/javascript" src="lib/mustache-0.7.2.js"></script>
-        <!-- d3 -->
-        <script type="text/javascript" src="lib/d3.v3-3.2.7.min.js"></script>
-        <!-- cal-heatmap -->
-        <link rel="stylesheet" href="lib/cal-heatmap/cal-heatmap-3.3.10.css" />
-        <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap-3.3.10.min.js"></script>
-        <!-- highlight.js -->
-        <link rel="stylesheet" href="lib/highlight/tomorrow.min.css">
-        <script src="lib/highlight/highlight.min.js"></script>
     </body>
 
 </html>
