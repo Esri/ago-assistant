@@ -14,9 +14,6 @@ requirejs.config({
         "app": "js/app"
     },
     shim: {
-        "jquery": {
-            exports: "jQuery"
-        },
         "jquery.bootstrap": {
             // Ensure jquery-ui loads first.
             // This is necessary so bootstrap stuff still works.
@@ -24,12 +21,6 @@ requirejs.config({
         },
         "jquery.ui": {
             deps: ["jquery"],
-        },
-        "mustache": {
-            exports: "Mustache"
-        },
-        "d3": {
-            exports: "d3"
         },
         "nprogress": {
             deps: ["jquery"],
