@@ -768,8 +768,10 @@ require([
             // Get the full item description and data from the source.
             portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
                 var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-                portal.content.itemData(sourcePortal, id, sourceToken).done(function (data) {
+                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
                     // Post it to the destination.
+                    // Using always to ensure that it copies Web Mapping Applications
+                    // which don't have a data component (and generate a failed response).
                     portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
                         var message,
                             html;
