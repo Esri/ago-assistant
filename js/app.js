@@ -454,7 +454,7 @@ require([
             portal.content.updateUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
                 var html;
                 if (response.success) {
-                    jquery("[data-original]").attr("data-original", currentUrl);
+                    jquery("[data-original]").attr("data-original", url);
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetContentUrl").before(html);
                 } else if (response.error.code === 400) {
