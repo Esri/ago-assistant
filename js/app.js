@@ -528,7 +528,7 @@ require([
             cancel: false,
             helper: "clone",
             appendTo: "body",
-            revert: "invalid",
+            revert: true,
             opacity: 0.7
         });
         el.removeClass("disabled");
@@ -731,11 +731,13 @@ require([
     function moveItem(item, destination) {
         // Move the content DOM element from the source to the destination container on the page.
         "use strict";
-        jquery(item).css("max-width", ""); // Remove the max-width property so it fills the folder.
-        item.prependTo(destination);
         var itemId = jquery(item).attr("data-id");
-        var destinationFolder = jquery(item).parent().attr("data-folder");
-        jquery(item).removeClass("active btn-primary btn-info");
+        var clone = jquery(item).clone();                           // Clone the original item.
+        clone.attr("id", itemId + "_clone");                        // Differentiate this object from the original.
+        clone.css("max-width", "");                                 // Remove the max-width property so it fills the folder.
+        clone.prependTo(destination);                               // Move it to the destination folder.
+        clone.removeClass("active btn-primary btn-info");           // Remove the contextual highlighting.
+        var destinationFolder = clone.parent().attr("data-folder"); // Get the folder the item was dragged into.
         copyItem(itemId, destinationFolder);
     }
 
@@ -748,7 +750,6 @@ require([
             destinationPortal = sessionStorage.destinationUrl,
             destinationUsername = sessionStorage.destinationUsername,
             destinationToken = sessionStorage.destinationToken;
-
         var type = jquery("#" + id).attr("data-type");
         // Ensure the content type is supported before trying to copy it.
         if (isSupported(type)) {
@@ -758,28 +759,26 @@ require([
                 portal.content.itemData(sourcePortal, id, sourceToken).done(function (data) {
                     // Post it to the destination.
                     portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
-                        console.log("success");
                         var message,
                             html;
                         if (response.success === true) {
-                            jquery("#" + id).addClass("btn-success");
+                            jquery("#" + id + "_clone").addClass("btn-success");
                         } else if (response.error) {
-                            jquery("#" + id).addClass("btn-danger");
+                            jquery("#" + id + "_clone").addClass("btn-danger");
                             message = response.error.message;
                             html = Mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                                 id: id,
                                 message: message
                             });
-                            jquery("#" + id).before(html);
+                            jquery("#" + id + "_clone").before(html);
                         }
                     }).fail(function (response) {
-                        console.log("fail");
                         var message = "Something went wrong.",
                             html = Mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                                 id: id,
                                 message: message
                             });
-                        jquery("#" + id).before(html);
+                        jquery("#" + id + "_clone").before(html);
                     });
                 });
             });
