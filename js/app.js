@@ -1,9 +1,11 @@
 require([
     "jquery",
-    "portal"
+    "portal",
+    "mustache"
 ], function (
     jquery,
-    portal
+    portal,
+    mustache
 ) {
 
     function resizeContentAreas() {
@@ -17,9 +19,9 @@ require([
     jquery(document).ready(function () {
 
         /*// Detect IE.
-    if (navigator.appName == 'Microsoft Internet Explorer') {
-        alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
-    }*/
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
+        }*/
 
         jquery("#logout").hide();
 
@@ -229,7 +231,7 @@ require([
             token = sessionStorage.sourceToken;
         portal.self(portalUrl, token).done(function (data) {
             var template = jquery("#sessionTemplate").html(),
-                html = Mustache.to_html(template, data);
+                html = mustache.to_html(template, data);
             jquery("#sourceLoginForm").before(html);
             jquery("#sourceLoginForm").hide();
             jquery("#sourceLoginBtn").hide();
@@ -325,7 +327,7 @@ require([
                         description: itemDescription,
                         data: JSON.stringify(itemData, undefined, 2)
                     };
-                    var html = Mustache.to_html(jquery("#inspectTemplate").html(), templateData);
+                    var html = mustache.to_html(jquery("#inspectTemplate").html(), templateData);
                     // Add the HTML container with the item JSON.
                     jquery("#dropArea").html(html);
                     // Color code the JSON to make it easier to read (uses highlight.js).
@@ -378,7 +380,7 @@ require([
                     basemapTitle: basemapTitle,
                     basemapLayers: basemapLayers
                 };
-                var html = Mustache.to_html(jquery("#webmapServicesTemplate").html(), templateData);
+                var html = mustache.to_html(jquery("#webmapServicesTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
                 jquery("#dropArea").html(html);
             });
@@ -400,10 +402,10 @@ require([
                 var html;
                 if (response.success) {
                     jquery("#btnResetWebmapServices").click();
-                    html = Mustache.to_html(jquery("#updateSuccessTemplate").html());
+                    html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetWebmapServices").before(html);
                 } else if (response.error.code === 400) {
-                    html = Mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetWebmapServices").before(html);
                 }
             });
@@ -439,7 +441,7 @@ require([
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
-                var html = Mustache.to_html(jquery("#itemContentTemplate").html(), description);
+                var html = mustache.to_html(jquery("#itemContentTemplate").html(), description);
                 // Add the HTML container with the item JSON.
                 jquery("#dropArea").html(html);
             });
@@ -452,11 +454,11 @@ require([
             portal.content.updateUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
                 var html;
                 if (response.success) {
-                    html = Mustache.to_html(jquery("#updateSuccessTemplate").html());
+                    html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetContentUrl").before(html);
                 } else if (response.error.code === 400) {
                     jquery("#btnResetContentUrl").click();
-                    html = Mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetContentUrl").before(html);
                 }
             });
@@ -496,7 +498,7 @@ require([
                 usageRate: usageRate
             };
 
-            html = Mustache.to_html(template, templateData);
+            html = mustache.to_html(template, templateData);
             jquery("body").append(html);
             statsCalendar(app.stats.activities);
 
@@ -510,7 +512,7 @@ require([
                     results.results[result].itemUrl = sessionStorage.sourceUrl + "home/item.html?id=" + results.results[result].id;
                 });
                 var tableTemplate = jquery("#mostViewedContentTemplate").html();
-                jquery("#mostViewedContent").html(Mustache.to_html(tableTemplate, {
+                jquery("#mostViewedContent").html(mustache.to_html(tableTemplate, {
                     searchResults: results.results
                 }));
             });
@@ -644,7 +646,7 @@ require([
                 id: "",
                 count: content.items.length
             };
-            var html = Mustache.to_html(jquery("#folderTemplate").html(), folderData);
+            var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
             jquery("#itemsArea").append(html);
             // Append the root items to the Root folder.
             jquery.each(content.items, function (item) {
@@ -662,7 +664,7 @@ require([
                     "type": this.type,
                     "icon": icon
                 };
-                var html = Mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
                 storeActivity(content.items[item].modified);
             });
@@ -674,7 +676,7 @@ require([
                         count: content.items.length
                     };
                     // Append an accordion for the folder.
-                    var html = Mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                    var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
                     jquery("#itemsArea").append(html);
                     // Append the items to the folder.
                     jquery.each(content.items, function (item) {
@@ -692,7 +694,7 @@ require([
                             "type": this.type,
                             "icon": icon
                         };
-                        var html = Mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                        var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                         jquery("#collapse_" + content.currentFolder.id).append(html);
                         storeActivity(content.items[item].modified);
                     });
@@ -716,7 +718,7 @@ require([
                 count: content.items.length
             };
             // Append the root folder accordion.
-            var html = Mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
+            var html = mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
             jquery("#dropArea").append(html);
             makeDroppable(""); // Enable the droppable area.
             // Append the other folders.
@@ -728,7 +730,7 @@ require([
                         count: content.items.length
                     };
                     // Append an accordion for the folder.
-                    var html = Mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
+                    var html = mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
                     jquery("#dropArea").append(html);
                     // Collapse the accordion to avoid cluttering the display.
                     jquery("#collapse" + content.currentFolder.id).collapse("hide");
@@ -776,7 +778,7 @@ require([
                         } else if (response.error) {
                             jquery("#" + id + "_clone").addClass("btn-danger");
                             message = response.error.message;
-                            html = Mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                                 id: id,
                                 message: message
                             });
@@ -784,7 +786,7 @@ require([
                         }
                     }).fail(function (response) {
                         var message = "Something went wrong.",
-                            html = Mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                                 id: id,
                                 message: message
                             });
@@ -795,7 +797,7 @@ require([
         } else {
             // Not supported.
             jquery("#" + id).addClass("btn-warning");
-            var html = Mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
+            var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
                 id: id,
                 type: type
             });

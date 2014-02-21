@@ -42,7 +42,7 @@ requirejs.config({
             deps: ["jquery", "util"]
         },
         "app": {
-            deps: ["jquery", "jquery.bootstrap", "mustache", "nprogress", "cal-heatmap", "portal"]
+            deps: ["jquery", "jquery.bootstrap", "mustache", "highlight", "nprogress", "cal-heatmap", "portal"]
         }
     }
 });
@@ -71,8 +71,6 @@ require([
     app
 ) {
         
-    // Reassign Mustache globally.
-    // This is a hack and should be fixed to properly use Mustache with requirejs.
-    window.Mustache = mustache;
-
+        
+        
 });
