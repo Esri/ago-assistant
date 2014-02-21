@@ -172,27 +172,33 @@ require([
         // and update it before sending.
         "use strict";
         var portalUrl = jquery.trim(jquery(el).val()), // trim whitespace
-            html = jquery("#urlErrorTemplate").html();
-        if (portalUrl === "") {
-            // Default to ArcGIS Online.
-            portalUrl = "https://arcgis.com/";
-        } else if (portalUrl.search("/home/") > 0) {
-            // Strip the /home endpoint.
-            portalUrl = portalUrl.substr(0, portalUrl.search("/home/")) + "/";
-        } else if (portalUrl.search("/sharing/") > 0) {
-            // Strip the /home endpoint.
-            portalUrl = portalUrl.substr(0, portalUrl.search("/sharing/")) + "/";
-        } else if (portalUrl.charAt(portalUrl.length - 1) !== "/") {
-            // Add the trailing slash.
-            portalUrl = portalUrl + "/";
-        }
-        jquery(el).val(portalUrl);
+            html = jquery("#urlErrorTemplate").html(),
+            fixUrl = function (url) {
+                var deferred = jquery.Deferred();
+                if (portalUrl === "") {
+                    // Default to ArcGIS Online.
+                    portalUrl = "https://www.arcgis.com/";
+                } else if (portalUrl.search("/home/") > 0) {
+                    // Strip the /home endpoint.
+                    portalUrl = portalUrl.substr(0, portalUrl.search("/home/")) + "/";
+                } else if (portalUrl.search("/sharing/") > 0) {
+                    // Strip the /home endpoint.
+                    portalUrl = portalUrl.substr(0, portalUrl.search("/sharing/")) + "/";
+                } else if (portalUrl.charAt(portalUrl.length - 1) !== "/") {
+                    // Add the trailing slash.
+                    portalUrl = portalUrl + "/";
+                }
+                jquery(el).val(portalUrl);
+                deferred.resolve(portalUrl);
+                return deferred.promise();
+            };
 
-        portal.version(portalUrl).done(function (data) {
-            console.log("API v" + data.currentVersion);
-        }).fail(function (response) {
-            console.log(response.statusText);
-            jquery(el).parent().after(html);
+        fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
+            portal.version(url).done(function (data) {
+                console.log("API v" + data.currentVersion);
+            }).fail(function (response) {
+                jquery(el).parent().after(html);
+            });
         });
     }
 
@@ -212,6 +218,8 @@ require([
             }
         }).fail(function (response) {
             console.log(response.statusText);
+            var html = jquery("#loginErrorTemplate").html();
+            jquery("#sourceLoginForm").before(html);
         });
     }
 
@@ -270,6 +278,8 @@ require([
             }
         }).fail(function (response) {
             console.log(response.statusText);
+            var html = jquery("#loginErrorTemplate").html();
+            jquery("#destinationLoginForm").before(html);
         });
     }
 
