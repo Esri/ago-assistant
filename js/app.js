@@ -401,10 +401,10 @@ require([
             portal.content.updateWebmapData(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, webmapId, itemData, sessionStorage.sourceToken).done(function (response) {
                 var html;
                 if (response.success) {
-                    jquery("#btnResetWebmapServices").click();
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetWebmapServices").before(html);
                 } else if (response.error.code === 400) {
+                    jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
                     html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetWebmapServices").before(html);
                 }
@@ -457,7 +457,7 @@ require([
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetContentUrl").before(html);
                 } else if (response.error.code === 400) {
-                    jquery("#btnResetContentUrl").click();
+                    jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
                     html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetContentUrl").before(html);
                 }
