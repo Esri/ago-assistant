@@ -9,7 +9,8 @@ requirejs.config({
         "nprogress": "lib/nprogress/nprogress-0.1.2",
         "cal-heatmap": "lib/cal-heatmap/cal-heatmap-3.3.10.min",
         "highlight": "lib/highlight/highlight.min",
-        "portal": "js/portal",
+        "portal": "js/portal/portal",
+        "util": "js/portal/util",
         "app": "js/app"
     },
     shim: {
@@ -38,7 +39,7 @@ requirejs.config({
             deps: ["d3"]
         },
         "portal": {
-            deps: ["jquery"]
+            deps: ["jquery", "util"]
         },
         "app": {
             deps: ["jquery", "jquery.bootstrap", "mustache", "nprogress", "cal-heatmap", "portal"]
@@ -69,8 +70,9 @@ require([
     portal,
     app
 ) {
-
+        
     // Reassign Mustache globally.
-    // This is a hack and should be fixed to properly use Mustache.
+    // This is a hack and should be fixed to properly use Mustache with requirejs.
     window.Mustache = mustache;
+
 });
