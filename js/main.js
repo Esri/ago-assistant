@@ -49,19 +49,6 @@ require([
     "highlight",
     "portal",
     "app"
-], function (
-    jquery,
-    bootstrap,
-    jqueryui,
-    mustache,
-    d3,
-    nprogress,
-    calheatmap,
-    highlight,
-    portal,
-    app
-) {
-        
-        
-        
+], function () {
+
 });
