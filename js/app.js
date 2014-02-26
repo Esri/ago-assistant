@@ -287,6 +287,8 @@ require([
 
     function logout() {
         sessionStorage.clear();
+        app.user = {};
+        app.stats.activities = {};
         jquery("#currentAction").html("");
         jquery("#itemsArea").empty(); //Clear any old items.
         jquery("#dropArea").empty(); //Clear any old items.
