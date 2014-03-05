@@ -99,8 +99,8 @@
 <script type="text/template" id="contentTemplate">
        
     <button id="{{ id }}" class="btn btn-block disabled content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
-        {{ title }} ({{type}})
-    </button>
+        {{ title }} ({{ type }})
+    <span class="glyphicon glyphicon-{{ icon }}" style="display:block; float:right; margin-right:10px"></span></button>
 
 </script>
 
@@ -133,11 +133,20 @@
                 <li class="list-group-item">Description</li>
                 <li class="list-group-item"><pre>{{ description }}</pre></li>
             </ul>
-            <br>
-            <ul class="list-group">
-                <li class="list-group-item">Data</li>
-                <li class="list-group-item"><pre>{{ data }}</pre></li>
-            </ul>
+            {{ #data }}
+                <br>
+                <ul class="list-group">
+                    <li class="list-group-item">Data</li>
+                    <li class="list-group-item"><pre>{{ data }}</pre></li>
+                </ul>
+            {{ /data }}
+            {{ ^data }}
+                <br>
+                <ul class="list-group">
+                    <li class="list-group-item">Data</li>
+                    <li class="list-group-item">There is no data associated with this item or it is a file item which will not be displayed here.</li>
+                </ul>
+            {{ /data }}
         </div>
     </div>
 
@@ -268,7 +277,7 @@
 
     <div class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <strong>Update failed!</strong>
+        <strong>Update failed! {{ error.message }}</strong>
     </div>
 
 </script>
