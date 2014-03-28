@@ -1,46 +1,40 @@
 /*global module:false*/
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
-  // Project configuration.
-  grunt.initConfig({
-    // Metadata.
-    pkg: grunt.file.readJSON('package.json'),
-    banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-      '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-      '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-      '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-      ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
-    // Task configuration.
-    concat: {
-      options: {
-        banner: '<%= banner %>',
-        stripBanners: true
-      },
-      dist: {
-        src: ['js/<%= pkg.name %>.js'],
-        dest: 'dist/<%= pkg.name %>.js'
-      }
-    },
-    uglify: {
-      options: {
-        banner: '<%= banner %>'
-      },
-      dist: {
-        src: '<%= concat.dist.dest %>',
-        dest: 'dist/<%= pkg.name %>.min.js'
-      }
-    },
-    gruntfile: {
-        src: 'Gruntfile.js'
-    },
-  });
+    // Project configuration.
+    grunt.initConfig({
+        // Metadata.
+        pkg: grunt.file.readJSON('package.json'),
+        // Task configuration.
+        jshint: {
+            all: ['Gruntfile.js', 'src/js/*.js', 'src/js/portal/*.js']
+        },
+        concat: {
+            options: {
+                separator: ';'
+            },
+            dist: {
+                src: ['src/index.html', 'src/templates.html'],
+                dest: 'build/index.html'
+            }
+        },
+        copy: {
+            main: {
+                files: [
+                    {expand: true, cwd: 'src/', src: ['assets/**'], dest: 'build/'},
+                    {expand: true, cwd: 'src/', src: ['css/**'], dest: 'build/'},
+                    {expand: true, cwd: 'src/', src: ['js/**'], dest: 'build/'},
+                ]
+            }
+        },
+    });
 
-  // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+    // These plugins provide necessary tasks.
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
-  // Default task.
-  grunt.registerTask('default', ['concat', 'uglify']);
+    // Default task.
+    grunt.registerTask('default', ['jshint', 'concat', 'copy']);
 
 };
