@@ -1,5 +1,6 @@
 body {
-    background: #e7e5df;
+    background: #F1F1F1;
+;
     padding-top: 50px;
 }
 
@@ -30,7 +31,7 @@ body {
 }
 
 .itemArea {
-    background: #c4bea7;
+    background: #E7E7E7;
     overflow-y: auto;
     padding-top: 10px;
 }

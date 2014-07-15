@@ -38,8 +38,11 @@
                                 <li data-action="copyContent">
                                     <a href="#copyModal" data-toggle="modal">Copy Content</a>
                                 </li>
+                                <li data-action="createGroup">
+                                    <a href="#groupModal" data-toggle="modal">Create a Group</a>
+                                </li>
                                 <li data-action="inspectContent">
-                                    <a>Inspect Content (View JSON)</a>
+                                    <a>View and Edit JSON</a>
                                 </li>
                                 <li data-action="updateWebmapServices">
                                     <a>Update the URLs of a Service in a Web Map</a>
@@ -84,9 +87,9 @@
                             <ul>
                                 <li>
                                     Copy content between accounts (even on different organizations or Portals)
-                                    <p align="middle"><em>Files and Hosted Feature Services cannot be copied at this time.</em></p>
+                                    <p align="middle"><em>Hosted Feature Services cannot be copied at this time, but you can copy service definitions.</em></p>
                                 </li>
-                                <li>Inspect content</li>
+                                <li>Inspect and Edit item JSON files</li>
                                 <li>Update the URLs for services in a Web Map</li>
                                 <li>Update the URL for registered Web Apps and Map Services</li>
                                 <li>View user stats</li>
@@ -140,6 +143,60 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Create a Group modal -->
+            <div id="groupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="groupModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="H1">Create a Group</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div id="groupPortalInformation" class = "form-inline">
+                                    <p>Enter your portal URL (or leave as default if you use ArcGIS Online</p>
+                                    <div class="form-group">
+                                        <input class="form-control" type="url" placeholder="https://arcgis.com/" id="groupPortalUrl">
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Login to the target account</p>
+                                <div id="groupUserDetails" class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" placeholder="Username" id="groupUsername">
+                                        <input class="form-control" type="password" placeholder="Password" id="groupPassword">
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Select a sharing option:</p>
+                                <div class="form-inline">
+                                    <div class="btn-group" data-toggle="buttons-radio">
+                                        <button type="button" id="groupPrivateBtn" class="btn btn-default default" data-toggle="button">Private</button>
+                                        <button type="button" id="groupOrganisationBtn" class="btn btn-default" data-toggle="button">Organisation</button>
+                                        <button type="button" id="groupPublicBtn" class="btn btn-default" data-toggle="button">Public</button>
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Enter the group details:</p>
+                                <div id="groupDetails" class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" placeholder="Group Name" id="groupTitleText">
+                                        <input class="form-control" type="text" placeholder="Summary" id="groupSnippetText">
+                                        <input class="form-control" type="text" placeholder="Tags (separate with commas)" id="groupTagsText">
+                                        <input class="form-control" type="text" placeholder="Group Description" id="groupDescriptionText">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="groupCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="groupSubmitBtn" class="btn btn-primary" data-loading-text="Creating group...">Create Group</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Item containers -->
             <div id="itemsContainer" class="row">
                 <div id="itemsArea" class="col-md-6 itemArea">

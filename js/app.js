@@ -10,7 +10,7 @@ require([
 
     function resizeContentAreas() {
         "use strict";
-        var height = jquery(window).height() - 50;
+        var height = jquery(window).height() - 80;
         jquery("#itemsArea").height(height);
         jquery("#dropArea").height(height);
     }
@@ -100,6 +100,22 @@ require([
         loginDestination();
     });
 
+    //Listener for group login validation
+    jquery("#groupPassword").blur(function () {
+        checkGroupToken();
+    });
+
+    $("#groupPrivateBtn, #groupOrganisationBtn, #groupPublicBtn").click(function () {
+        $("#groupPrivateBtn, #groupOrganisationBtn, #groupPublicBtn").removeClass("btn-primary active");
+        
+        $(this).addClass("btn-primary active");
+    });
+
+    //Listener for the group creation button
+    jquery("#groupSubmitBtn").click(function () {
+        createGroup();
+    });
+
     // Reset the destination login form when the modal is canceled.
     jquery("#destinationLoginBtn").click(function () {
         jquery("#destinationLoginBtn").button("reset");
@@ -137,9 +153,11 @@ require([
     // Enable inspecting of content.
     jquery("li[data-action='inspectContent']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>inspect content</a>");
+        jquery("#currentAction").html("<a>View/Edit JSON</a>");
         inspectContent();
     });
+
+    
 
     // Add a listener for the "View my stats" action.
     jquery("li[data-action='stats']").click(function () {
@@ -263,7 +281,13 @@ require([
                     jquery("#copyModal").modal("hide");
                     jquery(".content").each(function (i) {
                         var type = jquery(this).attr("data-type");
-                        if (isSupported(type)) {
+                        if (isSupportedFull(type)) {
+                            jquery(this).addClass("btn-primary"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (isSupportedReferenced(type)) {
+                            jquery(this).addClass("btn-info"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (type == 'Groups') {
                             jquery(this).addClass("btn-info"); // Highlight supported content.
                             makeDraggable(jquery(this)); //Make the content draggable.
                         }
@@ -309,10 +333,12 @@ require([
 
         jquery("#inspectModal").modal("hide");
         jquery("#inspectBtn").button("reset");
+
         // Add a listener for clicking on content buttons.
         jquery(".content").click(function () {
             var itemDescription,
                 itemData;
+            
             NProgress.start();
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
@@ -336,9 +362,136 @@ require([
                     jquery("pre").each(function (i, e) {
                         hljs.highlightBlock(e);
                     });
+
+                    //make the Json elements editable upon clicking (enables on mouse over and selects on click)
+                    $(".hljs-string, .hljs-number, .hljs-literal").bind('mouseover', function () {
+                        if (isJSONEditable($(this).parent().prev().html())) {
+                            $(this).attr('contentEditable', true);
+                            $(this).css("background-color", "#B2E0B2");
+                        }
+                        else {
+                            $(this).css("background-color", "#E0B2B2");
+                        }
+                    }).mouseleave(
+                        function () {
+                            $(this).css("background-color", "transparent");
+                    }).blur(
+                        function () {
+                            $(this).attr('contentEditable', false);
+
+                            //Folder of the item (blank if root)
+                            var folder = jquery(".content.active.btn-primary").parent().attr("data-folder");
+
+                            //edited attribute and value
+                            var val = $(this).html(),
+                                attribute = $(this).parent().prev().html();        
+
+                            // if the attribute is a json object (tags etc.) then create a comma separated string of all items
+                            if ($(this).siblings()) {
+                                val = '';
+                                var sibs = $(this).siblings();
+                                for (sibling in sibs) {
+                                    if (sibs[sibling].textContent) {
+                                        val = val + ', ' + sibs[sibling].textContent;
+                                    }
+                                };
+                            }
+
+                            value = val.replace(/\"/g, '').substring(1);  //value without the quotation marks and without the prevailing comma
+                            console.log(attribute + ' : ' + value);
+
+                            portal.commitJson(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, sessionStorage.sourceToken, id, attribute, value).done(function (response) {
+                                if (response.success) {
+                                    console.log('success');
+                                }
+                                else {
+                                    alert('Sorry, your edit could not be committed');
+                                }
+                            });
+                        });
                     NProgress.done();
                 });
             });
+        });
+    }
+
+    function isJSONEditable(type) {
+        var supportedTypes = ["title", "thumbnail", "thumbnailurl", "metadata", "type", "typeKeywords", "description",
+                             "tags", "snippet", "extent", "spatialReference", "accessInformation", "licenseInfo",
+                             "culture", "serviceUsername", "servicePassword"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function createGroup() {
+        $('#groupPortalUrl').val("https://www.arcgis.com/");
+
+        var groupAccess = 'private',
+            groupInvitation = 'true';
+
+        if ($("#groupPrivateBtn").hasClass("btn-primary active")) { groupAccess = 'private' }
+        else if ($("#groupOrganisationBtn").hasClass("btn-primary active")) { groupAccess = 'org' }
+        else if ($("#groupPublicBtn").hasClass("btn-primary active")) { groupAccess = 'public' }
+
+        //variables loaded in from the user's input
+        var destinationPortal = $("#groupPortalUrl").val(),
+            groupId = '',
+            groupTitle = $("#groupTitleText").val(),
+
+            groupDescription = $("#groupDescriptionText").val(),
+            groupSnippet = $("#groupSnippetText").val(),
+            groupTags = $("#groupTagsText").val(),
+            groupPhone = '',
+            groupThumbnail = '';
+            
+        //insert sharing button options here...
+        if (jquery("#groupPrivateBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        else if (jquery("#groupOrganisationBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        else if (jquery("#groupPublicBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        
+        //Generate a token for the target account
+        portal.generateToken(destinationPortal, $("#groupUsername").val(), $("#groupPassword").val()).done(function (response) {
+            var destinationToken = response.token;
+
+        //send off the create group request
+            portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+                if (response.success == true) {
+                    jquery("#groupModal").modal("hide");
+                    //and other stuff to reset the modal!
+
+                } else if (response.error.code === 400) {
+                    alert("Sorry, your group couldn't be created, but we're not sure exactly why.");
+
+                } else if (response.error.code === 403) {
+                    alert("Looks like your user details don't quite match up");
+                }
+            });
+        });
+    }
+
+    //for checking login credentials in the group modal box and providing feedback on the fly
+    function checkGroupToken() {
+        portal.generateToken(jquery("#sourceUrl").val(), $("#groupUsername").val(), $("#groupPassword").val()).done(function (response) {
+            $("#groupUserDetails").removeClass("has-success");
+            $("#groupUserDetails").removeClass("has-error");
+
+            if (response.token) {
+                //set the ui green
+                $("#groupUserDetails").addClass("has-success has-feedback");
+                //$("#groupUserDetails").attr("has-success","has-feedback");
+            }
+            else if (response.error.code === 400) {
+                //set the ui red
+                $("#groupUserDetails").addClass("has-error has-feedback");
+                //$("#groupUserDetails").addClass("has-feedback");
+            }
         });
     }
 
@@ -422,7 +575,6 @@ require([
                 jquery(webmapServices[service]).attr("data-original", currentUrl);
             });
         }));
-
     }
 
     function updateContentUrls() {
@@ -472,7 +624,6 @@ require([
                 currentUrl = jquery("[data-original]").val();
             jquery("[data-original]").val(originalUrl);
         }));
-
     }
 
     function viewStats() {
@@ -567,7 +718,16 @@ require([
         jquery(".content").addClass("disabled");
     }
 
-    function isSupported(type) {
+    function isSupportedFull(type) {
+        // Check if the content type is supported.
+        // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+        var supportedTypes = ["CSV", "PDF", "Service Definition"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function isSupportedReferenced(type) {
         // Check if the content type is supported.
         // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
         var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
@@ -587,7 +747,7 @@ require([
     }
 
     function isTypeUrl(type) {
-        var urlTypes = ["Feature Service", "Map Service", "Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
+        var urlTypes = ["Feature Service", "Map Service","Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
                    "Geocoding Service", "Network Analysis Service", "Geoprocessing Service", "Web Mapping Application", "Mobile Application"];
         if (jquery.inArray(type, urlTypes) > -1) {
             return true;
@@ -595,7 +755,6 @@ require([
     }
 
     function statsCalendar(activities) {
-
         // Create a date object for three months ago.
         var today = new Date();
         var startDate = new Date();
@@ -603,7 +762,6 @@ require([
         if (today.getMonth() < 2) {
             startDate.setYear(today.getFullYear() - 1);
         }
-
         var cal = new CalHeatMap();
         cal.init({
             itemSelector: "#statsCalendar",
@@ -627,7 +785,6 @@ require([
             },
             domainDynamicDimension: false
         });
-
     }
 
     function storeActivity(activityTime) {
@@ -704,6 +861,41 @@ require([
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
+
+            //Next list the groups in a new folder
+            portal.getGroups(url, username, token).done(function (response) {
+                var groupData = {
+                    title: 'Groups',
+                    id: 'group',
+                    count: response.groups.length
+                };
+                // Append an accordion for the folder.
+                var html = mustache.to_html(jquery("#folderTemplate").html(), groupData);
+                jquery("#itemsArea").append(html);
+                // Append the items to the folder.
+                jquery.each(response.groups, function (item) {
+                    var icon;
+                    if (isTypeText(this.type)) {
+                        icon = "globe";
+                    } else if (isTypeUrl(this.type)) {
+                        icon = "link";
+                    } else {
+                        icon = "file";
+                    }
+                    var templateData = {
+                        "id": this.id,
+                        "title": this.title,
+                        "type": 'Groups',
+                        "icon": icon
+                    };
+                    var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                    jquery("#collapse_" + 'group').append(html);
+                    storeActivity(content.items[item].modified);
+                });
+                // Collapse the accordion to avoid cluttering the display.
+                jquery("#collapse_" + 'group').collapse("hide");
+            });
+
         });
     }
 
@@ -763,10 +955,11 @@ require([
             sourceToken = sessionStorage.sourceToken,
             destinationPortal = sessionStorage.destinationUrl,
             destinationUsername = sessionStorage.destinationUsername,
-            destinationToken = sessionStorage.destinationToken;
+            destinationToken = sessionStorage.destinationToken,
+            sourceUsername = $("#sourceUsername").val();
         var type = jquery("#" + id).attr("data-type");
         // Ensure the content type is supported before trying to copy it.
-        if (isSupported(type)) {
+        if (isSupportedFull(type) && type != 'Groups') {
             // Get the full item description and data from the source.
             portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
                 var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
@@ -774,7 +967,72 @@ require([
                     // Post it to the destination.
                     // Using always to ensure that it copies Web Mapping Applications
                     // which don't have a data component (and generate a failed response).
-                    portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
+                    portal.content.addItem(destinationPortal, id, sourceUsername, destinationUsername, folder, description, data, thumbnailUrl, sourceToken, destinationToken).done(function (response) {
+                        var message,
+                            html;
+                        if (response.success === true) {
+                            jquery("#" + id + "_clone").addClass("btn-success");
+                        } else if (response.error) {
+                            jquery("#" + id + "_clone").addClass("btn-danger");
+                            message = response.error.message;
+                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                id: id,
+                                message: message
+                            });
+                            jquery("#" + id + "_clone").before(html);
+                        }
+                    }).fail(function (response) {
+                        var message = "Something went wrong.",
+                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                id: id,
+                                message: message
+                            });
+                        jquery("#" + id + "_clone").before(html);
+                    });
+                });
+            });
+        } else if (type == 'Groups') { //initiate group copying
+            
+            //get the group's attributes
+            portal.getGroupDetails(sourcePortal, sourceToken, id).done(function (response) {
+                var groupId = 'some id',
+                    groupTitle = response.title,
+                    groupInvitation = response.isInvitationOnly,
+                    groupDescription = response.description,
+                    groupSnippet = response.snippet,
+                    groupTags = response.tags,
+                    groupPhone = response.phone,
+                    groupThumbnail = response.thumbnail,
+                    groupAccess = response.access;
+
+                //send off the group creation
+                portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+                    var message,
+                            html;
+                    if (response.success === true) {
+                        jquery("#" + id + "_clone").addClass("btn-success");
+                    } else if (response.error) {
+                        jquery("#" + id + "_clone").addClass("btn-danger");
+                        message = response.error.message;
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: message
+                        });
+                        jquery("#" + id + "_clone").before(html);
+                    }
+                });
+            });
+
+        } else if (isSupportedReferenced(type) && type != 'Groups') { //for the old referencing style
+            console.log('webmap type selected');
+            // Get the full item description and data from the source.
+            portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+                var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
+                    // Post it to the destination.
+                    // Using always to ensure that it copies Web Mapping Applications
+                    // which don't have a data component (and generate a failed response).
+                    portal.content.addItemReferenced(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
                         var message,
                             html;
                         if (response.success === true) {
@@ -809,5 +1067,4 @@ require([
             jquery("#" + id + "_alert").fadeOut(6000);
         }
     }
-
 });
