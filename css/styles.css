@@ -1,5 +1,5 @@
 body {
-    background: #F1F1F1;
+    background: #F8F8F8;
 ;
     padding-top: 50px;
 }
@@ -31,7 +31,7 @@ body {
 }
 
 .itemArea {
-    background: #E7E7E7;
+    background: #F8F8F8;
     overflow-y: auto;
     padding-top: 10px;
 }
@@ -53,3 +53,9 @@ body {
 .list-group-item pre{
     font-size: .8em;
 }
+
+.form-login{
+    text-align: center;
+    
+}
+

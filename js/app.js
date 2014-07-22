@@ -6,11 +6,11 @@ require([
     jquery,
     portal,
     mustache
-) {
+){
 
     function resizeContentAreas() {
         "use strict";
-        var height = jquery(window).height() - 80;
+        var height = jquery(window).height() - 50;
         jquery("#itemsArea").height(height);
         jquery("#dropArea").height(height);
     }
@@ -282,6 +282,9 @@ require([
                     jquery(".content").each(function (i) {
                         var type = jquery(this).attr("data-type");
                         if (isSupportedFull(type)) {
+                            jquery(this).addClass("btn-primary"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (type == 'Feature Service'){
                             jquery(this).addClass("btn-primary"); // Highlight supported content.
                             makeDraggable(jquery(this)); //Make the content draggable.
                         } else if (isSupportedReferenced(type)) {
@@ -960,55 +963,45 @@ require([
         var type = jquery("#" + id).attr("data-type");
         // Ensure the content type is supported before trying to copy it.
         if (isSupportedFull(type) && type != 'Groups') {
-            // Get the full item description and data from the source.
-            portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
-                var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
-                    // Post it to the destination.
-                    // Using always to ensure that it copies Web Mapping Applications
-                    // which don't have a data component (and generate a failed response).
-                    portal.content.addItem(destinationPortal, id, sourceUsername, destinationUsername, folder, description, data, thumbnailUrl, sourceToken, destinationToken).done(function (response) {
-                        var message,
-                            html;
-                        if (response.success === true) {
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                        } else if (response.error) {
-                            jquery("#" + id + "_clone").addClass("btn-danger");
-                            message = response.error.message;
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
-                            jquery("#" + id + "_clone").before(html);
-                        }
-                    }).fail(function (response) {
-                        var message = "Something went wrong.",
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
-                        jquery("#" + id + "_clone").before(html);
-                    });
-                });
-            });
+
+            copyFull(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
+        } else if (type == 'Feature Service'){
+
+            copyFeatureService(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
         } else if (type == 'Groups') { //initiate group copying
             
-            //get the group's attributes
-            portal.getGroupDetails(sourcePortal, sourceToken, id).done(function (response) {
-                var groupId = 'some id',
-                    groupTitle = response.title,
-                    groupInvitation = response.isInvitationOnly,
-                    groupDescription = response.description,
-                    groupSnippet = response.snippet,
-                    groupTags = response.tags,
-                    groupPhone = response.phone,
-                    groupThumbnail = response.thumbnail,
-                    groupAccess = response.access;
+            copyGroup(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+            
+        } else if (isSupportedReferenced(type) && type != 'Groups') { //for the old referencing style
 
-                //send off the group creation
-                portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+            copyReferenced(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
+        } else {
+        // Not supported.
+        jquery("#" + id).addClass("btn-warning");
+        var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
+            id: id,
+            type: type
+        });
+        jquery("#" + id).before(html);
+        jquery("#" + id + "_alert").fadeOut(6000);
+        }
+    }
+
+    function copyReferenced(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+
+        // Get the full item description and data from the source.
+        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
+                // Post it to the destination.
+                // Using always to ensure that it copies Web Mapping Applications
+                // which don't have a data component (and generate a failed response).
+                portal.content.addItemReferenced(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
                     var message,
-                            html;
+                        html;
                     if (response.success === true) {
                         jquery("#" + id + "_clone").addClass("btn-success");
                     } else if (response.error) {
@@ -1020,51 +1013,171 @@ require([
                         });
                         jquery("#" + id + "_clone").before(html);
                     }
+                }).fail(function (response) {
+                    var message = "Something went wrong.",
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: message
+                        });
+                    jquery("#" + id + "_clone").before(html);
                 });
             });
+        });
+    }
 
-        } else if (isSupportedReferenced(type) && type != 'Groups') { //for the old referencing style
-            console.log('webmap type selected');
-            // Get the full item description and data from the source.
-            portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
-                var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
-                    // Post it to the destination.
-                    // Using always to ensure that it copies Web Mapping Applications
-                    // which don't have a data component (and generate a failed response).
-                    portal.content.addItemReferenced(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
-                        var message,
-                            html;
-                        if (response.success === true) {
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                        } else if (response.error) {
-                            jquery("#" + id + "_clone").addClass("btn-danger");
-                            message = response.error.message;
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
-                            jquery("#" + id + "_clone").before(html);
-                        }
-                    }).fail(function (response) {
-                        var message = "Something went wrong.",
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
-                        jquery("#" + id + "_clone").before(html);
+    function copyFull(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        NProgress.start();
+            
+        // Get the full item description and data from the source.
+        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            // Post it to the destination.
+            $.when(portal.content.addItem(destinationPortal, id, sourceUsername, destinationUsername, folder, description, thumbnailUrl, sourceToken, destinationToken)).then(function(response){
+                var message,
+                    html;
+                if (jQuery.parseJSON(response).success == true) {
+                    jquery("#" + id + "_clone").addClass("btn-success");
+                    NProgress.done();
+                } else if (response.error) {
+                    jquery("#" + id + "_clone").addClass("btn-danger");
+                    NProgress.done();
+                    message = response.error.message;
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
                     });
+                    jquery("#" + id + "_clone").before(html);
+                }
+            }).fail(function (response) {
+                NProgress.done();
+                var message = "Something went wrong.",
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
+                    });
+                jquery("#" + id + "_clone").before(html);
+            });
+        });         
+    }
+
+    function copyFeatureService(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        NProgress.start();
+        portal.content.exportItemAsFGDB(sourcePortal, sourceUsername, id, sourceToken).done(function (response) {
+            
+            var interval = setInterval(function(){checkStatus()}, 3000); 
+
+            function checkStatus() {
+                portal.content.checkItemStatus(sourcePortal, sourceUsername, response.exportItemId, response.jobId, 'export', sourceToken).done(function (resp) {
+                    
+                    if (resp.status == 'completed'){
+
+                        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+
+                            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+                            clearInterval(interval);
+                            NProgress.set(0.35);
+                            description.type = 'File Geodatabase';
+                            description.name = response.jobId + '.zip'; //a unique name to use as the filename of the new item
+                            description.title = description.title.replace(/\s+/g, ''); //remove the spaces from a title 
+                            
+                            $.when(portal.content.addItem(destinationPortal, response.exportItemId, sourceUsername, destinationUsername, folder, description, thumbnailUrl, sourceToken, destinationToken)).then(function(newItem){
+                                var interval2 = setInterval(function(){checkUpload()}, 3000);
+
+                                function checkUpload(){
+                                    portal.content.checkUploadStatus(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken).done(function (resp2) {
+                                        if (resp2.status == 'completed'){
+                                            clearInterval(interval2);
+                                            NProgress.set(0.5);
+
+                                            portal.content.publishItem(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken, description.title).done(function(publishResp){
+                                                var interval3 = setInterval(function(){checkPublish()}, 3000);
+                                                NProgress.set(0.75);
+
+                                                function checkPublish(){
+                                                    portal.content.checkPublishStatus(destinationPortal, destinationUsername, publishResp.services[0].serviceItemId, publishResp.services[0].jobId, destinationToken).done(function(publishStatus){
+
+                                                        if (publishStatus.status == 'completed'){
+                                                            clearInterval(interval3);
+                                                            jquery("#" + id + "_clone").addClass("btn-success");
+                                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                            portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                            NProgress.done();
+
+                                                        } else if (publishResp.services[0].success == false){ 
+                                                            jquery("#" + id + "_clone").addClass("btn-danger");
+                                                            NProgress.done();
+                                                            clearInterval(interval3);
+                                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                            portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                            var message = publishResp.services[0].error.message,
+                                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                                id: id,
+                                                                message: message
+                                                            });
+                                                            jquery("#" + id + "_clone").before(html);
+                                                        }
+                                                    });
+
+                                                }
+                                            });
+                                        } else if (resp2.status == 'error') { 
+                                            jquery("#" + id + "_clone").addClass("btn-danger"); 
+                                            clearInterval(interval2); 
+                                            NProgress.done();
+                                        }
+                                    });
+                                }
+                            });  
+                        }).fail(function (response) {
+                            var message = "Couldn't get the item description.",
+                                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                    id: id,
+                                    message: message
+                                });
+                            jquery("#" + id + "_clone").before(html);
+                        });
+                    } else if (resp.status == 'error') { jquery("#" + id + "_clone").addClass("btn-danger"); NProgress.done();}
+                });  
+            }
+        }).fail(function (response) {
+            var message = "Exporting item to File Geodatabase failed.",
+                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                    id: id,
+                    message: message
                 });
+            jquery("#" + id + "_clone").before(html);
+        });       
+    }
+
+    function copyGroup(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        //get the group's attributes
+        portal.getGroupDetails(sourcePortal, sourceToken, id).done(function (response) {
+            var groupId = 'some id',
+                groupTitle = response.title,
+                groupInvitation = response.isInvitationOnly,
+                groupDescription = response.description,
+                groupSnippet = response.snippet,
+                groupTags = response.tags,
+                groupPhone = response.phone,
+                groupThumbnail = response.thumbnail,
+                groupAccess = response.access;
+
+            //send off the group creation
+            portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+                var message,
+                        html;
+                if (response.success === true) {
+                    jquery("#" + id + "_clone").addClass("btn-success");
+                } else if (response.error) {
+                    jquery("#" + id + "_clone").addClass("btn-danger");
+                    message = response.error.message;
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
+                    });
+                    jquery("#" + id + "_clone").before(html);
+                }
             });
-        } else {
-            // Not supported.
-            jquery("#" + id).addClass("btn-warning");
-            var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
-                id: id,
-                type: type
-            });
-            jquery("#" + id).before(html);
-            jquery("#" + id + "_alert").fadeOut(6000);
-        }
+        });          
     }
 });

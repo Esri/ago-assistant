@@ -165,14 +165,15 @@ define(["jquery", "util"], function (jquery, util) {
                     dataType: "json"
                 });
             },
-            addItem: function (portal, id, sUsername, dUsername, folder, description, data, thumbnailUrl, sToken, dToken) {
+            addItem: function (portal, id, sUsername, dUsername, folder, description, thumbnailUrl, sToken, dToken) {
                 // Create a new item on the specified portal.
 
                 // Clean up description items for posting.
                 // This is necessary because some of the item descriptions (e.g. tags and extent)
                 // are returned as arrays, but the post operation expects comma separated strings.
-                NProgress.start();
-                //var dfd = $.Deferred();
+
+                var dfd = $.Deferred();
+
                 jquery.each(description, function (item, value) {
                     if (value === null) {
                         description[item] = "";
@@ -180,16 +181,6 @@ define(["jquery", "util"], function (jquery, util) {
                         description[item] = util.arrayToString(value);
                     }
                 });
-
-                // Create a new item in a user's content.
-                var params = {
-                    item: description.title,
-                    text: JSON.stringify(data), // Stringify the Javascript object so it can be properly sent.
-                    overwrite: false, // Prevent users from accidentally overwriting items with the same name.
-                    thumbnailurl: thumbnailUrl,
-                    f: "json",
-                    token: sToken
-                };
 
                 xhr = new XMLHttpRequest();
                 xhr.open('POST', 'http://localhost/proxy/proxy.ashx?http://arcgis.com/sharing/rest/content/items/' + id + "/data?f=json&token=" + sToken, true);
@@ -203,10 +194,15 @@ define(["jquery", "util"], function (jquery, util) {
                     var data = new FormData();
                     data.append('itemType', 'file');
                     data.append('file', blob, description.name);
+                    data.append('url', null );
                     data.append('title', description.title);
                     data.append('type', description.type);
+                    data.append('description', description.description);
                     data.append('tags', description.tags);
                     data.append('snippet', description.snippet);
+                    data.append('extent', description.extent);
+                    data.append('spatialReference', description.spatialReference);
+                    data.append('accessInformation', description.accessInformation);
                     data.append('thumbnail', thumbnailUrl);
                     data.append('overwrite', false);
                     data.append('async', true);
@@ -215,23 +211,26 @@ define(["jquery", "util"], function (jquery, util) {
                     data.append('folder', folder);
 
                     //Upload the item to the destination agol account
-                    $.ajax({
+                    jquery.ajax({
+                        type: 'POST',
                         url: portal + "sharing/rest/content/users/" + dUsername + "/" + folder + "/addItem?f=json&token=" + dToken,
                         data: data,
                         cache: false,
                         contentType: false,
                         processData: false,
-                        type: 'POST',
+                        
                         success: function (data) {
                             console.log(data);
+                            dfd.resolve(data);
+                            
                         }
                     });
                 };
 
                 //Request the file download
                 xhr.send();
-                NProgress.done();
-                //return dfd.promise();
+                return dfd.promise();
+
             },
             addItemReferenced: function (portal, username, folder, description, data, thumbnailUrl, token) {
                 // Create a new item on the specified portal.
@@ -285,6 +284,92 @@ define(["jquery", "util"], function (jquery, util) {
                         url: url,
                         token: token,
                         f: "json"
+                    },
+                    dataType: "json"
+                });
+            },
+            exportItemAsFGDB: function(portal, username, id, token) {
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/export?",
+                    data: {
+                        itemID: id,
+                        title: 'temporaryGDBExport',
+                        exportFormat: 'File Geodatabase',
+                        f: 'json',
+                        token: token
+                    },
+                    dataType: "json"
+                });
+            },
+            checkItemStatus: function(portal, username, itemId, jobID, type, token) {
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/items/" + itemId + "/status?",
+                    data: {
+                        jobId: jobID,
+                        jobType: type,
+                        f: 'json',
+                        token: token
+                    },
+                    dataType: "json"
+                });
+            },
+            checkUploadStatus: function(portal, username, itemId, token) {
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/items/" + itemId + "/status?",
+                    data: {
+                        f: 'json',
+                        token: token
+                    },
+                    dataType: "json"
+                });
+            },
+            checkPublishStatus: function(portal, username, itemId, jobID, token) {
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/items/" + itemId + "/status?",
+                    data: {
+                        jobId: jobID,
+                        f: 'json',
+                        token: token
+                    },
+                    dataType: "json"
+                });
+            },
+            deleteFgdb: function(portal, username, itemId, token) {
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/items/" + itemId + "/delete?",
+                    data: {
+                        f: 'json',
+                        token: token
+                    },
+                    dataType: "json"
+                });
+            },
+            publishItem: function(portal, username, itemID, token, itemName) {
+                var layerInformation={
+                        capabilities: 'query'
+                    };   
+
+                var publishParams = {
+                        hasStaticData: true,
+                        name: itemName,
+                        maxRecordCount: 2000,
+                        layerInfo: layerInformation
+                    };
+
+                return $.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/publish?",
+                    data: {
+                        f: 'json',
+                        token: token,
+                        itemId: itemID,
+                        filetype: 'filegeodatabase',
+                        publishParameters: JSON.stringify(publishParams)
                     },
                     dataType: "json"
                 });
