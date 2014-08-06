@@ -56,11 +56,6 @@ require([
     // Do stuff when DOM is ready.
     jquery(document).ready(function () {
 
-        /*// Detect IE.
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
-        }*/
-
         jquery("#logout").hide();
 
         resizeContentAreas(); // Resize the content areas based on the window size.
