@@ -382,11 +382,11 @@ require([
 
     function updateWebmapServices() {
         var webmapData, // make a couple globals so we can access them in other parts of the function
-            folder;
-        jquery(".content").addClass("data-toggle");
-        jquery(".content").removeClass("disabled");
-        jquery(".content").attr("data-toggle", "button");
-        jquery(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+            folder,
+            supportedContent = jquery(".content[data-type='Web Map']");
+        supportedContent.addClass("data-toggle btn-info"); // Highlight supported content.
+        supportedContent.removeClass("disabled");
+        supportedContent.attr("data-toggle", "button");
 
         // Add a listener for clicking on content buttons.
         jquery(".content").click(function () {
