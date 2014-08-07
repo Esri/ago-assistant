@@ -48,9 +48,7 @@ require([
     
     function resizeContentAreas() {
         "use strict";
-        var height = jquery(window).height() - 50;
-        jquery("#itemsArea").height(height);
-        jquery("#dropArea").height(height);
+        jquery(".itemArea").height(jquery(window).height() - 50);
     }
 
     // Do stuff when DOM is ready.

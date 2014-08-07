@@ -3,11 +3,6 @@ body {
     padding-top: 50px;
 }
 
-#dropArea {
-    min-height: 100px;
-    overflow-y: auto;
-}
-
 .dropArea {
     padding-bottom: 5px;
     margin: 5px;
@@ -33,6 +28,7 @@ body {
     background: #c4bea7;
     overflow-y: auto;
     padding-top: 10px;
+    min-height: 400px;
 }
 
 .accordion-inner {
