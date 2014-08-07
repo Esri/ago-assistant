@@ -194,6 +194,16 @@ require([
         jquery("#currentAction").html("<a>update content URL</a>");
         updateContentUrls();
     });
+    
+    function setMaxWidth(el) {
+        // Set the max-width of folder items so they don't fill the body when dragging.
+        jquery(el).on("shown.bs.collapse", function () {
+            jquery(el).children(".content").each(function (i) {
+                var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+                jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
+            });
+        });
+    }
 
     var app = {
         user: {},
@@ -300,7 +310,6 @@ require([
                             jquery(this).addClass("btn-info"); // Highlight supported content.
                             makeDraggable(jquery(this)); //Make the content draggable.
                         }
-                        jquery(this).css("max-width", jquery("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                     });
                     jquery("#currentAction").html("<a>copy content</a>");
                     NProgress.start();
@@ -701,6 +710,7 @@ require([
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
+                setMaxWidth("#collapse_");
                 storeActivity(content.items[item].modified);
             });
             jquery.each(content.folders, function (folder) {
@@ -734,6 +744,7 @@ require([
                         storeActivity(content.items[item].modified);
                     });
                     // Collapse the accordion to avoid cluttering the display.
+                    setMaxWidth("#collapse_" + content.currentFolder.id);
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
