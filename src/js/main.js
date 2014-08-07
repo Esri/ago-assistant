@@ -195,11 +195,15 @@ require([
     
     function setMaxWidth(el) {
         // Set the max-width of folder items so they don't fill the body when dragging.
-        jquery(el).on("shown.bs.collapse", function () {
+        function setWidth() {
             jquery(el).children(".content").each(function (i) {
                 var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
                 jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
             });
+        }
+        setWidth();
+        jquery(el).on("shown.bs.collapse", function () {
+            setWidth();
         });
     }
 
