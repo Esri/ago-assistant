@@ -187,6 +187,8 @@ define(["jquery", "util"], function (jquery, util) {
                 xhr.responseType = "blob";
 
                 xhr.onload = function (xhrEvent) {
+
+                   
                     //Get the downloaded blob (the file of the agol item)
                     var blob = xhr.response;
 
@@ -222,7 +224,6 @@ define(["jquery", "util"], function (jquery, util) {
                         success: function (data) {
                             console.log(data);
                             dfd.resolve(data);
-                            
                         }
                     });
                 };
@@ -294,7 +295,7 @@ define(["jquery", "util"], function (jquery, util) {
                     url: portal + "sharing/rest/content/users/" + username + "/export?",
                     data: {
                         itemID: id,
-                        title: 'temporaryGDBExport',
+                        title: id,
                         exportFormat: 'File Geodatabase',
                         f: 'json',
                         token: token

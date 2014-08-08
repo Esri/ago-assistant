@@ -105,7 +105,7 @@
         <div id="collapseDest_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
             <div class="dropArea">
                 <div id="dropFolder_{{ id }}" class="dropBorder">
-                    Drop items to copy to this folder
+                    Drop items here
                     <!-- content gets dropped here -->
                 </div>
             </div>
@@ -128,6 +128,27 @@
         {{ title }} 
     </button>
 
+</script>
+
+<script type="text/template" id="duplicateUserDecision">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h3 id="copyModalLabel">Duplicate Found</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    The item "{{ itemTitle }}" has been found in your target account.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Use</button>
+                <button class="btn" data-dismiss="modal">Reference</button>
+                <button class="btn" data-dismiss="modal">Copy</button>
+            </div>
+        </div>
+    </div>
 </script>
 
 <script type="text/template" id="contentTypeErrorTemplate">
