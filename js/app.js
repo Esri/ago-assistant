@@ -6,11 +6,12 @@ require([
     jquery,
     portal,
     mustache
-) {
+){
+
 
     function resizeContentAreas() {
         "use strict";
-        var height = jquery(window).height() - 50;
+        var height = jquery(window).height() - 60;
         jquery("#itemsArea").height(height);
         jquery("#dropArea").height(height);
     }
@@ -24,6 +25,7 @@ require([
         }*/
 
         jquery("#logout").hide();
+        
 
         resizeContentAreas(); // Resize the content areas based on the window size.
 
@@ -100,6 +102,22 @@ require([
         loginDestination();
     });
 
+    //Listener for group login validation
+    jquery("#groupPassword").blur(function () {
+        checkGroupToken();
+    });
+
+    $("#groupPrivateBtn, #groupOrganisationBtn, #groupPublicBtn").click(function () {
+        $("#groupPrivateBtn, #groupOrganisationBtn, #groupPublicBtn").removeClass("btn-primary active");
+        
+        $(this).addClass("btn-primary active");
+    });
+
+    //Listener for the group creation button
+    jquery("#groupSubmitBtn").click(function () {
+        createGroup();
+    });
+
     // Reset the destination login form when the modal is canceled.
     jquery("#destinationLoginBtn").click(function () {
         jquery("#destinationLoginBtn").button("reset");
@@ -137,9 +155,16 @@ require([
     // Enable inspecting of content.
     jquery("li[data-action='inspectContent']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>inspect content</a>");
+        jquery("#currentAction").html("<a>View/Edit JSON</a>");
         inspectContent();
     });
+
+    //Add listener for 'Download Items' action.
+        jquery("li[data-action='downloadItems']").click(function () {
+        cleanUp();
+        jquery("#currentAction").html("<a>Download Items</a>");
+        downloadItems();
+        });
 
     // Add a listener for the "View my stats" action.
     jquery("li[data-action='stats']").click(function () {
@@ -168,6 +193,8 @@ require([
             activities: {}
         },
     };
+
+    var copyStatus = 0; //temporary for disabling multi-threaded copying.
 
     function validateUrl(el) {
         // Check the url for errors (e.g. no trailing slash)
@@ -263,7 +290,16 @@ require([
                     jquery("#copyModal").modal("hide");
                     jquery(".content").each(function (i) {
                         var type = jquery(this).attr("data-type");
-                        if (isSupported(type)) {
+                        if (isSupportedFull(type)) {
+                            jquery(this).addClass("btn-primary"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (type == 'Feature Service' || 'Web Map'){
+                            jquery(this).addClass("btn-primary"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (isSupportedReferenced(type)) {
+                            jquery(this).addClass("btn-info"); // Highlight supported content.
+                            makeDraggable(jquery(this)); //Make the content draggable.
+                        } else if (type == 'Groups') {
                             jquery(this).addClass("btn-info"); // Highlight supported content.
                             makeDraggable(jquery(this)); //Make the content draggable.
                         }
@@ -304,21 +340,26 @@ require([
     function inspectContent() {
         jquery(".content").addClass("data-toggle");
         jquery(".content").removeClass("disabled");
+        jquery(".content").removeClass("btn-success");
         jquery(".content").attr("data-toggle", "button");
-        jquery(".content").addClass("btn-info"); // Highlight everything
+        jquery(".content").addClass("btn-primary"); // Highlight everything
 
         jquery("#inspectModal").modal("hide");
         jquery("#inspectBtn").button("reset");
+
         // Add a listener for clicking on content buttons.
         jquery(".content").click(function () {
             var itemDescription,
                 itemData;
+            
             NProgress.start();
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
+            var button = jquery(this);
+            var type = jquery(this).attr("data-type");
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
                 itemDescription = JSON.stringify(description, undefined, 2);
                 portal.content.itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (data) {
@@ -336,9 +377,156 @@ require([
                     jquery("pre").each(function (i, e) {
                         hljs.highlightBlock(e);
                     });
+
+                    //make the Json elements editable upon clicking (enables on mouse over and selects on click)
+                    $(".hljs-string, .hljs-number, .hljs-literal").bind('mouseover', function () {
+                        if (isJSONEditable($(this).parent().prev().html())) {
+                            $(this).attr('contentEditable', true);
+                            $(this).css("background-color", "#B2E0B2");
+                        }
+                        else {
+                            $(this).css("background-color", "#E0B2B2");
+                        }
+                    }).mouseleave(
+                        function () {
+                            $(this).css("background-color", "transparent");
+                    }).blur(
+                        function () {
+                            $(this).attr('contentEditable', false);
+
+                            //Folder of the item (blank if root)
+                            var folder = jquery(".content.active.btn-primary").parent().attr("data-folder");
+
+                            //edited attribute and value
+                            var val = $(this).html(),
+                                attribute = $(this).parent().prev().html();        
+
+                            // if the attribute is a json object (tags etc.) then create a comma separated string of all items
+                            if ($(this).siblings()) {
+                                val = '';
+                                var sibs = $(this).siblings();
+                                for (sibling in sibs) {
+                                    if (sibs[sibling].textContent) {
+                                        val = val + ', ' + sibs[sibling].textContent;
+                                    }
+                                };
+                            }
+
+                            value = val.replace(/\"/g, '').substring(1);  //value without the quotation marks and without the prevailing comma
+                            console.log(attribute + ' : ' + value);
+
+                            if (attribute == 'url'){
+                                //do a url update 
+                                portal.content.updateUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, id, attribute, sessionStorage.sourceToken).done(function (response) {
+                                    if (response.success) {
+                                        console.log('success');
+
+                                    } else {
+                                        alert('Sorry, your edit could not be committed');
+                                    }
+                                });
+                            }
+
+                            else{
+                                //do a standard Json commit
+                                portal.commitJson(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, sessionStorage.sourceToken, id, attribute, value).done(function (response) {
+                                    if (response.success) {
+                                        console.log('success');
+
+                                        //update the title if it has been edited here!
+                                        if (attribute == "title"){
+                                            button.text(value + '  (' + type + ')');
+                                        }
+
+                                    } else {
+                                        alert('Sorry, your edit could not be committed');
+                                    }
+                                });
+                            }
+                        });
                     NProgress.done();
                 });
             });
+        });
+    }
+
+    function isJSONEditable(type) {
+        var supportedTypes = ["title", "thumbnail", "thumbnailurl", "metadata", "type", "typeKeywords", "description",
+                             "tags", "snippet", "extent", "spatialReference", "accessInformation", "licenseInfo",
+                             "culture", "serviceUsername", "servicePassword", "url"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function createGroup() {
+        $('#groupPortalUrl').val("https://www.arcgis.com/");
+
+        var groupAccess = 'private',
+            groupInvitation = 'true';
+
+        if ($("#groupPrivateBtn").hasClass("btn-primary active")) { groupAccess = 'private' }
+        else if ($("#groupOrganisationBtn").hasClass("btn-primary active")) { groupAccess = 'org' }
+        else if ($("#groupPublicBtn").hasClass("btn-primary active")) { groupAccess = 'public' }
+
+        //variables loaded in from the user's input
+        var destinationPortal = $("#groupPortalUrl").val(),
+            groupId = '',
+            groupTitle = $("#groupTitleText").val(),
+
+            groupDescription = $("#groupDescriptionText").val(),
+            groupSnippet = $("#groupSnippetText").val(),
+            groupTags = $("#groupTagsText").val(),
+            groupPhone = '',
+            groupThumbnail = '';
+            
+        //insert sharing button options here...
+        if (jquery("#groupPrivateBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        else if (jquery("#groupOrganisationBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        else if (jquery("#groupPublicBtn").hasClass("active")) {
+            validateUrl("#destinationUrl");
+        }
+        
+        //Generate a token for the target account
+        portal.generateToken(destinationPortal, $("#groupUsername").val(), $("#groupPassword").val()).done(function (response) {
+            var destinationToken = response.token;
+
+        //send off the create group request
+            portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+                if (response.success == true) {
+                    jquery("#groupModal").modal("hide");
+                    //and other stuff to reset the modal!
+
+                } else if (response.error.code === 400) {
+                    alert("Sorry, your group couldn't be created, but we're not sure exactly why.");
+
+                } else if (response.error.code === 403) {
+                    alert("Looks like your user details don't quite match up");
+                }
+            });
+        });
+    }
+
+    //for checking login credentials in the group modal box and providing feedback on the fly
+    function checkGroupToken() {
+        portal.generateToken(jquery("#sourceUrl").val(), $("#groupUsername").val(), $("#groupPassword").val()).done(function (response) {
+            $("#groupUserDetails").removeClass("has-success");
+            $("#groupUserDetails").removeClass("has-error");
+
+            if (response.token) {
+                //set the ui green
+                $("#groupUserDetails").addClass("has-success has-feedback");
+                //$("#groupUserDetails").attr("has-success","has-feedback");
+            }
+            else if (response.error.code === 400) {
+                //set the ui red
+                $("#groupUserDetails").addClass("has-error has-feedback");
+                //$("#groupUserDetails").addClass("has-feedback");
+            }
         });
     }
 
@@ -422,7 +610,6 @@ require([
                 jquery(webmapServices[service]).attr("data-original", currentUrl);
             });
         }));
-
     }
 
     function updateContentUrls() {
@@ -472,7 +659,6 @@ require([
                 currentUrl = jquery("[data-original]").val();
             jquery("[data-original]").val(originalUrl);
         }));
-
     }
 
     function viewStats() {
@@ -552,8 +738,8 @@ require([
         // Make the drop area accept content items.
         jquery("#dropFolder_" + id).droppable({
             accept: ".content",
-            activeClass: "ui-state-hover",
-            hoverClass: "ui-state-active",
+            //activeClass: "ui-state-hover",
+            //hoverClass: "ui-state-active",
             drop: function (event, ui) {
                 moveItem(ui.draggable, jquery(this).parent().parent());
             }
@@ -567,13 +753,40 @@ require([
         jquery(".content").addClass("disabled");
     }
 
-    function isSupported(type) {
+    function isSupportedFull(type) {
         // Check if the content type is supported.
         // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
-        var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
+        var supportedTypes = ["CSV", "PDF", "Service Definition"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function isSupportedReferenced(type) {
+        // Check if the content type is supported.
+        // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+        var supportedTypes = ["Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
                           "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
                           "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
                           "Color Set", "Document Link"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function isSupportedDownload(type) {
+        // Check if the content type is supported.
+        // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+        var supportedTypes = ["CSV", "PDF", "Service Definition", "File Geodatabase"];
+        if (jquery.inArray(type, supportedTypes) > -1) {
+            return true;
+        }
+    }
+
+    function isSupportedExportDownload(type) {
+        // Check if the content type is supported.
+        // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+        var supportedTypes = ["Feature Service"];
         if (jquery.inArray(type, supportedTypes) > -1) {
             return true;
         }
@@ -587,7 +800,7 @@ require([
     }
 
     function isTypeUrl(type) {
-        var urlTypes = ["Feature Service", "Map Service", "Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
+        var urlTypes = ["Feature Service", "Map Service","Image Service", "KML", "WMS", "Geodata Service", "Globe Service", "Geometry Service",
                    "Geocoding Service", "Network Analysis Service", "Geoprocessing Service", "Web Mapping Application", "Mobile Application"];
         if (jquery.inArray(type, urlTypes) > -1) {
             return true;
@@ -595,7 +808,6 @@ require([
     }
 
     function statsCalendar(activities) {
-
         // Create a date object for three months ago.
         var today = new Date();
         var startDate = new Date();
@@ -603,7 +815,6 @@ require([
         if (today.getMonth() < 2) {
             startDate.setYear(today.getFullYear() - 1);
         }
-
         var cal = new CalHeatMap();
         cal.init({
             itemSelector: "#statsCalendar",
@@ -627,7 +838,6 @@ require([
             },
             domainDynamicDimension: false
         });
-
     }
 
     function storeActivity(activityTime) {
@@ -704,6 +914,41 @@ require([
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
+
+            //Next list the groups in a new folder
+            portal.getGroups(url, username, token).done(function (response) {
+                var groupData = {
+                    title: 'Groups',
+                    id: 'group',
+                    count: response.groups.length
+                };
+                // Append an accordion for the folder.
+                var html = mustache.to_html(jquery("#folderTemplate").html(), groupData);
+                jquery("#itemsArea").append(html);
+                // Append the items to the folder.
+                jquery.each(response.groups, function (item) {
+                    var icon;
+                    if (isTypeText(this.type)) {
+                        icon = "globe";
+                    } else if (isTypeUrl(this.type)) {
+                        icon = "link";
+                    } else {
+                        icon = "file";
+                    }
+                    var templateData = {
+                        "id": this.id,
+                        "title": this.title,
+                        "type": 'Groups',
+                        "icon": icon
+                    };
+                    var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                    jquery("#collapse_" + 'group').append(html);
+                    storeActivity(content.items[item].modified);
+                });
+                // Collapse the accordion to avoid cluttering the display.
+                jquery("#collapse_" + 'group').collapse("hide");
+            });
+
         });
     }
 
@@ -748,6 +993,7 @@ require([
         var itemId = jquery(item).attr("data-id");
         var clone = jquery(item).clone();                           // Clone the original item.
         clone.attr("id", itemId + "_clone");                        // Differentiate this object from the original.
+        clone.children().addClass("fa fa-spinner fa-spin");
         clone.css("max-width", "");                                 // Remove the max-width property so it fills the folder.
         clone.prependTo(destination);                               // Move it to the destination folder.
         clone.removeClass("active btn-primary btn-info");           // Remove the contextual highlighting.
@@ -755,58 +1001,650 @@ require([
         copyItem(itemId, destinationFolder);
     }
 
+
     function copyItem(id, folder) {
         // id: id of the source item
         // folder: id of the destination folder
         "use strict";
         var sourcePortal = sessionStorage.sourceUrl,
             sourceToken = sessionStorage.sourceToken,
-            destinationPortal = sessionStorage.destinationUrl,
+            destinationPortal = sessionStorage.destinationUrl, 
             destinationUsername = sessionStorage.destinationUsername,
-            destinationToken = sessionStorage.destinationToken;
+            destinationToken = sessionStorage.destinationToken,
+            sourceUsername = $("#sourceUsername").val();
         var type = jquery("#" + id).attr("data-type");
+        jquery(".content").removeClass("data-toggle");
+
         // Ensure the content type is supported before trying to copy it.
-        if (isSupported(type)) {
-            // Get the full item description and data from the source.
-            portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
-                var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
-                    // Post it to the destination.
-                    // Using always to ensure that it copies Web Mapping Applications
-                    // which don't have a data component (and generate a failed response).
-                    portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
-                        var message,
-                            html;
-                        if (response.success === true) {
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                        } else if (response.error) {
-                            jquery("#" + id + "_clone").addClass("btn-danger");
-                            message = response.error.message;
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
-                            jquery("#" + id + "_clone").before(html);
-                        }
-                    }).fail(function (response) {
-                        var message = "Something went wrong.",
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: message
-                            });
+        if (isSupportedFull(type) && type != 'Groups') {
+
+            copyFull(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
+        } else if (type == 'Feature Service'){
+
+            copyFeatureService(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
+        } else if (type == 'Groups') { //initiate group copying
+            
+            copyGroup(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+            
+        } else if (type == 'Web Map') { 
+            
+            copyWebmap(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+            
+        } else if (isSupportedReferenced(type) && type != 'Groups') { //for the old referencing style
+
+            copyReferenced(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername);
+
+        } else {
+        // Not supported.
+        jquery("#" + id).addClass("btn-warning");
+        jquery("#" + id).children().removeClass("fa fa-spinner fa-spin");
+        var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
+            id: id,
+            type: type
+        });
+        jquery("#" + id).before(html);
+        jquery("#" + id + "_alert").fadeOut(6000);
+        }
+    }
+
+    function copyReferenced(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+
+        // Get the full item description and data from the source.
+        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
+                // Post it to the destination.
+                // Using always to ensure that it copies Web Mapping Applications
+                // which don't have a data component (and generate a failed response).
+                portal.content.addItemReferenced(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
+                    var message,
+                        html;
+                    if (response.success === true) {
+                        jquery("#" + id + "_clone").addClass("btn-success");
+                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                    } else if (response.error) {
+                        jquery("#" + id + "_clone").addClass("btn-danger");
+                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                        message = response.error.message;
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: message
+                        });
                         jquery("#" + id + "_clone").before(html);
+                    }
+                }).fail(function (response) {
+                    jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                    var message = "Something went wrong.",
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: message
+                        });
+                    jquery("#" + id + "_clone").before(html);
+                });
+            });
+        });
+    }
+
+    function copyFull(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        NProgress.start();
+            
+        // Get the full item description and data from the source.
+        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+            // Post it to the destination.
+            $.when(portal.content.addItem(destinationPortal, id, sourceUsername, destinationUsername, folder, description, thumbnailUrl, sourceToken, destinationToken)).then(function(response){
+                var message,
+                    html;
+                if (jQuery.parseJSON(response).success == true) {
+                    jquery("#" + id + "_clone").addClass("btn-success");
+                    jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                    NProgress.done();
+                } else if (response.error) {
+                    jquery("#" + id + "_clone").addClass("btn-danger");
+                    jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                    NProgress.done();
+                    message = response.error.message;
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
+                    });
+                    jquery("#" + id + "_clone").before(html);
+                }
+            }).fail(function (response) {
+                NProgress.done();
+                var message = "Something went wrong.",
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
+                    });
+                jquery("#" + id + "_clone").before(html);
+            });
+        });         
+    }
+
+    function copyFeatureService(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        var dfd = $.Deferred();
+        NProgress.start();
+
+        copyStatus = 1;
+        portal.content.exportItemAsFGDB(sourcePortal, sourceUsername, id, sourceToken).done(function (response) {
+            //catch error
+            if(response.error){
+                console.log('error fired');
+                jquery("#" + id + "_clone").addClass("btn-danger"); 
+                NProgress.done(); 
+                dfd.resolve(-1);
+                copyStatus = 0;
+                var message = response.error.details,
+                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                    id: id,
+                    message: message
+                });
+                jquery("#" + id + "_clone").before(html);
+
+                return;
+            }
+
+            var interval = setInterval(function(){checkStatus()}, 3000); 
+
+            function checkStatus() {
+                
+                portal.content.checkItemStatus(sourcePortal, sourceUsername, response.exportItemId, response.jobId, 'export', sourceToken).done(function (resp) {
+                    //catch error
+                    if (resp.status == ""){
+                        console.log('error fired');
+                        jquery("#" + id + "_clone").addClass("btn-danger"); 
+                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                        dfd.resolve(-1);
+                        NProgress.done(); 
+                        copyStatus = 0;
+                        var message = resp.statusMessage,
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: message
+                        });
+                        jquery("#" + id + "_clone").before(html);
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    if (resp.status == 'completed'){
+
+                        clearInterval(interval);
+
+                        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+                            //catch error
+                            if(description.error){
+                                console.log('error fired');
+                                portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                jquery("#" + id + "_clone").addClass("btn-danger"); 
+                                jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                NProgress.done(); 
+                                copyStatus = 0;
+                                var message = description.error.message,
+                                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                    id: id,
+                                    message: message
+                                });
+                                jquery("#" + id + "_clone").before(html);
+
+                                return;
+                            }
+
+                            var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+                            
+                            NProgress.set(0.35);
+                            description.type = 'File Geodatabase';
+                            description.name = response.jobId + '.zip'; //a unique name to use as the filename of the new item
+                            description.title = description.title.replace(/\s+/g, ''); //remove the spaces from a title 
+                            
+
+                            
+
+                            $.when(portal.content.addItem(destinationPortal, response.exportItemId, sourceUsername, destinationUsername, folder, description, thumbnailUrl, sourceToken, destinationToken)).then(function(newItem){
+                                
+                                //work on error catching here! 
+
+
+                                var interval2 = setInterval(function(){checkUpload()}, 3000);
+
+                                function checkUpload(){
+                                    portal.content.checkUploadStatus(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken).done(function (resp2) {
+                                        //catch error
+                                        if(resp2.status == ''){
+                                            console.log('error fired');
+                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                            clearInterval(interval2);
+                                            jquery("#" + id + "_clone").addClass("btn-danger"); 
+                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                            dfd.resolve(-1);
+                                            NProgress.done(); 
+                                            copyStatus = 0;
+                                            var message = resp2.statusMessage,
+                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                id: id,
+                                                message: message
+                                            });
+                                            jquery("#" + id + "_clone").before(html);
+
+                                            return;
+                                        }
+
+                                        if (resp2.status == 'completed'){
+                                            clearInterval(interval2);
+                                            NProgress.set(0.5);
+
+                                            portal.content.publishItem(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken, description.title).done(function(publishResp){
+                                                //catch error
+                                                    if(publishResp.services[0].success == false){
+                                                        console.log('error fired');
+                                                        portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                        portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                      
+                                                        jquery("#" + id + "_clone").addClass("btn-danger");
+                                                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin"); 
+                                                        dfd.resolve(-1);
+                                                        NProgress.done(); 
+                                                        copyStatus = 0;
+                                                        var message = publishResp.services[0].error.message,
+                                                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                            id: id,
+                                                            message: message
+                                                        });
+                                                        jquery("#" + id + "_clone").before(html);
+
+                                                        return;
+                                                    }
+
+
+                                                var interval3 = setInterval(function(){checkPublish()}, 3000);
+                                                NProgress.set(0.75);
+
+                                                function checkPublish(){
+                                                    
+                                                    portal.content.checkPublishStatus(destinationPortal, destinationUsername, publishResp.services[0].serviceItemId, publishResp.services[0].jobId, destinationToken).done(function(publishStatus){
+                                                        //catch error
+                                                        if(publishStatus.status == ''){
+                                                            console.log('error fired');
+                                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                            portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                            clearInterval(interval3);
+                                                            jquery("#" + id + "_clone").addClass("btn-danger");
+                                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin"); 
+                                                            dfd.resolve(-1);
+                                                            NProgress.done(); 
+                                                            copyStatus = 0;
+                                                            var message = publishStatus.statusMessage,
+                                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                                id: id,
+                                                                message: message
+                                                            });
+                                                            jquery("#" + id + "_clone").before(html);
+
+                                                            return;
+                                                        }
+
+
+                                                        if (publishStatus.status == 'completed'){
+                                                            clearInterval(interval3);
+                                                            jquery("#" + id + "_clone").addClass("btn-success");
+                                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                                            dfd.resolve(publishResp.services[0]);
+                                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                            portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                            NProgress.done();
+                                                            copyStatus = 0;
+
+                                                        } else if (publishResp.services[0].success == false){ 
+                                                            jquery("#" + id + "_clone").addClass("btn-danger");
+                                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                                            dfd.resolve(-1);
+                                                            NProgress.done();
+                                                            copyStatus = 0;
+                                                            clearInterval(interval3);
+                                                            portal.content.deleteFgdb(sourcePortal, sourceUsername, response.exportItemId, sourceToken); //for source
+                                                            portal.content.deleteFgdb(destinationPortal, destinationUsername, jQuery.parseJSON(newItem).id, destinationToken); //for dest
+                                                            var message = publishResp.services[0].error.message,
+                                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                                id: id,
+                                                                message: message
+                                                            });
+                                                            jquery("#" + id + "_clone").before(html);
+                                                        }
+                                                    });
+
+                                                }
+                                            });
+                                        } 
+                                    });
+                                }
+                            });  
+                        })
+                    } 
+                });  
+            }
+        }) 
+
+        return dfd.promise();      
+    }
+
+    function copyGroup(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        //get the group's attributes
+        portal.getGroupDetails(sourcePortal, sourceToken, id).done(function (response) {
+            var groupId = 'some id',
+                groupTitle = response.title,
+                groupInvitation = response.isInvitationOnly,
+                groupDescription = response.description,
+                groupSnippet = response.snippet,
+                groupTags = response.tags,
+                groupPhone = response.phone,
+                groupThumbnail = response.thumbnail,
+                groupAccess = response.access;
+
+            //send off the group creation
+            portal.processGroup(destinationPortal, destinationToken, groupId, groupTitle, groupInvitation, groupDescription, groupSnippet, groupTags, groupPhone, groupThumbnail, groupAccess).done(function (response) {
+                var message,
+                        html;
+                if (response.success === true) {
+                    jquery("#" + id + "_clone").addClass("btn-success");
+                    jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                } else if (response.error) {
+                    jquery("#" + id + "_clone").addClass("btn-danger");
+                    jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                    message = response.error.message;
+                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                        id: id,
+                        message: message
+                    });
+                    jquery("#" + id + "_clone").before(html);
+                }
+            });
+        });          
+    }
+
+    function copyWebmap(id, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername){
+        //Perform a full copy of a webmap
+        //Hosted features will be copied to the new account and referenced items will remain referenced
+
+        var destinationCurrentItems;
+
+        portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+
+            //get a list of items in the destination account to check for duplicates before copying items
+            portal.user.content(destinationPortal, destinationUsername, folder, destinationToken).done(function (items) {
+                destinationCurrentItems = items;
+        
+                portal.content.itemData(sourcePortal, id, sourceToken).always(function(sourceItemJson){
+                    var destinationItemJson = sourceItemJson; //Destinatoin begins the same before items are copied
+
+                    setTargetJson(destinationCurrentItems, sourceItemJson, destinationItemJson, sourcePortal, sourceToken, sourceUsername, destinationUsername).done(function(resp){
+                        destinationItemJson = resp;
+                        //Here, the destinationItemJson is ready to act as a reference for copying items and will be completed as this happens. 
+                        var copyCount = 0;
+                        //Begin copying necessary items to the destination account... 
+                        for (item in destinationItemJson.operationalLayers){
+                            destinationItemJson.operationalLayers[item].id = '';
+
+                            //item to copy
+
+                            if (destinationItemJson.operationalLayers[item].opacity == 'c'){
+                                
+                                copyIndexdFeatureService(destinationItemJson.operationalLayers[item].itemId, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername, item).done(function(resp2){
+                                    if (resp2 == -1){
+                                        jquery("#" + id + "_clone").addClass("btn-danger");
+                                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                        message = 'One of the feature services could not be copied';
+                                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                            id: id,
+                                            message: message
+                                        });
+                                        jquery("#" + id + "_clone").before(html);
+                                    }
+
+                                    if (resp2 != -1){
+                                        myItem = resp2.jobId; //A maintained index
+                                        destinationItemJson.operationalLayers[myItem].itemId = resp2.serviceItemId;
+                                        destinationItemJson.operationalLayers[myItem].url = resp2.serviceurl + '/0';
+                                        destinationItemJson.operationalLayers[item].opacity = 1;
+                                        copyCount++;
+                                    }
+
+                                    if(copyCount == destinationItemJson.operationalLayers.length){
+                                        //
+                                        addCopiedWebmap(destinationPortal, destinationUsername, folder, description, destinationItemJson, 'testURL', destinationToken).done(function(resp){
+                                            if (resp != -1){
+                                                jquery("#" + id + "_clone").addClass("btn-success");
+                                                jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                            }
+                                            else{
+                                            jquery("#" + id + "_clone").addClass("btn-danger");
+                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                            message = 'The webmap could not be created in the target account';
+                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                id: id,
+                                                message: message
+                                            });
+                                            jquery("#" + id + "_clone").before(html);
+                                            }
+                                        });
+                                    }
+                                });  
+                            }
+
+                            else {
+                                destinationItemJson.operationalLayers[item].opacity = 1;
+                                copyCount++;
+                            
+
+                                if(copyCount == destinationItemJson.operationalLayers.length){
+                                    addCopiedWebmap(destinationPortal, destinationUsername, folder, description, destinationItemJson, 'testURL', destinationToken).done(function(resp){
+                                        if (resp != -1){
+                                        jquery("#" + id + "_clone").addClass("btn-success");
+                                        jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                        }
+                                        else{
+                                            jquery("#" + id + "_clone").addClass("btn-danger");
+                                            jquery("#" + id + "_clone").children().removeClass("fa fa-spinner fa-spin");
+                                            message = 'The webmap could not be created in the target account';
+                                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                                id: id,
+                                                message: message
+                                            });
+                                            jquery("#" + id + "_clone").before(html);
+                                        }
+                                    }); 
+                                }
+                            }
+                        }
                     });
                 });
             });
-        } else {
-            // Not supported.
-            jquery("#" + id).addClass("btn-warning");
-            var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
-                id: id,
-                type: type
+
+        });
+    }
+
+    function setTargetJson(destinationCurrentItems, sourceItemJson, destinationItemJson, sourcePortal, sourceToken, sourceUsername, destinationUsername){
+        var def = $.Deferred();
+        
+        //deal here with basemaps
+        for (sItem in sourceItemJson.baseMap.baseMapLayers){
+            if(sourceItemJson.baseMap.baseMapLayers[sItem].layerType == 'ArcGISTiledMapServiceLayer'){
+                //leave it as it is
+
+            } else {
+                //copy or reference the basemap layer as appropriate
+                 
+            }
+        }
+
+        var i = 0;
+        // Edit the destinationItemJson object to reflect the requirements of the impending copy
+        for(sItem in sourceItemJson.operationalLayers){
+            //var sourceItem = sItem;
+
+            getIndexedDesctiption(sourcePortal, sourceItemJson.operationalLayers[sItem].itemId, sourceToken, sItem).done(function(itemDescription){
+                var sourceItem = itemDescription.numComments; //a maintained index for the item returned from the Ajax.  
+
+                if(itemDescription.owner == sourceUsername){
+                    //check to see if the item is already present in the destination account
+                    for (dItem in destinationCurrentItems.items){
+                        if (destinationCurrentItems.items[dItem].title == itemDescription.title){
+                            //deal with duplicate choices here: 
+                            //$('#duplicatesModal').show();
+
+                            //the item is already in the destination portal so get the item number for the destination JSON                        
+                            destinationItemJson.operationalLayers[sourceItem].itemId = destinationCurrentItems.items[dItem].id;
+                            destinationItemJson.operationalLayers[sourceItem].url = destinationCurrentItems.items[dItem].url + '/0';
+                            //destinationItemJson.operationalLayers[sourceItem]. =
+                            destinationItemJson.operationalLayers[sourceItem].opacity = 'n';
+                            //and other things needed to create a layer in a webmap
+                            break;
+                        } else {
+                            destinationItemJson.operationalLayers[sourceItem].opacity = 'c';
+                            //add info box that this process will take some time. 
+                        }
+                    }
+                } else {
+                    destinationItemJson.operationalLayers[sourceItem].opacity = 'r';
+                }
+
+                i++;
+
+                if (i == sourceItemJson.operationalLayers.length){
+                    def.resolve(destinationItemJson);
+                }
             });
-            jquery("#" + id).before(html);
-            jquery("#" + id + "_alert").fadeOut(6000);
+        }
+        return def.promise();
+    }
+
+    function getIndexedDesctiption(sourcePortal, itemId, sourceToken, i){
+        var def = $.Deferred();
+        portal.content.itemDescription(sourcePortal, itemId, sourceToken).done(function (itemDescription) {
+            itemDescription.numComments = i; //numComments used as this will not be copied to the new account later on.
+            def.resolve(itemDescription);
+        });
+        return def.promise();
+    }
+
+    function copyIndexdFeatureService(itemId, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername, i){
+        var def = $.Deferred();
+        copyFeatureService(itemId, folder, sourcePortal, sourceToken, destinationPortal, destinationToken, destinationUsername, sourceUsername).done(function(resp){
+            if(resp != -1){
+                resp.jobId = i;
+                def.resolve(resp);
+            }
+            else{def.resolve(-1);}
+        });
+        return def.promise();
+    }
+
+    function addCopiedWebmap(destinationPortal, destinationUsername, folder, description, destinationItemJson, thumbnailUrl, destinationToken){
+        var def = $.Deferred();
+        portal.content.addItemReferenced(destinationPortal, destinationUsername, folder, description, destinationItemJson, 'testURL', destinationToken).done(function(webmapResp){
+            if(webmapResp.success){
+                def.resolve(webmapResp);
+            }
+            else{def.resolve(-1)}
+
+        });
+        return def.promise();
+    }
+
+    function downloadItems(){
+        jquery(".content").removeClass("btn-primary"); //reset UI
+
+        // Highlight supported content.
+        jquery(".content").each(function (i) {
+            var type = jquery(this).attr("data-type");
+            if (isSupportedDownload(type)) {
+                jquery(this).addClass("btn-primary"); 
+                jquery(this).removeClass("disabled");
+            } 
+            else if (isSupportedExportDownload(type)) {
+                jquery(this).addClass("btn-primary"); 
+                jquery(this).removeClass("disabled");
+            }
+        });
+
+        // Add a listener for clicking on content buttons.
+        jquery(".content").click(function () {
+            var type = jquery(this).attr("data-type");
+
+            if (isSupportedDownload(type)) {
+                NProgress.start()
+                jquery(this).children().addClass("fa fa-spinner fa-spin");
+                var button = jquery(this);
+                var id = jquery(this).attr("data-id");
+
+                //build the filename:
+                var filename = jquery(this).attr("data-id") + '.' + jquery(this).attr("data-type");
+
+                saveToDisk(sessionStorage.sourceUrl + "sharing/rest/content/items/" + id + "/data?&token=" + sessionStorage.sourceToken + "&f=json/", filename);
+                
+                NProgress.done();
+                button.children().removeClass("fa fa-spinner fa-spin");
+                button.addClass("btn-success");
+            }
+
+            else if (isSupportedExportDownload(type)) {
+                NProgress.start();
+                jquery(this).children().addClass("fa fa-spinner fa-spin");
+                var button = jquery(this);
+                portal.content.exportItemAsFGDB(sessionStorage.sourceUrl, sessionStorage.sourceUsername, jquery(this).attr("data-id"), sessionStorage.sourceToken).done(function(resp){
+                    var interval = setInterval(function(){checkStatus()}, 3000); 
+
+                    function checkStatus() {
+                        portal.content.checkItemStatus(sessionStorage.sourceUrl, sessionStorage.sourceUsername, resp.exportItemId, resp.jobId, 'export', sessionStorage.sourceToken).done(function (response) {
+                            if (response.status == "completed"){
+                                clearInterval(interval);
+                                saveToDisk(sessionStorage.sourceUrl + "sharing/rest/content/items/" + resp.exportItemId + "/data?&token=" + sessionStorage.sourceToken + "&f=json/", filename);
+                                button.children().removeClass("fa fa-spinner fa-spin");
+                                button.addClass("btn-success");
+                                NProgress.done();
+                            }
+                            //catch a failed export
+                            if (response.status == ""){
+                                clearInterval(interval);
+                                button.children().removeClass("fa fa-spinner fa-spin");
+                                button.addClass("btn-warning");
+                                NProgress.done();
+                            }                        
+                        });
+                    }
+                });
+            }  
+
+            else if (type == 'Web Map'){
+                //download the plist file
+                //saveToDisk(sessionStorage.sourceUrl + "sharing/rest/content/items/" + id + "/data.pkinfo?&token=" + sessionStorage.sourceToken, 'item.pkinfo');
+            }          
+        });
+    }
+
+    //function to force the files to download and not show in the browser
+    function saveToDisk(fileURL, fileName) {
+        // for non-IE
+        if (!window.ActiveXObject) {
+            var save = document.createElement('a');
+            save.href = fileURL;
+            save.target = '_blank';
+            save.download = fileName || 'unknown';
+
+            var event = document.createEvent('Event');
+            event.initEvent('click', true, true);
+            save.dispatchEvent(event);
+            (window.URL || window.webkitURL).revokeObjectURL(save.href);
+        }
+
+        // for IE
+        else if ( !! window.ActiveXObject && document.execCommand)     {
+            var _window = window.open(fileURL, '_blank');
+            _window.document.close();
+            _window.document.execCommand('SaveAs', true, fileName || fileURL)
+            _window.close();
         }
     }
 

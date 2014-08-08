@@ -65,6 +65,24 @@
 
 </script>
 
+<script type="text/template" id="groupCreationErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable" style="position: absolute; right: 10px; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Whoops!</strong> The group couldn't be created.
+    </div>
+
+</script>
+
+<script type="text/template" id="groupCreationCredentialsErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable" style="position: absolute; right: 10px; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Whoops!</strong> Looks like your login details aren't quite right.
+    </div>
+
+</script>
+
 <script type="text/template" id="folderTemplate">
 
     <div class="panel panel-default">
@@ -87,7 +105,7 @@
         <div id="collapseDest_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
             <div class="dropArea">
                 <div id="dropFolder_{{ id }}" class="dropBorder">
-                    Drop items to copy to this folder
+                    Drop items here
                     <!-- content gets dropped here -->
                 </div>
             </div>
@@ -102,6 +120,35 @@
         {{ title }} ({{ type }})
     <span class="glyphicon glyphicon-{{ icon }}" style="display:block; float:right; margin-right:10px"></span></button>
 
+</script>
+
+<script type="text/template" id="groupContentTemplate">
+       
+    <button id="{{ groupId }}" class="btn btn-block disabled content" style="opacity: 1;" type="button" data-id="{{ id }}">
+        {{ title }} 
+    </button>
+
+</script>
+
+<script type="text/template" id="duplicateUserDecision">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h3 id="copyModalLabel">Duplicate Found</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    The item "{{ itemTitle }}" has been found in your target account.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Use</button>
+                <button class="btn" data-dismiss="modal">Reference</button>
+                <button class="btn" data-dismiss="modal">Copy</button>
+            </div>
+        </div>
+    </div>
 </script>
 
 <script type="text/template" id="contentTypeErrorTemplate">
@@ -130,7 +177,7 @@
         </div>
         <div class="panel-body" id="itemDescription>
             <ul class="list-group">
-                <li class="list-group-item">Description</li>
+                <li class="list-group-item">Description (click to edit)</li>
                 <li class="list-group-item"><pre>{{ description }}</pre></li>
             </ul>
             {{ #data }}

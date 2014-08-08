@@ -16,7 +16,8 @@ This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [Ar
 ## Instructions
 
 1. Fork and then clone the repo. 
-2. Run and try the samples.
+2. Copy the proxy folder to your localhost
+3. Run and try the samples.
 
 ## Requirements
 
