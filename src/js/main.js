@@ -530,18 +530,10 @@ require([
             } else {
                 thumbnailUrl = "assets/images/no-user-thumb.jpg";
             }
-            // Calculate storage quota stats.
-            var gigabyteConstant = 0.000000000931322574615479,
-                usage = (user.storageUsage * gigabyteConstant).toFixed(2),
-                quota = (user.storageQuota * gigabyteConstant).toFixed(2),
-                usageRate = (usage / quota).toFixed(2) * 100;
 
             var templateData = {
                 username: user.username,
-                thumbnail: thumbnailUrl,
-                usage: usage,
-                quota: quota,
-                usageRate: usageRate
+                thumbnail: thumbnailUrl
             };
 
             html = mustache.to_html(template, templateData);
