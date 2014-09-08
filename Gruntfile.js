@@ -13,9 +13,22 @@ module.exports = function (grunt) {
             options: {
                 separator: ';'
             },
-            dist: {
+            build_index: {
                 src: ['src/index.html', 'src/templates.html'],
                 dest: 'build/index.html'
+            },
+            build_js: {
+                src: ['src/js/portal/portal.js', 'src/js/portal/util.js'],
+                dest: 'src/js/portal/portal-build.js'
+            }
+        },  
+        uglify: {
+            options: {
+                banner: '/*! <%= pkg.name %> <%= pkg.version %> */\n'
+            },
+            build: {
+                src: 'src/js/portal/portal-build.js',
+                dest: 'src/js/portal/portal-build.js'
             }
         },
         copy: {
@@ -23,7 +36,8 @@ module.exports = function (grunt) {
                 files: [
                     {expand: true, cwd: 'src/', src: ['assets/**'], dest: 'build/'},
                     {expand: true, cwd: 'src/', src: ['css/**'], dest: 'build/'},
-                    {expand: true, cwd: 'src/', src: ['js/**'], dest: 'build/'},
+                    {expand: true, cwd: 'src/', src: ['js/lib/**'], dest: 'build/'},
+//                    {expand: true, cwd: 'src/', src: ['js/**'], dest: 'build/'},
                 ]
             }
         },
@@ -32,9 +46,10 @@ module.exports = function (grunt) {
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'concat', 'copy']);
+    grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy']);
 
 };
