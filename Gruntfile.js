@@ -6,6 +6,10 @@ module.exports = function (grunt) {
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
         // Task configuration.
+        clean: {
+            src: ['src/js/portal/*.min.js', 'src/js/main.min.js'],
+            build: ['build/**']
+        },
         jshint: {
             all: ['Gruntfile.js', 'src/js/*.js', 'src/js/portal/*.js']
         },
@@ -16,10 +20,6 @@ module.exports = function (grunt) {
             build_index: {
                 src: ['src/index.html', 'src/templates.html'],
                 dest: 'build/index.html'
-            },
-            build_js: {
-                src: ['src/js/portal/portal.js', 'src/js/portal/util.js'],
-                dest: 'src/js/portal/portal-build.js'
             }
         },  
         uglify: {
@@ -27,8 +27,11 @@ module.exports = function (grunt) {
                 banner: '/*! <%= pkg.name %> <%= pkg.version %> */\n'
             },
             build: {
-                src: 'src/js/portal/portal-build.js',
-                dest: 'src/js/portal/portal-build.js'
+                files: {
+                    'src/js/main.min.js': 'src/js/main.js',
+                    'src/js/portal/portal.min.js': 'src/js/portal/portal.js',
+                    'src/js/portal/util.min.js': 'src/js/portal/util.js'
+                }
             }
         },
         copy: {
@@ -36,20 +39,31 @@ module.exports = function (grunt) {
                 files: [
                     {expand: true, cwd: 'src/', src: ['assets/**'], dest: 'build/'},
                     {expand: true, cwd: 'src/', src: ['css/**'], dest: 'build/'},
-                    {expand: true, cwd: 'src/', src: ['js/lib/**'], dest: 'build/'},
-//                    {expand: true, cwd: 'src/', src: ['js/**'], dest: 'build/'},
+                    {expand: true, cwd: 'src/', src: ['js/*'], dest: 'build/',
+                        rename: function(src, dest) {
+                            return src + dest.replace('.min', '');
+                        }
+                    },
+                    {expand: true, cwd: 'src/', src: 'js/portal/*', dest: 'build/',
+                        rename: function(src, dest) {
+                            return src + dest.replace('.min', '');
+                        }
+                    },
+                    {expand: true, cwd: 'src/', src: ['js/lib/**'], dest: 'build/'}
                 ]
             }
         },
     });
 
     // These plugins provide necessary tasks.
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('default', ['clean', 'jshint', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('cleanup', ['clean']);
 
 };
