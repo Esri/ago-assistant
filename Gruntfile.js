@@ -7,13 +7,16 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         // Task configuration.
         clean: {
+            // Clean up build files.
             src: ['src/js/portal/*.min.js', 'src/js/main.min.js'],
             build: ['build/**']
         },
         jshint: {
+            // Validate the javascripts.
             all: ['Gruntfile.js', 'src/js/*.js', 'src/js/portal/*.js']
         },
         concat: {
+            // Combine files where it makes sense.
             options: {
                 separator: ';'
             },
@@ -23,6 +26,7 @@ module.exports = function (grunt) {
             }
         },  
         uglify: {
+            // Minify the javascript files.
             options: {
                 banner: '/*! <%= pkg.name %> <%= pkg.version %> */\n'
             },
@@ -35,6 +39,7 @@ module.exports = function (grunt) {
             }
         },
         copy: {
+            // Copy everything to the build directory for testing.
             main: {
                 files: [
                     {expand: true, cwd: 'src/', src: ['assets/**'], dest: 'build/'},
