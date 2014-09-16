@@ -609,7 +609,7 @@ require([
         var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
                           "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
                           "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
-                          "Color Set", "Document Link"];
+                          "Color Set", "Document Link", "Feature Service"];
         if (jquery.inArray(type, supportedTypes) > -1) {
             return true;
         }
