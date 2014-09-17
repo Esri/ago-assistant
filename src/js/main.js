@@ -347,7 +347,7 @@ require([
 
     function inspectContent() {
         jquery(".content").addClass("data-toggle");
-        jquery(".content").removeClass("disabled");
+        jquery(".content").removeAttr("disabled");
         jquery(".content").attr("data-toggle", "button");
         jquery(".content").addClass("btn-info"); // Highlight everything
 
@@ -393,7 +393,7 @@ require([
             folder,
             supportedContent = jquery(".content[data-type='Web Map']");
         supportedContent.addClass("data-toggle btn-info"); // Highlight supported content.
-        supportedContent.removeClass("disabled");
+        supportedContent.removeAttr("disabled");
         supportedContent.attr("data-toggle", "button");
 
         // Add a listener for clicking on content buttons.
@@ -475,7 +475,7 @@ require([
         var folder,
             supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
         supportedContent.addClass("data-toggle btn-info"); // Highlight support content
-        supportedContent.removeClass("disabled");
+        supportedContent.removeAttr("disabled");
         supportedContent.attr("data-toggle", "button");
 
         // Add a listener for clicking on content buttons.
@@ -583,7 +583,7 @@ require([
             revert: true,
             opacity: 0.7
         });
-        el.removeClass("disabled");
+        el.removeAttr("disabled");
     }
 
     function makeDroppable(id) {
@@ -602,7 +602,7 @@ require([
         jquery("#dropArea").empty(); //Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
-        jquery(".content").addClass("disabled");
+        jquery(".content").attr("disabled", "disabled");
     }
 
     function isSupported(type) {
