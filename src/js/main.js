@@ -358,9 +358,11 @@ require([
             var itemDescription,
                 itemData;
             NProgress.start();
+            jquery(".content").addClass("btn-info"); // Highlight everything again.
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
+            jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
