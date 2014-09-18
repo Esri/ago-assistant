@@ -42,6 +42,7 @@ module.exports = function (grunt) {
             // Copy everything to the build directory for testing.
             main: {
                 files: [
+                    {expand: true, cwd: 'src/', src: ['*.html'], dest: 'build/'},
                     {expand: true, cwd: 'src/', src: ['assets/**'], dest: 'build/'},
                     {expand: true, cwd: 'src/', src: ['css/**'], dest: 'build/'},
                     {expand: true, cwd: 'src/', src: ['js/*'], dest: 'build/',
