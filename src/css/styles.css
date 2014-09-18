@@ -1,5 +1,4 @@
 body {
-/*    background: #e7e5df;*/
     background: #fff;
     padding-top: 50px;
 }
@@ -9,7 +8,6 @@ body {
     margin: 5px;
     text-align: center;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
-/*    background: #e7e5df;*/
     background: #fff;
     -webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -27,7 +25,6 @@ body {
 }
 
 .itemArea {
-/*    background: #c4bea7;*/
     background: #fff;
     overflow-y: auto;
     padding-top: 10px;
@@ -35,12 +32,7 @@ body {
 }
 
 .accordion-inner {
-/*    background: #c4bea7;*/
     background: #fff;
-}
-            
-.accordion-toggle {
-/*    color: #48423a;*/
 }
 
 .center {
