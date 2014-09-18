@@ -2,7 +2,7 @@
   "name": "ago-assistant",
   "title": "ArcGIS Online Assistant",
   "description": "ArcGIS Online Assistant",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "homepage": "https://github.com/Esri/ago-assistant",
   "repository": {
     "type": "git",
