@@ -67,11 +67,11 @@
 
 <script type="text/template" id="folderTemplate">
 
-    <div class="panel panel-default">
+    <div class="panel panel-primary">
         <div class="panel-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
         </div>
-        <div id="collapse_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
+        <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse in" data-folder="{{ id }}">
             <!-- content gets inserted here -->
         </div>
     </div>
@@ -80,11 +80,11 @@
 
 <script type="text/template" id="dropFolderTemplate">
 
-    <div class="panel panel-default">
+    <div class="panel panel-primary">
         <div class="panel-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest_{{ id }}"> {{ title }} </a>
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest_{{ id }}"> {{ title }} </a>
         </div>
-        <div id="collapseDest_{{ id }}" class="panel-body collapse in" data-folder="{{ id }}">
+        <div id="collapseDest_{{ id }}" class="panel-body panel-collapse collapse in" data-folder="{{ id }}">
             <div class="dropArea">
                 <div id="dropFolder_{{ id }}" class="dropBorder">
                     Drop items to copy to this folder
@@ -98,7 +98,7 @@
 
 <script type="text/template" id="contentTemplate">
        
-    <button id="{{ id }}" class="btn btn-block disabled content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
+    <button id="{{ id }}" class="btn btn-default btn-block content" disabled="disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
         {{ title }} ({{ type }})
     <span class="glyphicon glyphicon-{{ icon }}" style="display:block; float:right; margin-right:10px"></span></button>
 
@@ -163,7 +163,7 @@
                     <h3 id="statsModalLabel">Stats for {{ username }}</h3>
                 </div>
                 <div class="modal-body">
-                    <div class="container">
+                    <div class="container-fluid">
                         <div class="row">
                             <div class="col-md-3">
                                 <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
@@ -184,15 +184,6 @@
                         <div class="row">
                             <h4 class="text-center">Most Popular Content</h4>
                             <div id="mostViewedContent"><!--Most Viewed Content table--></div>
-                        </div>
-                        <div class="row">
-                            <h4 class="text-center">Storage Quota</h4>
-                            <div class="progress progress-striped">
-                                <div class="progress-bar" role="progressbar" aria-valuenow="{{ usageRate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ usageRate }}%">
-                                    <span class="sr-only">{{ usage }} of {{ quota }} GB used</span>
-                                </div>
-                            </div>
-                            <div style="text-align: center; margin-top:-15px">{{ usage }} of {{ quota }} GB used</div>
                         </div>
                     </div>
                 </div>
@@ -255,7 +246,7 @@
                     {{/basemapLayers}}
                 </div>
                 <div class="pull-right">
-                    <button type="submit" class="btn" id="btnResetWebmapServices">Reset</button>
+                    <button type="submit" class="btn btn-default" id="btnResetWebmapServices">Reset</button>
                     <button type="submit" class="btn btn-primary" id="btnUpdateWebmapServices">Update</button>
                 </div>
             </form>
@@ -297,7 +288,7 @@
                     </div>
                 </div>
                 <div class="pull-right">
-                    <button type="submit" class="btn" id="btnResetContentUrl">Reset</button>
+                    <button type="submit" class="btn btn-default" id="btnResetContentUrl">Reset</button>
                     <button type="submit" class="btn btn-primary" id="btnUpdateContentUrl">Update</button>
                 </div>
             </form>

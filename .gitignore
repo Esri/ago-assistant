@@ -1,3 +1,9 @@
 *.DS_Store
 /node_modules
 /build
+*.geojson
+
+# Ignore build files
+src/js/*.min.js
+src/js/portal/*.min.js
+build.zip

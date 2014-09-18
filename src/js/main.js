@@ -1,27 +1,58 @@
+requirejs.config({
+    baseUrl: './',
+    paths: {
+        "jquery": "js/lib/jquery-1.10.2.min",
+        "jquery.bootstrap": "js/lib/bootstrap/js/bootstrap.min",
+        "jquery.ui": "js/lib/jquery-ui-1.9.2.min",
+        "mustache": "js/lib/mustache-0.7.2",
+        "d3": "js/lib/d3.v3-3.2.7.min",
+        "nprogress": "js/lib/nprogress/nprogress-0.1.6",
+        "cal-heatmap": "js/lib/cal-heatmap/cal-heatmap-3.3.10.min",
+        "highlight": "js/lib/highlight/highlight.min",
+        "portal": "js/portal/portal",
+        "util": "js/portal/util"
+    },
+    shim: {
+        "jquery.bootstrap": {
+            // Ensure jquery-ui loads first.
+            // This is necessary so bootstrap stuff still works.
+            deps: ["jquery", "jquery.ui"],
+        },
+        "jquery.ui": {
+            deps: ["jquery"],
+        },
+        "nprogress": {
+            deps: ["jquery"],
+            exports: "NProgress"
+        },
+        "cal-heatmap": {
+            deps: ["d3"]
+        },
+        "portal": {
+            deps: ["jquery", "util"]
+        }
+    }
+});
+
 require([
     "jquery",
     "portal",
-    "mustache"
-], function (
-    jquery,
-    portal,
-    mustache
-) {
-
+    "mustache",
+    "d3",
+    "nprogress",
+    "jquery.bootstrap",
+    "jquery.ui",
+    "cal-heatmap",
+    "highlight"
+], function (jquery, portal, mustache, d3, NProgress) {
+    
     function resizeContentAreas() {
         "use strict";
-        var height = jquery(window).height() - 50;
-        jquery("#itemsArea").height(height);
-        jquery("#dropArea").height(height);
+        jquery(".itemArea").height(jquery(window).height() - 50);
     }
 
     // Do stuff when DOM is ready.
     jquery(document).ready(function () {
-
-        /*// Detect IE.
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            alert("This site uses HTML5 features which aren't supported yet in Internet Explorer.\n Try Firefox or Chrome for a better experience.");
-        }*/
 
         jquery("#logout").hide();
 
@@ -161,6 +192,20 @@ require([
         jquery("#currentAction").html("<a>update content URL</a>");
         updateContentUrls();
     });
+    
+    function setMaxWidth(el) {
+        // Set the max-width of folder items so they don't fill the body when dragging.
+        function setWidth() {
+            jquery(el).children(".content").each(function (i) {
+                var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+                jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
+            });
+        }
+        setWidth();
+        jquery(el).on("shown.bs.collapse", function () {
+            setWidth();
+        });
+    }
 
     var app = {
         user: {},
@@ -267,7 +312,6 @@ require([
                             jquery(this).addClass("btn-info"); // Highlight supported content.
                             makeDraggable(jquery(this)); //Make the content draggable.
                         }
-                        jquery(this).css("max-width", jquery("#itemsArea .panel-body").width()); // Set the max-width so it doesn't fill the body when dragging.
                     });
                     jquery("#currentAction").html("<a>copy content</a>");
                     NProgress.start();
@@ -303,7 +347,7 @@ require([
 
     function inspectContent() {
         jquery(".content").addClass("data-toggle");
-        jquery(".content").removeClass("disabled");
+        jquery(".content").removeAttr("disabled");
         jquery(".content").attr("data-toggle", "button");
         jquery(".content").addClass("btn-info"); // Highlight everything
 
@@ -314,9 +358,11 @@ require([
             var itemDescription,
                 itemData;
             NProgress.start();
+            jquery(".content").addClass("btn-info"); // Highlight everything again.
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
+            jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
@@ -344,11 +390,11 @@ require([
 
     function updateWebmapServices() {
         var webmapData, // make a couple globals so we can access them in other parts of the function
-            folder;
-        jquery(".content").addClass("data-toggle");
-        jquery(".content").removeClass("disabled");
-        jquery(".content").attr("data-toggle", "button");
-        jquery(".content[data-type='Web Map']").addClass("btn-info"); // Highlight Web Maps
+            folder,
+            supportedContent = jquery(".content[data-type='Web Map']");
+        supportedContent.addClass("data-toggle btn-info"); // Highlight supported content.
+        supportedContent.removeAttr("disabled");
+        supportedContent.attr("data-toggle", "button");
 
         // Add a listener for clicking on content buttons.
         jquery(".content").click(function () {
@@ -429,7 +475,7 @@ require([
         var folder,
             supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
         supportedContent.addClass("data-toggle btn-info"); // Highlight support content
-        supportedContent.removeClass("disabled");
+        supportedContent.removeAttr("disabled");
         supportedContent.attr("data-toggle", "button");
 
         // Add a listener for clicking on content buttons.
@@ -486,18 +532,10 @@ require([
             } else {
                 thumbnailUrl = "assets/images/no-user-thumb.jpg";
             }
-            // Calculate storage quota stats.
-            var gigabyteConstant = 0.000000000931322574615479,
-                usage = (user.storageUsage * gigabyteConstant).toFixed(2),
-                quota = (user.storageQuota * gigabyteConstant).toFixed(2),
-                usageRate = (usage / quota).toFixed(2) * 100;
 
             var templateData = {
                 username: user.username,
-                thumbnail: thumbnailUrl,
-                usage: usage,
-                quota: quota,
-                usageRate: usageRate
+                thumbnail: thumbnailUrl
             };
 
             html = mustache.to_html(template, templateData);
@@ -545,7 +583,7 @@ require([
             revert: true,
             opacity: 0.7
         });
-        el.removeClass("disabled");
+        el.removeAttr("disabled");
     }
 
     function makeDroppable(id) {
@@ -564,7 +602,7 @@ require([
         jquery("#dropArea").empty(); //Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
-        jquery(".content").addClass("disabled");
+        jquery(".content").attr("disabled", "disabled");
     }
 
     function isSupported(type) {
@@ -573,7 +611,7 @@ require([
         var supportedTypes = ["Web Map", "Map Service", "Image Service", "WMS", "Feature Collection", "Feature Collection Template",
                           "Geodata Service", "Globe Service", "Geometry Service", "Geocoding Service", "Network Analysis Service",
                           "Geoprocessing Service", "Web Mapping Application", "Mobile Application", "Operation View", "Symbol Set",
-                          "Color Set", "Document Link"];
+                          "Color Set", "Document Link", "Feature Service"];
         if (jquery.inArray(type, supportedTypes) > -1) {
             return true;
         }
@@ -668,6 +706,7 @@ require([
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
+                setMaxWidth("#collapse_");
                 storeActivity(content.items[item].modified);
             });
             jquery.each(content.folders, function (folder) {
@@ -701,6 +740,7 @@ require([
                         storeActivity(content.items[item].modified);
                     });
                     // Collapse the accordion to avoid cluttering the display.
+                    setMaxWidth("#collapse_" + content.currentFolder.id);
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });

@@ -5,17 +5,17 @@
         <meta charset="utf-8">
         <title>ArcGIS Online Assistant</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="lib/require-2.1.11.min.js" data-main="js/main"></script>
+        <script src="js/lib/require-2.1.14.min.js" data-main="js/main"></script>
         <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.css" />
-        <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="js/lib/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" type="text/css" href="css/styles.css"/>
-        <link rel="stylesheet" type="text/css" href="lib/nprogress/nprogress.css" />
-        <link rel="stylesheet" type="text/css" href="lib/cal-heatmap/cal-heatmap-3.3.10.css" />
-        <link rel="stylesheet" type="text/css" href="lib/highlight/tomorrow.min.css">
+        <link rel="stylesheet" type="text/css" href="js/lib/nprogress/nprogress.css" />
+        <link rel="stylesheet" type="text/css" href="js/lib/cal-heatmap/cal-heatmap-3.3.10.css" />
+        <link rel="stylesheet" type="text/css" href="js/lib/highlight/tomorrow.min.css">
     </head>
     
     <body>
-        <div class="navbar navbar-default navbar-fixed-top">
+        <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -27,8 +27,18 @@
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li>
-                            <a data-toggle="modal" data-target="#aboutModal">About</a>
+                        <li id="helpDropdown" class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a data-toggle="modal" data-target="#aboutModal">About</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
+                                </li>
+                            </ul>
                         </li>
                         <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
@@ -70,7 +80,7 @@
                 <!--/.navbar-collapse -->
             </div>
         </div>
-        <div class="container col-md-12 center">
+        <div class="container col-md-10 center">
             <!-- About modal -->
             <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -96,6 +106,14 @@
                         <div class="modal-footer">
                             <button class="btn" data-dismiss="modal">Close</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Changelog modal -->
+            <div id="changelogModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="changelogModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Changelog content -->
                     </div>
                 </div>
             </div>
