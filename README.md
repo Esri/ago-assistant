@@ -2,7 +2,7 @@
 
 This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [ArcGIS Online](http://www.arcgis.com/home/) and/or [Portal for ArcGIS](http://www.esri.com/software/arcgis/portal-for-arcgis) to copy items between accounts and across organizations.
 
-[View it live](https://s3.amazonaws.com/dtc-apps/AgolAssistant/index.html)
+[View it live](https://ago-assistant.esri.com)
 
 ![App](ago-assistant.png)
 
