@@ -44,3 +44,22 @@ body {
 .list-group-item pre{
     font-size: .8em;
 }
+
+.navbar {
+    background-image: url("../assets/images/navigation-bar-background-green.jpg");
+    background-repeat: repeat-x;
+    color: #fff;
+}
+
+.navbar-inverse .navbar-brand {
+     color: #fff;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-inverse .navbar-nav > .open > a:focus {
+    opacity: 0.3;
+    filter: alpha(opacity=30); /* For IE8 and earlier */
+}
