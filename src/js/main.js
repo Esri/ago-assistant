@@ -2,13 +2,13 @@ requirejs.config({
     baseUrl: './',
     paths: {
         "jquery": "js/lib/jquery-1.10.2.min",
-        "jquery.bootstrap": "js/lib/bootstrap/js/bootstrap.min",
+        "jquery.bootstrap": "js/lib/bootstrap/js/bootstrap-3.2.0.min",
         "jquery.ui": "js/lib/jquery-ui-1.9.2.min",
         "mustache": "js/lib/mustache-0.7.2",
         "d3": "js/lib/d3.v3-3.2.7.min",
-        "nprogress": "js/lib/nprogress/nprogress-0.1.6",
-        "cal-heatmap": "js/lib/cal-heatmap/cal-heatmap-3.3.10.min",
-        "highlight": "js/lib/highlight/highlight.min",
+        "nprogress": "js/lib/nprogress-0.1.6",
+        "cal-heatmap": "js/lib/cal-heatmap-3.3.10.min",
+        "highlight": "js/lib/highlight.min",
         "portal": "js/portal/portal",
         "util": "js/portal/util"
     },
