@@ -366,15 +366,18 @@ require([
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
-                itemDescription = JSON.stringify(description, undefined, 2);
                 portal.content.itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (data) {
                     itemData = data;
                 }).always(function (data) {
                     var templateData = {
                         title: title,
-                        description: itemDescription,
+                        description: JSON.stringify(description, undefined, 2), // Stringify it for display in the json window.
                         data: JSON.stringify(itemData, undefined, 2)
                     };
+                    // Add a download link for files (i.e. no data and not a service).
+                    if (templateData.data === undefined && description.typeKeywords.indexOf("Service") === -1) {
+                        templateData.downloadLink = sessionStorage.sourceUrl + "sharing/rest/content/items/" + id + "/data?token=" + sessionStorage.sourceToken;
+                    }
                     var html = mustache.to_html(jquery("#inspectTemplate").html(), templateData);
                     // Add the HTML container with the item JSON.
                     jquery("#dropArea").html(html);

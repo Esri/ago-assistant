@@ -140,13 +140,11 @@
                     <li class="list-group-item"><pre>{{ data }}</pre></li>
                 </ul>
             {{ /data }}
-            {{ ^data }}
+            {{! Add a download link }}
+            {{ #downloadLink }}
                 <br>
-                <ul class="list-group">
-                    <li class="list-group-item">Data</li>
-                    <li class="list-group-item">There is no data associated with this item or it is a file item which will not be displayed here.</li>
-                </ul>
-            {{ /data }}
+                <a href="{{ downloadLink }}" target="_blank" class="btn btn-link btn-lg btn-block" role="button">Download {{ title }}</a>
+            {{ /downloadLink }}
         </div>
     </div>
 
