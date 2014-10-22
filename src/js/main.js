@@ -285,7 +285,7 @@ require([
                 "visibility": "visible"
             });
             NProgress.start();
-            listItems();
+            listUserItems();
             NProgress.done();
         });
     }
@@ -676,7 +676,7 @@ require([
         app.stats.activities[seconds] = 1;
     }
 
-    function listItems() {
+    function listUserItems() {
         "use strict";
         var url = sessionStorage.sourceUrl,
             username = sessionStorage.sourceUsername,
