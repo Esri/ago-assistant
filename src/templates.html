@@ -65,6 +65,43 @@
 
 </script>
 
+<script type="text/template" id="tabTemplate">
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a>My Content</a></li>
+        <li><a>Search</a></li>
+    </ul>
+
+</script>
+
+<script type="text/template" id="userContentTemplate">
+
+    <div id="userContent" class="col-md-12 itemArea">
+        <!-- content goes here -->
+    </div>
+
+</script>
+
+<script type="text/template" id="searchTemplate">
+
+        <form id="searchForm" class="navbar-form navbar-left" role="search">
+            <input id="searchText" type="text" class="form-control" placeholder="enter a keyword search">
+            <div class="btn-group">
+                <button id="search" type="button" class="btn btn-default">Search</button>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul id="searchMenu" class="dropdown-menu" role="menu">
+                    <li id="searchAGO" data-url="https://www.arcgis.com/" class="active"><a>ArcGIS Online</a></li>
+                    <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a>{{ name }}</a></li>
+                    <li id="searchContent" data-url={{ portal }}><a>My Content</a></li>
+                </ul>
+            </div>
+        </form>
+
+</script>
+
 <script type="text/template" id="folderTemplate">
 
     <div class="panel panel-primary">

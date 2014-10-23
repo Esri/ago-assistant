@@ -45,7 +45,7 @@ require([
     "cal-heatmap",
     "highlight"
 ], function (jquery, portal, mustache, d3, NProgress) {
-    
+
     function resizeContentAreas() {
         "use strict";
         jquery(".itemArea").height(jquery(window).height() - 50);
@@ -150,9 +150,52 @@ require([
         }
     });
 
+    // Add a listener for the enter key on the search form.
+    jquery("#searchForm").keypress(function (e) {
+        if (e.which == 13) {
+            jquery("#search").focus().click();
+        }
+    });
+
     // Add a listener for the future logout button.
     jquery(document).on("click", "li[data-action='logout']", (function () {
         logout();
+    }));
+
+    // Add a listener for the future search bar picker.
+    jquery(document).on("click", "li[id='searchAGO']", (function () {
+        jquery("#searchMenu li").removeClass("active");
+        jquery("#searchAGO").addClass("active");
+    }));
+
+    // Add a listener for the future search bar picker.
+    jquery(document).on("click", "li[id='searchPortal']", (function () {
+        jquery("#searchMenu li").removeClass("active");
+        jquery("#searchPortal").addClass("active");
+    }));
+
+    // Add a listener for the future search bar picker.
+    jquery(document).on("click", "li[id='searchContent']", (function () {
+        jquery("#searchMenu li").removeClass("active");
+        jquery("#searchContent").addClass("active");
+    }));
+
+    // Add a listener for the future search button.
+    jquery(document).on("click", "#search", (function () {
+        var query = jquery("#searchText").val();
+        var portalUrl = jquery("#searchMenu li.active").attr("data-url");
+        // Add the org id for "My Portal" searches.
+        if (jquery("#searchMenu li.active").attr("data-id")) {
+            query = query + " accountid:" + jquery("#searchMenu li.active").attr("data-id");
+        }
+        // Add the username for "My Content" searches.
+        if (jquery("#searchMenu li.active").text() === "My Content") {
+            query = query + " owner:" + sessionStorage.sourceUsername;
+        }
+
+        portal.search(portalUrl, query, 100, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
+            listSearchItems(results);
+        });
     }));
 
     // Load the html templates.
@@ -192,12 +235,12 @@ require([
         jquery("#currentAction").html("<a>update content URL</a>");
         updateContentUrls();
     });
-    
+
     function setMaxWidth(el) {
         // Set the max-width of folder items so they don't fill the body when dragging.
         function setWidth() {
             jquery(el).children(".content").each(function (i) {
-                var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+                var maxWidth = jquery("#userContent .in").width() ? jquery("#userContent .in").width() : 400;
                 jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
             });
         }
@@ -251,7 +294,7 @@ require([
 
     function loginSource() {
         jquery("#sourceLoginBtn").button("loading");
-        jquery("#itemsArea").empty(); //Clear any old items.
+        jquery("#userContent").empty(); //Clear any old items.
         portal.generateToken(jquery("#sourceUrl").val(), jquery("#sourceUsername").val(), jquery("#sourcePassword").val()).done(function (response) {
             jquery("#sourceLoginBtn").button("reset");
             if (response.token) {
@@ -284,6 +327,12 @@ require([
             jquery("#actionDropdown").css({
                 "visibility": "visible"
             });
+            var search = mustache.to_html(jquery("#searchTemplate").html(), {
+                portal: portalUrl,
+                name: data.name,
+                id: data.id
+            });
+            jquery("#actionDropdown").before(search);
             NProgress.start();
             listUserItems();
             NProgress.done();
@@ -334,9 +383,10 @@ require([
         app.user = {};
         app.stats.activities = {};
         jquery("#currentAction").html("");
-        jquery("#itemsArea").empty(); //Clear any old items.
+        jquery("#userContent").empty(); //Clear any old items.
         jquery("#dropArea").empty(); //Clear any old items.
         jquery("#sessionDropdown").remove();
+        jquery("#searchForm").remove();
         jquery("#loginSuccess").remove();
         jquery("#actionDropdown").css({
             "visibility": "hidden"
@@ -608,6 +658,11 @@ require([
         jquery(".content").attr("disabled", "disabled");
     }
 
+    function clearResults() {
+        // Clean up any existing content in the left hand column.
+        jquery("#userContent").remove();
+    }
+
     function isSupported(type) {
         // Check if the content type is supported.
         // List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
@@ -676,11 +731,54 @@ require([
         app.stats.activities[seconds] = 1;
     }
 
+    function listSearchItems(results) {
+        "use strict";
+
+        clearResults();
+
+        var userContent = mustache.to_html(jquery("#userContentTemplate").html());
+        jquery("#itemsArea").append(userContent);
+
+        var folderData = {
+            title: "Search Results (" + results.query + ")",
+            id: "search",
+            count: results.total
+        };
+        var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+        jquery("#userContent").append(html);
+        // Append the root items to the Root folder.
+        jquery.each(results.results, function (item) {
+            var icon;
+            if (isTypeText(this.type)) {
+                icon = "globe";
+            } else if (isTypeUrl(this.type)) {
+                icon = "link";
+            } else {
+                icon = "file";
+            }
+            var templateData = {
+                "id": this.id,
+                "title": this.title,
+                "type": this.type,
+                "icon": icon
+            };
+            var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+            jquery("#collapse_search").append(html);
+            setMaxWidth("#collapse_search");
+        });
+    }
+
     function listUserItems() {
         "use strict";
+
+        clearResults();
+
         var url = sessionStorage.sourceUrl,
             username = sessionStorage.sourceUsername,
             token = sessionStorage.sourceToken;
+
+        var userContent = mustache.to_html(jquery("#userContentTemplate").html());
+        jquery("#itemsArea").append(userContent);
 
         portal.user.content(url, username, "/", token).done(function (content) {
             // Append the root folder accordion.
@@ -690,7 +788,7 @@ require([
                 count: content.items.length
             };
             var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-            jquery("#itemsArea").append(html);
+            jquery("#userContent").append(html);
             // Append the root items to the Root folder.
             jquery.each(content.items, function (item) {
                 var icon;
@@ -721,7 +819,7 @@ require([
                     };
                     // Append an accordion for the folder.
                     var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                    jquery("#itemsArea").append(html);
+                    jquery("#userContent").append(html);
                     // Append the items to the folder.
                     jquery.each(content.items, function (item) {
                         var icon;
