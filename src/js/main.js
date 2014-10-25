@@ -443,6 +443,7 @@ require([
 
     function updateWebmapServices() {
         var webmapData, // make a couple globals so we can access them in other parts of the function
+            owner,
             folder,
             supportedContent = jquery(".content[data-type='Web Map']");
         supportedContent.addClass("data-toggle btn-info"); // Highlight supported content.
@@ -459,6 +460,14 @@ require([
             jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 webmapTitle = jquery(this).text();
+            portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
+                owner = description.owner;
+                if (!description.ownerFolder) {
+                    folder = ""; // Handle content in the user's root folder.
+                } else {
+                    folder = description.ownerFolder;
+                }
+            });
             portal.content.itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (data) {
                 webmapData = JSON.stringify(data);
                 var operationalLayers = [];
@@ -497,14 +506,17 @@ require([
                 jquery(webmapServices[service]).val(newUrl);
             });
             var webmapId = jquery(".content.active.btn-primary").attr("data-id"),
-                folder = jquery(".content.active.btn-primary").parent().attr("data-folder"),
                 itemData = JSON.parse(webmapData);
-            portal.content.updateWebmapData(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, webmapId, itemData, sessionStorage.sourceToken).done(function (response) {
+            portal.content.updateWebmapData(sessionStorage.sourceUrl, owner, folder, webmapId, itemData, sessionStorage.sourceToken).done(function (response) {
                 var html;
                 if (response.success) {
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetWebmapServices").before(html);
                 } else if (response.error.code === 400) {
+                    jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
+                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                    jquery("#btnResetWebmapServices").before(html);
+                } else if (response.error.code === 403) {
                     jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
                     html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetWebmapServices").before(html);
