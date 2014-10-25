@@ -164,23 +164,11 @@ require([
     jquery(document).on("click", "li[data-action='logout']", (function () {
         logout();
     }));
-
+    
     // Add a listener for the future search bar picker.
-    jquery(document).on("click", "li[id='searchAGO']", (function () {
+    jquery(document).on("click", "#searchMenu li", (function (e) {
         jquery("#searchMenu li").removeClass("active");
-        jquery("#searchAGO").addClass("active");
-    }));
-
-    // Add a listener for the future search bar picker.
-    jquery(document).on("click", "li[id='searchPortal']", (function () {
-        jquery("#searchMenu li").removeClass("active");
-        jquery("#searchPortal").addClass("active");
-    }));
-
-    // Add a listener for the future search bar picker.
-    jquery(document).on("click", "li[id='searchContent']", (function () {
-        jquery("#searchMenu li").removeClass("active");
-        jquery("#searchContent").addClass("active");
+        jquery(e.target).parent().addClass("active");
     }));
 
     // Add a listener for the future search button.
