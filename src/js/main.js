@@ -193,8 +193,10 @@ require([
             query = query + " owner:" + sessionStorage.sourceUsername;
         }
 
+        NProgress.start();
         portal.search(portalUrl, query, 100, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
             listSearchItems(results);
+            NProgress.done();
         });
     }));
 
