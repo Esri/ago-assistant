@@ -45,6 +45,16 @@ require([
     "cal-heatmap",
     "highlight"
 ], function (jquery, portal, mustache, d3, NProgress) {
+    
+    function disableEnterKey() {
+        // Disable the enter key to prevent accidentally firing forms.
+        jquery("html").bind("keypress", function(e) {
+            if(e.keyCode == 13) {
+                return false;
+            }
+        });
+    }
+    disableEnterKey();
 
     function resizeContentAreas() {
         "use strict";
@@ -147,13 +157,6 @@ require([
     jquery("#destinationLoginForm").keypress(function (e) {
         if (e.which == 13) {
             jquery("#destinationLoginBtn").focus().click();
-        }
-    });
-
-    // Add a listener for the enter key on the search form.
-    jquery("#searchForm").keypress(function (e) {
-        if (e.which == 13) {
-            jquery("#search").focus().click();
         }
     });
 
@@ -335,6 +338,14 @@ require([
                 id: data.id
             });
             jquery("#actionDropdown").before(search);
+            
+            // Add a listener for the enter key on the search form.
+            jquery("#searchForm").keypress(function (e) {
+                if (e.which == 13) {
+                    jquery("#search").focus().click();
+                }
+            });
+    
             NProgress.start();
             listUserItems();
             NProgress.done();
