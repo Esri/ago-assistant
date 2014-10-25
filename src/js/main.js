@@ -537,7 +537,8 @@ require([
     }
 
     function updateContentUrls() {
-        var folder,
+        var owner,
+            folder,
             supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
         supportedContent.addClass("data-toggle btn-info"); // Highlight support content
         supportedContent.removeAttr("disabled");
@@ -554,6 +555,12 @@ require([
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
             portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
+                owner = description.owner;
+                if (!description.ownerFolder) {
+                    folder = ""; // Handle content in the user's root folder.
+                } else {
+                    folder = description.ownerFolder;
+                }
                 var html = mustache.to_html(jquery("#itemContentTemplate").html(), description);
                 // Add the HTML container with the item JSON.
                 jquery("#dropArea").html(html);
@@ -561,16 +568,20 @@ require([
         });
 
         jquery(document).on("click", "#btnUpdateContentUrl", (function () {
+            console.log("sending");
             var contentId = jquery(".content.active.btn-primary").attr("data-id"),
-                folder = jquery(".content.active.btn-primary").parent().attr("data-folder"),
                 url = jquery("[data-original]").val();
-            portal.content.updateUrl(sessionStorage.sourceUrl, sessionStorage.sourceUsername, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
+            portal.content.updateUrl(sessionStorage.sourceUrl, owner, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
                 var html;
                 if (response.success) {
                     jquery("[data-original]").attr("data-original", url);
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                     jquery("#btnResetContentUrl").before(html);
                 } else if (response.error.code === 400) {
+                    jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
+                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                    jquery("#btnResetContentUrl").before(html);
+                } else if (response.error.code === 403) {
                     jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
                     html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                     jquery("#btnResetContentUrl").before(html);
