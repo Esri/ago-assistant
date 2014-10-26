@@ -173,7 +173,7 @@ require([
     // Add a listener for the action dropdown.
     jquery(document).on("click", "#actionDropdown li", (function (e) {
         // Highlight the selected action except for "View My Stats."
-        if (jquery(e.target).parent().attr("data-action") !== "stats") {
+        if (jquery(e.target).parent().attr("data-action") !== ("stats" && "viewMyContent")) {
             jquery("#actionDropdown li").removeClass("active");
             jquery(e.target).parent().addClass("active");
         }
@@ -224,6 +224,13 @@ require([
     // Add a listener for the "View my stats" action.
     jquery("li[data-action='stats']").click(function () {
         viewStats();
+    });
+    
+    // Add a listener for the "View my stats" action.
+    jquery("li[data-action='viewMyContent']").click(function () {
+        NProgress.start();
+        listUserItems();
+        NProgress.done();
     });
 
     // Add a listener for the "Update map services" action.
@@ -697,6 +704,27 @@ require([
             }
         });
     }
+    
+    function highlightSupportedContent() {
+        // Highlight content supported by the currently selected action.
+        switch (jquery("#actionDropdown li.active").attr("data-action")) {
+            case "copyContent":
+                highlightCopyableContent();
+                break;
+            case "updateWebmapServices":
+                cleanUp();
+                updateWebmapServices();
+                break;
+            case "updateContentUrl":
+                cleanUp();
+                updateContentUrls();
+                break;
+            case "inspectContent":
+                cleanUp();
+                inspectContent();
+                break;
+        }
+    }
 
     function isSupported(type) {
         // Check if the content type is supported.
@@ -802,24 +830,8 @@ require([
             setMaxWidth("#collapse_search");
         });
         
-        // Highlight content supported by the currently selected action.
-        switch (jquery("#actionDropdown li.active").attr("data-action")) {
-            case "copyContent":
-                highlightCopyableContent();
-                break;
-            case "updateWebmapServices":
-                cleanUp();
-                updateWebmapServices();
-                break;
-            case "updateContentUrl":
-                cleanUp();
-                updateContentUrls();
-                break;
-            case "inspectContent":
-                cleanUp();
-                inspectContent();
-                break;
-        }
+        highlightSupportedContent();
+        
     }
 
     function listUserItems() {
@@ -899,6 +911,8 @@ require([
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
+            
+            highlightSupportedContent();
         });
     }
 
