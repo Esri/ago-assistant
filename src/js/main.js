@@ -145,6 +145,11 @@ require([
     jquery("#destinationLoginBtn").click(function () {
         jquery("#destinationLoginBtn").button("reset");
     });
+    
+    // Clear the copy action when the cancel button is clicked.
+    jquery("#destinationCancelBtn").click(function () {
+        jquery("#actionDropdown li").removeClass("active");
+    });
 
     // Add a listener for the enter key on the source login form.
     jquery("#sourceLoginForm").keypress(function (e) {
@@ -163,6 +168,12 @@ require([
     // Add a listener for the future logout button.
     jquery(document).on("click", "li[data-action='logout']", (function () {
         logout();
+    }));
+    
+    // Add a listener for the action dropdown.
+    jquery(document).on("click", "#actionDropdown li", (function (e) {
+        jquery("#actionDropdown li").removeClass("active");
+        jquery(e.target).parent().addClass("active");
     }));
     
     // Add a listener for the future search bar picker.
@@ -204,28 +215,24 @@ require([
     // Enable inspecting of content.
     jquery("li[data-action='inspectContent']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>inspect content</a>");
         inspectContent();
     });
 
     // Add a listener for the "View my stats" action.
     jquery("li[data-action='stats']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>view stats</a>");
         viewStats();
     });
 
     // Add a listener for the "Update map services" action.
     jquery("li[data-action='updateWebmapServices']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>update web map service URLs</a>");
         updateWebmapServices();
     });
 
-    // Add a listener for the "Update map services" action.
+    // Add a listener for the "Update content" action.
     jquery("li[data-action='updateContentUrl']").click(function () {
         cleanUp();
-        jquery("#currentAction").html("<a>update content URL</a>");
         updateContentUrls();
     });
 
@@ -363,7 +370,6 @@ require([
                             makeDraggable(jquery(this)); //Make the content draggable.
                         }
                     });
-                    jquery("#currentAction").html("<a>copy content</a>");
                     NProgress.start();
                     showDestinationFolders();
                     NProgress.done();
@@ -383,7 +389,7 @@ require([
         sessionStorage.clear();
         app.user = {};
         app.stats.activities = {};
-        jquery("#currentAction").html("");
+        jquery("#actionDropdown li").removeClass("active"); // Clear the selected action.
         jquery("#userContent").empty(); //Clear any old items.
         jquery("#dropArea").empty(); //Clear any old items.
         jquery("#sessionDropdown").remove();
@@ -644,7 +650,7 @@ require([
             });
 
             jquery("#statsModal").on("hidden.bs.modal", function () {
-                jquery("#currentAction").html("");
+                jquery("#actionDropdown li").removeClass("active");
                 // Destroy the stats modal so it can be properly rendered next time.
                 jquery("#statsModal").remove();
             });
