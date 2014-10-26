@@ -363,13 +363,7 @@ require([
             if (response.token) {
                 jquery.when(storeCredentials("destination", jquery("#destinationUrl").val(), jquery("#destinationUsername").val(), response.token, function (callback) {
                     jquery("#copyModal").modal("hide");
-                    jquery(".content").each(function (i) {
-                        var type = jquery(this).attr("data-type");
-                        if (isSupported(type)) {
-                            jquery(this).addClass("btn-info"); // Highlight supported content.
-                            makeDraggable(jquery(this)); //Make the content draggable.
-                        }
-                    });
+                    highlightCopyableContent();
                     NProgress.start();
                     showDestinationFolders();
                     NProgress.done();
@@ -692,6 +686,16 @@ require([
         // Clean up any existing content in the left hand column.
         jquery("#userContent").remove();
     }
+    
+    function highlightCopyableContent() {
+        jquery("#userContent .content").each(function (i) {
+            var type = jquery(this).attr("data-type");
+            if (isSupported(type)) {
+                jquery(this).addClass("btn-info"); // Highlight supported content.
+                makeDraggable(jquery(this)); //Make the content draggable.
+            }
+        });
+    }
 
     function isSupported(type) {
         // Check if the content type is supported.
@@ -796,6 +800,25 @@ require([
             jquery("#collapse_search").append(html);
             setMaxWidth("#collapse_search");
         });
+        
+        // Highlight content supported by the currently selected action.
+        switch (jquery("#actionDropdown li.active").attr("data-action")) {
+            case "copyContent":
+                highlightCopyableContent();
+                break;
+            case "updateWebmapServices":
+                cleanUp();
+                updateWebmapServices();
+                break;
+            case "updateContentUrl":
+                cleanUp();
+                updateContentUrls();
+                break;
+            case "inspectContent":
+                cleanUp();
+                inspectContent();
+                break;
+        }
     }
 
     function listUserItems() {
