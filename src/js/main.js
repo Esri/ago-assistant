@@ -172,8 +172,11 @@ require([
     
     // Add a listener for the action dropdown.
     jquery(document).on("click", "#actionDropdown li", (function (e) {
-        jquery("#actionDropdown li").removeClass("active");
-        jquery(e.target).parent().addClass("active");
+        // Highlight the selected action except for "View My Stats."
+        if (jquery(e.target).parent().attr("data-action") !== "stats") {
+            jquery("#actionDropdown li").removeClass("active");
+            jquery(e.target).parent().addClass("active");
+        }
     }));
     
     // Add a listener for the future search bar picker.
@@ -220,7 +223,6 @@ require([
 
     // Add a listener for the "View my stats" action.
     jquery("li[data-action='stats']").click(function () {
-        cleanUp();
         viewStats();
     });
 
@@ -644,7 +646,6 @@ require([
             });
 
             jquery("#statsModal").on("hidden.bs.modal", function () {
-                jquery("#actionDropdown li").removeClass("active");
                 // Destroy the stats modal so it can be properly rendered next time.
                 jquery("#statsModal").remove();
             });
