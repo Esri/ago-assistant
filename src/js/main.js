@@ -241,7 +241,7 @@ require([
         // Set the max-width of folder items so they don't fill the body when dragging.
         function setWidth() {
             jquery(el).children(".content").each(function (i) {
-                var maxWidth = jquery("#userContent .in").width() ? jquery("#userContent .in").width() : 400;
+                var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
                 jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
             });
         }
@@ -295,7 +295,7 @@ require([
 
     function loginSource() {
         jquery("#sourceLoginBtn").button("loading");
-        jquery("#userContent").empty(); //Clear any old items.
+        jquery("#itemsArea").empty(); //Clear any old items.
         portal.generateToken(jquery("#sourceUrl").val(), jquery("#sourceUsername").val(), jquery("#sourcePassword").val()).done(function (response) {
             jquery("#sourceLoginBtn").button("reset");
             if (response.token) {
@@ -385,7 +385,7 @@ require([
         app.user = {};
         app.stats.activities = {};
         jquery("#actionDropdown li").removeClass("active"); // Clear the selected action.
-        jquery("#userContent").empty(); //Clear any old items.
+        jquery("#itemsArea").empty(); //Clear any old items.
         jquery("#dropArea").empty(); //Clear any old items.
         jquery("#sessionDropdown").remove();
         jquery("#searchForm").remove();
@@ -684,11 +684,11 @@ require([
 
     function clearResults() {
         // Clean up any existing content in the left hand column.
-        jquery("#userContent").remove();
+        jquery("#itemsArea").empty();
     }
     
     function highlightCopyableContent() {
-        jquery("#userContent .content").each(function (i) {
+        jquery("#itemsArea .content").each(function (i) {
             var type = jquery(this).attr("data-type");
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
@@ -788,11 +788,8 @@ require([
 
     function listSearchItems(results) {
         "use strict";
-
         clearResults();
-
-        var userContent = mustache.to_html(jquery("#userContentTemplate").html());
-        jquery("#itemsArea").append(userContent);
+        cleanUp();
 
         var folderData = {
             title: "Search Results (" + results.query + ")",
@@ -800,7 +797,7 @@ require([
             count: results.total
         };
         var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-        jquery("#userContent").append(html);
+        jquery("#itemsArea").append(html);
         // Append the root items to the Root folder.
         jquery.each(results.results, function (item) {
             var icon;
@@ -828,15 +825,12 @@ require([
 
     function listUserItems() {
         "use strict";
-
+        cleanUp();
         clearResults();
 
         var url = sessionStorage.sourceUrl,
             username = sessionStorage.sourceUsername,
             token = sessionStorage.sourceToken;
-
-        var userContent = mustache.to_html(jquery("#userContentTemplate").html());
-        jquery("#itemsArea").append(userContent);
 
         portal.user.content(url, username, "/", token).done(function (content) {
             // Append the root folder accordion.
@@ -846,7 +840,7 @@ require([
                 count: content.items.length
             };
             var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-            jquery("#userContent").append(html);
+            jquery("#itemsArea").append(html);
             // Append the root items to the Root folder.
             jquery.each(content.items, function (item) {
                 var icon;
@@ -877,7 +871,7 @@ require([
                     };
                     // Append an accordion for the folder.
                     var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                    jquery("#userContent").append(html);
+                    jquery("#itemsArea").append(html);
                     // Append the items to the folder.
                     jquery.each(content.items, function (item) {
                         var icon;
