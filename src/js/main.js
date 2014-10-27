@@ -164,20 +164,6 @@ require([
             jquery("#destinationLoginBtn").focus().click();
         }
     });
-
-    // Add a listener for the future logout button.
-    jquery(document).on("click", "li[data-action='logout']", (function () {
-        logout();
-    }));
-    
-    // Add a listener for the action dropdown.
-    jquery(document).on("click", "#actionDropdown li", (function (e) {
-        // Highlight the selected action except for "View My Stats."
-        if (jquery(e.target).parent().attr("data-action") !== ("stats" && "viewMyContent")) {
-            jquery("#actionDropdown li").removeClass("active");
-            jquery(e.target).parent().addClass("active");
-        }
-    }));
     
     // Add a listener for the future search bar picker.
     jquery(document).on("click", "#searchMenu li", (function (e) {
@@ -209,40 +195,46 @@ require([
     jquery.get("templates.html", function (templates) {
         jquery("body").append(templates);
     });
+    
+    jquery(document).on("click", "li [data-action]", (function (e) {
+        // Highlight the selected action except for "View My Stats."
+        var selectedAction = jquery(e.target).parent().attr("data-action");
+        if (selectedAction !== "stats" && selectedAction !== "viewMyContent") {
+            jquery("#actionDropdown li").removeClass("active");
+            jquery(e.target).parent().addClass("active");
+        }
+        // Choose what to do based on the selection.
+        switch(selectedAction) {
+            case "inspectContent":
+                // Enable inspecting of content.
+                cleanUp();
+                inspectContent();
+                break;
+            case "updateWebmapServices":
+                cleanUp();
+                updateWebmapServices();
+                break;
+            case "updateContentUrl":
+                cleanUp();
+                updateContentUrls();
+                break;
+            case "stats":
+                viewStats();
+                break;
+            case "viewMyContent":
+                NProgress.start();
+                listUserItems();
+                NProgress.done();
+                break;
+            case "logout":
+                logout();
+                break;
+        }
+    }));
 
     // Clean up the lists when copy content is selected.
     jquery("#copyModal").on("show.bs.modal", function () {
         cleanUp();
-    });
-
-    // Enable inspecting of content.
-    jquery("li[data-action='inspectContent']").click(function () {
-        cleanUp();
-        inspectContent();
-    });
-
-    // Add a listener for the "View my stats" action.
-    jquery("li[data-action='stats']").click(function () {
-        viewStats();
-    });
-    
-    // Add a listener for the "View my stats" action.
-    jquery("li[data-action='viewMyContent']").click(function () {
-        NProgress.start();
-        listUserItems();
-        NProgress.done();
-    });
-
-    // Add a listener for the "Update map services" action.
-    jquery("li[data-action='updateWebmapServices']").click(function () {
-        cleanUp();
-        updateWebmapServices();
-    });
-
-    // Add a listener for the "Update content" action.
-    jquery("li[data-action='updateContentUrl']").click(function () {
-        cleanUp();
-        updateContentUrls();
     });
 
     function setMaxWidth(el) {
