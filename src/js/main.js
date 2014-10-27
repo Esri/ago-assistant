@@ -570,7 +570,6 @@ require([
         });
 
         jquery(document).on("click", "#btnUpdateContentUrl", (function () {
-            console.log("sending");
             var contentId = jquery(".content.active.btn-primary").attr("data-id"),
                 url = jquery("[data-original]").val();
             portal.content.updateUrl(sessionStorage.sourceUrl, owner, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
@@ -897,8 +896,10 @@ require([
                     jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
-            
-            highlightSupportedContent();
+            setTimeout(function () {
+                // Wait a second to let all of the items populate before highlighting them.
+                highlightSupportedContent();
+            }, 1000);
         });
     }
 
