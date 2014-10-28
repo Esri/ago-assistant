@@ -169,26 +169,7 @@ require([
     jquery(document).on("click", "#searchMenu li", (function (e) {
         jquery("#searchMenu li").removeClass("active");
         jquery(e.target).parent().addClass("active");
-    }));
-
-    // Add a listener for the future search button.
-    jquery(document).on("click", "#search", (function () {
-        var query = jquery("#searchText").val();
-        var portalUrl = jquery("#searchMenu li.active").attr("data-url");
-        // Add the org id for "My Portal" searches.
-        if (jquery("#searchMenu li.active").attr("data-id")) {
-            query = query + " accountid:" + jquery("#searchMenu li.active").attr("data-id");
-        }
-        // Add the username for "My Content" searches.
-        if (jquery("#searchMenu li.active").text() === "My Content") {
-            query = query + " owner:" + sessionStorage.sourceUsername;
-        }
-
-        NProgress.start();
-        portal.search(portalUrl, query, 100, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
-            listSearchItems(results);
-            NProgress.done();
-        });
+        jquery("#searchText").attr("placeholder", "Search " + jquery(e.currentTarget).text());
     }));
 
     // Load the html templates.
@@ -328,17 +309,22 @@ require([
             jquery("#actionDropdown").css({
                 "visibility": "visible"
             });
-            var search = mustache.to_html(jquery("#searchTemplate").html(), {
+            var searchHtml = mustache.to_html(jquery("#searchTemplate").html(), {
                 portal: portalUrl,
                 name: data.name,
                 id: data.id
             });
-            jquery("#actionDropdown").before(search);
+            jquery("#actionDropdown").before(searchHtml);
+            
+            // Add a listener for clicking the search icon.
+            jquery(document).on("click", "i.glyphicon-search ", (function () {
+                search();
+            }));
             
             // Add a listener for the enter key on the search form.
             jquery("#searchForm").keypress(function (e) {
                 if (e.which == 13) {
-                    jquery("#search").focus().click();
+                    search();
                 }
             });
     
@@ -395,6 +381,27 @@ require([
         });
         jquery("#sourceLoginForm").show();
         jquery("#sourceLoginBtn").show();
+    }
+    
+    function search() {
+    
+        var query = jquery("#searchText").val();
+        var portalUrl = jquery("#searchMenu li.active").attr("data-url");
+        // Add the org id for "My Portal" searches.
+        if (jquery("#searchMenu li.active").attr("data-id")) {
+            query = query + " accountid:" + jquery("#searchMenu li.active").attr("data-id");
+        }
+        // Add the username for "My Content" searches.
+        if (jquery("#searchMenu li.active").text() === "My Content") {
+            query = query + " owner:" + sessionStorage.sourceUsername;
+        }
+
+        NProgress.start();
+        portal.search(portalUrl, query, 100, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
+            listSearchItems(results);
+            NProgress.done();
+        });
+    
     }
 
     function inspectContent() {

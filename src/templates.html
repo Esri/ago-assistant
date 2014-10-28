@@ -58,22 +58,29 @@
 
 <script type="text/template" id="searchTemplate">
 
-        <form id="searchForm" class="navbar-form navbar-left" role="search">
-            <input id="searchText" type="text" class="form-control" placeholder="enter a keyword search">
-            <div class="btn-group">
-                <button id="search" type="button" class="btn btn-default">Search</button>
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-                </button>
-                <ul id="searchMenu" class="dropdown-menu" role="menu">
-                    <li id="searchAGO" data-url="https://www.arcgis.com/" class="active"><a>ArcGIS Online</a></li>
-                    <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a>{{ name }}</a></li>
-                    <li id="searchContent" data-url={{ portal }}><a>My Content</a></li>
-                </ul>
+    <form id="searchForm" class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+            <div class="input-group add-on">
+                <div class="form-group has-feedback">
+                    <input id="searchText" type="text" class="form-control" placeholder="Search ArcGIS Online">
+                    <i class="glyphicon glyphicon-search form-control-feedback" style="color:black"></i>
+                </div>
+                <div class="input-group-btn">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="searchMenu" class="dropdown-menu" role="menu">
+                            <li id="searchAGO" data-url="https://www.arcgis.com/" class="active"><a>ArcGIS Online</a></li>
+                            <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a>{{ name }}</a></li>
+                            <li id="searchContent" data-url={{ portal }}><a>My Content</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </form>
-
+        </div>
+    </form>
+    
 </script>
 
 <script type="text/template" id="folderTemplate">
