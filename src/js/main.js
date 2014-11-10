@@ -6,7 +6,7 @@ require([
     "nprogress",
     "jquery.ui",
     "bootstrap-shim",
-    "cal-heatmap",
+    "cal-heatmap-shim",
     "highlight"
 ], function (jquery, portal, mustache, d3, NProgress) {
     
