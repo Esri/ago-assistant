@@ -1,47 +1,11 @@
-requirejs.config({
-    baseUrl: './',
-    paths: {
-        "jquery": "js/lib/jquery-1.10.2.min",
-        "jquery.bootstrap": "js/lib/bootstrap/js/bootstrap-3.2.0.min",
-        "jquery.ui": "js/lib/jquery-ui-1.9.2.min",
-        "mustache": "js/lib/mustache-0.7.2",
-        "d3": "js/lib/d3.v3-3.2.7.min",
-        "nprogress": "js/lib/nprogress-0.1.6",
-        "cal-heatmap": "js/lib/cal-heatmap-3.3.10.min",
-        "highlight": "js/lib/highlight.min",
-        "portal": "js/portal/portal",
-        "util": "js/portal/util"
-    },
-    shim: {
-        "jquery.bootstrap": {
-            // Ensure jquery-ui loads first.
-            // This is necessary so bootstrap stuff still works.
-            deps: ["jquery", "jquery.ui"],
-        },
-        "jquery.ui": {
-            deps: ["jquery"],
-        },
-        "nprogress": {
-            deps: ["jquery"],
-            exports: "NProgress"
-        },
-        "cal-heatmap": {
-            deps: ["d3"]
-        },
-        "portal": {
-            deps: ["jquery", "util"]
-        }
-    }
-});
-
 require([
     "jquery",
     "portal",
     "mustache",
     "d3",
     "nprogress",
-    "jquery.bootstrap",
     "jquery.ui",
+    "bootstrap-shim",
     "cal-heatmap",
     "highlight"
 ], function (jquery, portal, mustache, d3, NProgress) {
