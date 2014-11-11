@@ -95,6 +95,7 @@ require([
 
     esriId.checkSignInStatus(appInfo.portalUrl).then(
         function (user) {
+            jquery("#splashContainer").css("display", "none");
             app.user = user;
             app.user.server = app.user.server + "/";
             startSession(user);
@@ -102,15 +103,17 @@ require([
     ).otherwise(
         function () {
             console.log("not signed in");
+            jquery("#splashContainer").css("display", "block");
         }
     );    
     
     // Source Login.
-    jquery("#sourceLoginBtn").click(function () {
+    jquery("[data-action='login']").click(function () {
         // Show the OAuth Sign-In.
         esriId.getCredential(appInfo.portalUrl, {
             oAuthPopupConfirmation: false
         }).then(function (user) {
+            jquery("#splashContainer").css("display", "none");
             app.user = user;
             app.user.server = app.user.server + "/";
             startSession(user);
@@ -258,9 +261,7 @@ require([
         portal.self(portalUrl, token).done(function (data) {
             var template = jquery("#sessionTemplate").html(),
                 html = mustache.to_html(template, data);
-            jquery("#sourceLoginForm").before(html);
-            jquery("#sourceLoginForm").hide();
-            jquery("#sourceLoginBtn").hide();
+            jquery(".nav.navbar-nav").after(html);
             jquery("#logout").show();
             jquery("#actionDropdown").css({
                 "visibility": "visible"
@@ -335,8 +336,6 @@ require([
         jquery("#actionDropdown").css({
             "visibility": "hidden"
         });
-        jquery("#sourceLoginForm").show();
-        jquery("#sourceLoginBtn").show();
         esriId.destroyCredentials();
         window.location.reload();
     }

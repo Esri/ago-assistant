@@ -52,11 +52,31 @@
                             </ul>
                         </li>
                     </ul>
-                    <form class="navbar-form navbar-right" id="sourceLoginForm">
-                        <button type="button" class="btn btn-default" id="sourceLoginBtn" style="" data-loading-text="Logging in...">Login</button>
-                    </form>
                 </div>
                 <!--/.navbar-collapse -->
+            </div>
+        </div>
+        <!-- Splash jumbotron -->
+        <div id="splashContainer" class="container col-md-6 center">
+            <div class="jumbotron">
+                <h2>ArcGIS Online Assistant</h2>
+                <p class="lead">Easily work with content in your ArcGIS Online and Portal for ArcGIS accounts.</p>
+                <p><a class="btn btn-lg btn-success" role="button" data-action="login">Log in to get started</a></p>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>Inspect</h4>
+                    <p>View the underlying JSON for any item in ArcGIS Online or your Portal.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Update</h4>
+                    <p>Modify the URLs for services in web maps and registered applications.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Copy</h4>
+                    <p>Search for and copy content to your account and other accounts.</p>
+                </div>
             </div>
         </div>
         <div class="container col-md-10 center">
@@ -102,7 +122,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                            <h3 id="copyModalLabel">Copy my content</h3>
+                            <h3 id="copyModalLabel">Copy content</h3>
                         </div>
                         <div class="modal-body">
                             <p>Login to the destination account. You will then be able to select which items to copy.</p>

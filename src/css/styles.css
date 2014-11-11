@@ -63,3 +63,19 @@ body {
     opacity: 0.3;
     filter: alpha(opacity=30); /* For IE8 and earlier */
 }
+
+/* Splash page jumbotron */
+.jumbotron .btn {
+    padding: 14px 24px;
+    font-size: 21px;
+    text-align: center;
+}
+
+/* Adjust splash page details */
+.marketing {
+    margin: 40px 0;
+}
+
+.marketing p + h4 {
+    margin-top: 28px;
+}
