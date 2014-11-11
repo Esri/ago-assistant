@@ -103,6 +103,7 @@ require([
     esriId.checkSignInStatus(appInfo.portalUrl).then(
         function (user) {
             app.user = user;
+            app.user.server = app.user.server + "/";
             startSession(user);
         }
     ).otherwise(
@@ -118,6 +119,7 @@ require([
             oAuthPopupConfirmation: false
         }).then(function (user) {
             app.user = user;
+            app.user.server = app.user.server + "/";
             startSession(user);
         });
     });
@@ -247,11 +249,9 @@ require([
                 }
             });
     
-            jquery.when(storeCredentials("source", user.server + "/", user.userId, user.token, function (callback) {
-                NProgress.start();
-                listUserItems();
-                NProgress.done();
-            }));
+            NProgress.start();
+            listUserItems();
+            NProgress.done();
         });
     }
 
@@ -316,11 +316,11 @@ require([
         }
         // Add the username for "My Content" searches.
         if (jquery("#searchMenu li.active").text() === "My Content") {
-            query = query + " owner:" + sessionStorage.sourceUsername;
+            query = query + " owner:" + app.user.userId;
         }
 
         NProgress.start();
-        portal.search(portalUrl, query, 100, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
+        portal.search(portalUrl, query, 100, "numViews", "desc", app.user.token).done(function (results) {
             listSearchItems(results);
             NProgress.done();
         });
@@ -347,8 +347,8 @@ require([
             jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
-            portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
-                portal.content.itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (data) {
+            portal.content.itemDescription(app.user.server, id, app.user.token).done(function (description) {
+                portal.content.itemData(app.user.server, id, app.user.token).done(function (data) {
                     itemData = data;
                 }).always(function (data) {
                     var templateData = {
@@ -358,7 +358,7 @@ require([
                     };
                     // Add a download link for files (i.e. no data and not a service).
                     if (templateData.data === undefined && description.typeKeywords.indexOf("Service") === -1) {
-                        templateData.downloadLink = sessionStorage.sourceUrl + "sharing/rest/content/items/" + id + "/data?token=" + sessionStorage.sourceToken;
+                        templateData.downloadLink = app.user.server + "sharing/rest/content/items/" + id + "/data?token=" + app.user.token;
                     }
                     var html = mustache.to_html(jquery("#inspectTemplate").html(), templateData);
                     // Add the HTML container with the item JSON.
@@ -392,7 +392,7 @@ require([
             jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 webmapTitle = jquery(this).text();
-            portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
+            portal.content.itemDescription(app.user.server, id, app.user.token).done(function (description) {
                 owner = description.owner;
                 if (!description.ownerFolder) {
                     folder = ""; // Handle content in the user's root folder.
@@ -400,7 +400,7 @@ require([
                     folder = description.ownerFolder;
                 }
             });
-            portal.content.itemData(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (data) {
+            portal.content.itemData(app.user.server, id, app.user.token).done(function (data) {
                 webmapData = JSON.stringify(data);
                 var operationalLayers = [];
                 jquery.each(data.operationalLayers, function (layer) {
@@ -439,7 +439,7 @@ require([
             });
             var webmapId = jquery(".content.active.btn-primary").attr("data-id"),
                 itemData = JSON.parse(webmapData);
-            portal.content.updateWebmapData(sessionStorage.sourceUrl, owner, folder, webmapId, itemData, sessionStorage.sourceToken).done(function (response) {
+            portal.content.updateWebmapData(app.user.server, owner, folder, webmapId, itemData, app.user.token).done(function (response) {
                 var html;
                 if (response.success) {
                     html = mustache.to_html(jquery("#updateSuccessTemplate").html());
@@ -486,7 +486,7 @@ require([
             jquery(this).removeClass("btn-info");
             var id = jquery(this).attr("data-id"),
                 title = jquery(this).text();
-            portal.content.itemDescription(sessionStorage.sourceUrl, id, sessionStorage.sourceToken).done(function (description) {
+            portal.content.itemDescription(app.user.server, id, app.user.token).done(function (description) {
                 owner = description.owner;
                 if (!description.ownerFolder) {
                     folder = ""; // Handle content in the user's root folder.
@@ -502,7 +502,7 @@ require([
         jquery(document).on("click", "#btnUpdateContentUrl", (function () {
             var contentId = jquery(".content.active.btn-primary").attr("data-id"),
                 url = jquery("[data-original]").val();
-            portal.content.updateUrl(sessionStorage.sourceUrl, owner, folder, contentId, url, sessionStorage.sourceToken).done(function (response) {
+            portal.content.updateUrl(app.user.server, owner, folder, contentId, url, app.user.token).done(function (response) {
                 var html;
                 if (response.success) {
                     jquery("[data-original]").attr("data-original", url);
@@ -529,13 +529,13 @@ require([
     }
 
     function viewStats() {
-        portal.user.profile(sessionStorage.sourceUrl, sessionStorage.sourceUsername, sessionStorage.sourceToken).done(function (user) {
+        portal.user.profile(app.user.server, app.user.userId, app.user.token).done(function (user) {
 
             var template = jquery("#statsTemplate").html();
             var thumbnailUrl;
             // Check that the user has a thumbnail image.
             if (user.thumbnail) {
-                thumbnailUrl = sessionStorage.sourceUrl + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + sessionStorage.sourceToken;
+                thumbnailUrl = app.user.server + "sharing/rest/community/users/" + user.username + "/info/" + user.thumbnail + "?token=" + app.user.token;
             } else {
                 thumbnailUrl = "assets/images/no-user-thumb.jpg";
             }
@@ -552,11 +552,11 @@ require([
             jquery("#statsModal").modal("show");
 
             // Get the user's 3 most viewed items.
-            var searchQuery = "owner:" + sessionStorage.sourceUsername;
-            portal.search(sessionStorage.sourceUrl, searchQuery, 3, "numViews", "desc", sessionStorage.sourceToken).done(function (results) {
+            var searchQuery = "owner:" + app.user.userId;
+            portal.search(app.user.server, searchQuery, 3, "numViews", "desc", app.user.token).done(function (results) {
                 jquery.each(results.results, function (result) {
                     results.results[result].numViews = results.results[result].numViews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                    results.results[result].itemUrl = sessionStorage.sourceUrl + "home/item.html?id=" + results.results[result].id;
+                    results.results[result].itemUrl = app.user.server + "home/item.html?id=" + results.results[result].id;
                 });
                 var tableTemplate = jquery("#mostViewedContentTemplate").html();
                 jquery("#mostViewedContent").html(mustache.to_html(tableTemplate, {
@@ -757,9 +757,9 @@ require([
         cleanUp();
         clearResults();
 
-        var url = sessionStorage.sourceUrl,
-            username = sessionStorage.sourceUsername,
-            token = sessionStorage.sourceToken;
+        var url = app.user.server,
+            username = app.user.userId,
+            token = app.user.token;
 
         portal.user.content(url, username, "/", token).done(function (content) {
             // Append the root folder accordion.
@@ -885,8 +885,8 @@ require([
         // id: id of the source item
         // folder: id of the destination folder
         "use strict";
-        var sourcePortal = sessionStorage.sourceUrl,
-            sourceToken = sessionStorage.sourceToken,
+        var sourcePortal = app.user.server,
+            sourceToken = app.user.token,
             destinationPortal = sessionStorage.destinationUrl,
             destinationUsername = sessionStorage.destinationUsername,
             destinationToken = sessionStorage.destinationToken;
