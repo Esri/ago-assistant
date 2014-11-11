@@ -4,12 +4,15 @@ require([
     "mustache",
     "d3",
     "nprogress",
+    "esri/arcgis/Portal",
+    "esri/arcgis/OAuthInfo",
+    "esri/IdentityManager",
     "jquery.ui",
     "bootstrap-shim",
     "cal-heatmap-shim",
     "highlight"
-], function (jquery, portal, mustache, d3, NProgress) {
-    
+], function (jquery, portal, mustache, d3, NProgress, arcgisPortal, arcgisOAuthInfo, esriId) {
+ 
     function disableEnterKey() {
         // Disable the enter key to prevent accidentally firing forms.
         jquery("html").bind("keypress", function(e) {
@@ -29,14 +32,8 @@ require([
     jquery(document).ready(function () {
 
         jquery("#logout").hide();
-
+        
         resizeContentAreas(); // Resize the content areas based on the window size.
-
-        jquery("#sourceUrl").tooltip({
-            trigger: "hover",
-            title: "Use https://www.arcgis.com/ for AGOL Organization accounts.",
-            placement: "bottom"
-        });
 
         jquery("#destinationAgolBtn").tooltip({
             trigger: "hover",
@@ -83,9 +80,6 @@ require([
     });
 
     // Validate the url when the input loses focus.
-    jquery("#sourceUrl").blur(function () {
-        validateUrl("#sourceUrl");
-    });
     jquery("#destinationUrl").blur(function () {
         // Give the DOM time to update before firing the validation.
         setTimeout(function () {
@@ -95,11 +89,42 @@ require([
         }, 500);
     });
 
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // *** ArcGIS OAuth ***
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    var appInfo = new arcgisOAuthInfo({
+        appId: "4E1s0Mv5r0c2l6W8",
+//        authNamespace: "portal_oauth_popup",
+        popup: true
+    });
+    esriId.registerOAuthInfos([appInfo]);
+
+    esriId.checkSignInStatus(appInfo.portalUrl).then(
+        function (user) {
+            app.user = user;
+            startSession(user);
+        }
+    ).otherwise(
+        function () {
+            console.log("not signed in");
+        }
+    );    
+    
     // Source Login.
     jquery("#sourceLoginBtn").click(function () {
-        loginSource();
+        // Show the OAuth Sign-In.
+        esriId.getCredential(appInfo.portalUrl, {
+            oAuthPopupConfirmation: false
+        }).then(function (user) {
+            app.user = user;
+            startSession(user);
+        });
     });
-
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
     // Destination Login.
     jquery("#destinationLoginBtn").click(function () {
         loginDestination();
@@ -113,20 +138,6 @@ require([
     // Clear the copy action when the cancel button is clicked.
     jquery("#destinationCancelBtn").click(function () {
         jquery("#actionDropdown li").removeClass("active");
-    });
-
-    // Add a listener for the enter key on the source login form.
-    jquery("#sourceLoginForm").keypress(function (e) {
-        if (e.which == 13) {
-            jquery("#sourceLoginBtn").focus().click();
-        }
-    });
-
-    // Add a listener for the enter key on the destination login form.
-    jquery("#destinationLoginForm").keypress(function (e) {
-        if (e.which == 13) {
-            jquery("#destinationLoginBtn").focus().click();
-        }
     });
     
     // Add a listener for the future search bar picker.
@@ -197,72 +208,16 @@ require([
     }
 
     var app = {
-        user: {},
+        user: {}, 
         stats: {
             activities: {}
         },
     };
 
-    function validateUrl(el) {
-        // Check the url for errors (e.g. no trailing slash)
-        // and update it before sending.
+    function startSession(user) {
         "use strict";
-        var portalUrl = jquery.trim(jquery(el).val()), // trim whitespace
-            html = jquery("#urlErrorTemplate").html(),
-            fixUrl = function (url) {
-                var deferred = jquery.Deferred();
-                if (portalUrl === "") {
-                    // Default to ArcGIS Online.
-                    portalUrl = "https://www.arcgis.com/";
-                } else if (portalUrl.search("/home/") > 0) {
-                    // Strip the /home endpoint.
-                    portalUrl = portalUrl.substr(0, portalUrl.search("/home/")) + "/";
-                } else if (portalUrl.search("/sharing/") > 0) {
-                    // Strip the /home endpoint.
-                    portalUrl = portalUrl.substr(0, portalUrl.search("/sharing/")) + "/";
-                } else if (portalUrl.charAt(portalUrl.length - 1) !== "/") {
-                    // Add the trailing slash.
-                    portalUrl = portalUrl + "/";
-                }
-                jquery(el).val(portalUrl);
-                deferred.resolve(portalUrl);
-                return deferred.promise();
-            };
-
-        fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
-            portal.version(url).done(function (data) {
-                console.log("API v" + data.currentVersion);
-            }).fail(function (response) {
-                jquery(el).parent().after(html);
-            });
-        });
-    }
-
-    function loginSource() {
-        jquery("#sourceLoginBtn").button("loading");
-        jquery("#itemsArea").empty(); //Clear any old items.
-        portal.generateToken(jquery("#sourceUrl").val(), jquery("#sourceUsername").val(), jquery("#sourcePassword").val()).done(function (response) {
-            jquery("#sourceLoginBtn").button("reset");
-            if (response.token) {
-                // Store the portal info in the browser's sessionStorage.
-                jquery.when(storeCredentials("source", jquery("#sourceUrl").val(), jquery("#sourceUsername").val(), response.token, function (callback) {
-                    startSession();
-                }));
-            } else if (response.error.code === 400) {
-                var html = jquery("#loginErrorTemplate").html();
-                jquery("#sourceLoginForm").before(html);
-            }
-        }).fail(function (response) {
-            console.log(response.statusText);
-            var html = jquery("#loginErrorTemplate").html();
-            jquery("#sourceLoginForm").before(html);
-        });
-    }
-
-    function startSession() {
-        "use strict";
-        var portalUrl = sessionStorage.sourceUrl,
-            token = sessionStorage.sourceToken;
+        var portalUrl = user.server + "/",
+            token = user.token;
         portal.self(portalUrl, token).done(function (data) {
             var template = jquery("#sessionTemplate").html(),
                 html = mustache.to_html(template, data);
@@ -292,9 +247,11 @@ require([
                 }
             });
     
-            NProgress.start();
-            listUserItems();
-            NProgress.done();
+            jquery.when(storeCredentials("source", user.server + "/", user.userId, user.token, function (callback) {
+                NProgress.start();
+                listUserItems();
+                NProgress.done();
+            }));
         });
     }
 
@@ -345,6 +302,8 @@ require([
         });
         jquery("#sourceLoginForm").show();
         jquery("#sourceLoginBtn").show();
+        esriId.destroyCredentials();
+        window.location.reload();
     }
     
     function search() {
