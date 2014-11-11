@@ -122,8 +122,24 @@ require([
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
     
+    // Use the existing credentials when "My Account" is selected as the copy target.
+    jquery("[data-action='copyMyAccount'").click(function () {
+        jquery.when(storeCredentials("destination", app.user.server, app.user.userId, app.user.token, function (callback) {
+            jquery("#copyModal").modal("hide");
+            highlightCopyableContent();
+            NProgress.start();
+            showDestinationFolders();
+            NProgress.done();
+        }));        
+    });
     
-    // Destination Login.
+    // Show other destination form when "Another Account" is selected as the copy target.
+    jquery("[data-action='copyOtherAccount'").click(function () {
+        jquery("#destinationChoice").css("display", "none");
+        jquery("#destinationForm").css("display", "block");
+    });
+    
+    // Log in to the destination account.
     jquery("#destinationLoginBtn").click(function () {
         loginDestination();
     });
@@ -196,6 +212,8 @@ require([
     // Clean up the lists when copy content is selected.
     jquery("#copyModal").on("show.bs.modal", function () {
         cleanUp();
+        jquery("#destinationChoice").css("display", "block");
+        jquery("#destinationForm").css("display", "none");
     });
 
     function setMaxWidth(el) {

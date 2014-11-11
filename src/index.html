@@ -125,30 +125,37 @@
                             <h3 id="copyModalLabel">Copy content</h3>
                         </div>
                         <div class="modal-body">
-                            <p>Login to the destination account. You will then be able to select which items to copy.</p>
-                            <br>
-                            <form>
-                                <p>Select the destination:</p>
-                                <div class="form-inline">
-                                    <div class="btn-group" data-toggle="buttons-radio">
-                                        <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
-                                        <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
-                                    </div>
-                                    <div class="form-group">
-                                        <input class="form-control" type="text" value="https://www.arcgis.com/" id="destinationUrl">
-                                    </div>
-                                </div>
+                            <div id="destinationChoice">
+                                <p>Select the account you want to copy into.</p>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyMyAccount">My account</button>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyOtherAccount">Another account</button>
+                            </div>
+                            <div id="destinationForm" style="display:none">
+                                <p>Login to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
                                 <br>
-                                <p>Enter your credentials:</p>
-                                <div id="destinationLoginForm" class="form-inline">
-                                    <div class="form-group">
-                                        <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                <form>
+                                    <p>Select the destination:</p>
+                                    <div class="form-inline">
+                                        <div class="btn-group" data-toggle="buttons-radio">
+                                            <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
+                                            <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" type="text" value="https://www.arcgis.com/" id="destinationUrl">
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                    <br>
+                                    <p>Enter your credentials:</p>
+                                    <div id="destinationLoginForm" class="form-inline">
+                                        <div class="form-group">
+                                            <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                        </div>
                                     </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
