@@ -35,12 +35,6 @@ require([
         
         resizeContentAreas(); // Resize the content areas based on the window size.
 
-        jquery("#destinationAgolBtn").tooltip({
-            trigger: "hover",
-            title: "Use this for AGOL Organization accounts.",
-            placement: "bottom"
-        });
-
         // Preformat the copy login screen.
         jquery("#destinationAgolBtn").button("toggle");
         jquery("#destinationAgolBtn").addClass("btn-primary");
@@ -95,7 +89,6 @@ require([
     ////////////////////////////////////////////////////////////////////////////////////////////////
     var appInfo = new arcgisOAuthInfo({
         appId: "4E1s0Mv5r0c2l6W8",
-//        authNamespace: "portal_oauth_popup",
         popup: true
     });
     esriId.registerOAuthInfos([appInfo]);
@@ -140,6 +133,13 @@ require([
     // Clear the copy action when the cancel button is clicked.
     jquery("#destinationCancelBtn").click(function () {
         jquery("#actionDropdown li").removeClass("active");
+    });
+    
+    // Add a listener for the enter key on the destination login form.
+    jquery("#destinationLoginForm").keypress(function (e) {
+        if (e.which == 13) {
+            jquery("#destinationLoginBtn").focus().click();
+        }
     });
     
     // Add a listener for the future search bar picker.
@@ -215,6 +215,41 @@ require([
             activities: {}
         },
     };
+    
+    function validateUrl(el) {
+        // Check the url for errors (e.g. no trailing slash)
+        // and update it before sending.
+        "use strict";
+        var portalUrl = jquery.trim(jquery(el).val()), // trim whitespace
+            html = jquery("#urlErrorTemplate").html(),
+            fixUrl = function (url) {
+                var deferred = jquery.Deferred();
+                if (portalUrl === "") {
+                    // Default to ArcGIS Online.
+                    portalUrl = "https://www.arcgis.com/";
+                } else if (portalUrl.search("/home/") > 0) {
+                    // Strip the /home endpoint.
+                    portalUrl = portalUrl.substr(0, portalUrl.search("/home/")) + "/";
+                } else if (portalUrl.search("/sharing/") > 0) {
+                    // Strip the /home endpoint.
+                    portalUrl = portalUrl.substr(0, portalUrl.search("/sharing/")) + "/";
+                } else if (portalUrl.charAt(portalUrl.length - 1) !== "/") {
+                    // Add the trailing slash.
+                    portalUrl = portalUrl + "/";
+                }
+                jquery(el).val(portalUrl);
+                deferred.resolve(portalUrl);
+                return deferred.promise();
+            };
+
+        fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
+            portal.version(url).done(function (data) {
+                console.log("API v" + data.currentVersion);
+            }).fail(function (response) {
+                jquery(el).parent().after(html);
+            });
+        });
+    }
 
     function startSession(user) {
         "use strict";
