@@ -6,14 +6,14 @@
                 {{#user}}
                     {{username}}
                 {{/user}}
-                {{#name}}
-                    @ {{name}}
-                {{/name}}
-                {{^name}}
-                    @ ArcGIS Online
-                {{/name}}
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
+                <li>
+                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
+                </li>
+                <li>
+                    <a data-toggle="modal" data-target="#aboutModal">Help</a>
+                </li>
                 <li data-action="logout">
                     <a>Logout</a>
                 </li>
