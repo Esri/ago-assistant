@@ -123,7 +123,7 @@ require([
     ////////////////////////////////////////////////////////////////////////////////////////////////
     
     // Use the existing credentials when "My Account" is selected as the copy target.
-    jquery("[data-action='copyMyAccount'").click(function () {
+    jquery("[data-action='copyMyAccount']").click(function () {
         jquery.when(storeCredentials("destination", app.user.server, app.user.userId, app.user.token, function (callback) {
             jquery("#copyModal").modal("hide");
             highlightCopyableContent();
@@ -134,7 +134,7 @@ require([
     });
     
     // Show other destination form when "Another Account" is selected as the copy target.
-    jquery("[data-action='copyOtherAccount'").click(function () {
+    jquery("[data-action='copyOtherAccount']").click(function () {
         jquery("#destinationChoice").css("display", "none");
         jquery("#destinationForm").css("display", "block");
     });
