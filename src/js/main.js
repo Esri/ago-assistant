@@ -766,6 +766,36 @@ require([
         seconds = activityTime / 1000;
         app.stats.activities[seconds] = 1;
     }
+    
+    function itemInfo(type) {
+        var types = [
+            {type: "Color Set", icon: "datafilesGray"},
+            {type: "Document Link", icon: "datafilesGray"},
+            {type: "Image Service", icon: "imagery"},
+            {type: "Feature Collection", icon: "features"},
+            {type: "Feature Collection Template", icon: "file"},
+            {type: "Feature Layer", icon: "features"},
+            {type: "Feature Service", icon: "features"},
+            {type: "Geocoding Service", icon: "layers"},
+            {type: "Geodata Service", icon: "layers"},
+            {type: "Geometry Service", icon: "layers"},
+            {type: "Geoprocessing Service", icon: "layers"},
+            {type: "Globe Service", icon: "layers"},
+            {type: "Network Analysis Service", icon: "layers"},
+            {type: "Map Service", icon: "layers"},
+            {type: "Mobile Application", icon: "apps"},
+            {type: "Operation View", icon: "apps"},
+            {type: "Service Definition", icon: "datafiles"},
+            {type: "Symbol Set", icon: "datafiles"},
+            {type: "Web Map", icon: "maps"},
+            {type: "Web Mapping Application", icon: "apps"},
+            {type: "WMS", icon: "layers"},
+        ];
+        var info = types.filter(function (item) {
+            return item.type === type;
+        })[0];
+        return info;
+    }
 
     function listSearchItems(results) {
         "use strict";
@@ -781,19 +811,11 @@ require([
         jquery("#itemsArea").append(html);
         // Append the root items to the Root folder.
         jquery.each(results.results, function (item) {
-            var icon;
-            if (isTypeText(this.type)) {
-                icon = "globe";
-            } else if (isTypeUrl(this.type)) {
-                icon = "link";
-            } else {
-                icon = "file";
-            }
             var templateData = {
                 "id": this.id,
                 "title": this.title,
                 "type": this.type,
-                "icon": icon
+                "icon": itemInfo(this.type).icon
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html);
@@ -824,19 +846,11 @@ require([
             jquery("#itemsArea").append(html);
             // Append the root items to the Root folder.
             jquery.each(content.items, function (item) {
-                var icon;
-                if (isTypeText(this.type)) {
-                    icon = "globe";
-                } else if (isTypeUrl(this.type)) {
-                    icon = "link";
-                } else {
-                    icon = "file";
-                }
                 var templateData = {
                     "id": this.id,
                     "title": this.title,
                     "type": this.type,
-                    "icon": icon
+                    "icon": itemInfo(this.type).icon
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
@@ -855,19 +869,11 @@ require([
                     jquery("#itemsArea").append(html);
                     // Append the items to the folder.
                     jquery.each(content.items, function (item) {
-                        var icon;
-                        if (isTypeText(this.type)) {
-                            icon = "globe";
-                        } else if (isTypeUrl(this.type)) {
-                            icon = "link";
-                        } else {
-                            icon = "file";
-                        }
                         var templateData = {
                             "id": this.id,
                             "title": this.title,
                             "type": this.type,
-                            "icon": icon
+                            "icon": itemInfo(this.type).icon
                         };
                         var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                         jquery("#collapse_" + content.currentFolder.id).append(html);

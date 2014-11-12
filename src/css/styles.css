@@ -83,3 +83,64 @@ body {
 .marketing p + h4 {
     margin-top: 28px;
 }
+
+.icon {
+    width:16px;
+    height:16px;
+    display: block;
+    float: left;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.apps { 
+    background:url(../assets/images/apps16.png); 
+}
+
+.appsGray { 
+    background:url(../assets/images/appsGray16.png); 
+}
+
+.datafiles { 
+    background:url(../assets/images/datafiles16.png); 
+}
+
+.datafilesGray { 
+    background:url(../assets/images/datafilesGray16.png); 
+}
+
+.features { 
+    background:url(../assets/images/Features16.png); 
+}
+
+.imagery { 
+    background:url(../assets/images/Imagery16.png); 
+}
+
+.layers { 
+    background:url(../assets/images/layers16.png); 
+}
+
+.layersGray { 
+    background:url(../assets/images/layersGray16.png); 
+}
+
+.mapImages { 
+    background:url(../assets/images/MapImages16.png); 
+}
+
+.maps { 
+    background:url(../assets/images/maps16.png); 
+}
+
+.mapsGray { 
+    background:url(../assets/images/mapsGray16.png); 
+}
+
+.tools { 
+    background:url(../assets/images/tools16.png); 
+}
+
+.toolsGray { 
+    background:url(../assets/images/toolsGray16.png); 
+}
