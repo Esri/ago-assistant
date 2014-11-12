@@ -41,6 +41,10 @@ body {
     margin-right: auto;
 }
 
+.content {
+    text-align: left;
+}
+
 .list-group-item pre{
     font-size: .8em;
 }
