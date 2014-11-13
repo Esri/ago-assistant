@@ -96,6 +96,7 @@ require([
     esriId.checkSignInStatus(appInfo.portalUrl).then(
         function (user) {
             jquery("#splashContainer").css("display", "none");
+            jquery("#itemsContainer").css("display", "block");
             app.user = user;
             app.user.server = app.user.server + "/";
             startSession(user);
@@ -103,6 +104,7 @@ require([
     ).otherwise(
         function () {
             console.log("not signed in");
+            jquery("#itemsContainer").css("display", "none");
             jquery("#splashContainer").css("display", "block");
         }
     );    
@@ -114,6 +116,7 @@ require([
             oAuthPopupConfirmation: false
         }).then(function (user) {
             jquery("#splashContainer").css("display", "none");
+            jquery("#itemsContainer").css("display", "block");
             app.user = user;
             app.user.server = app.user.server + "/";
             startSession(user);
