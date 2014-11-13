@@ -2,16 +2,14 @@ require([
     "jquery",
     "portal",
     "mustache",
-    "d3",
     "nprogress",
     "esri/arcgis/Portal",
     "esri/arcgis/OAuthInfo",
     "esri/IdentityManager",
     "jquery.ui",
     "bootstrap-shim",
-    "cal-heatmap-shim",
     "highlight"
-], function (jquery, portal, mustache, d3, NProgress, arcgisPortal, arcgisOAuthInfo, esriId) {
+], function (jquery, portal, mustache, NProgress, arcgisPortal, arcgisOAuthInfo, esriId) {
  
     function disableEnterKey() {
         // Disable the enter key to prevent accidentally firing forms.
@@ -730,39 +728,40 @@ require([
     }
 
     function statsCalendar(activities) {
+        
+        require(["d3", "cal-heatmap-shim"], function(d3, CalHeatMap) {
+            // Create a date object for three months ago.
+            var today = new Date();
+            var startDate = new Date();
+            startDate.setMonth(today.getMonth() - 2);
+            if (today.getMonth() < 2) {
+                startDate.setYear(today.getFullYear() - 1);
+            }
 
-        // Create a date object for three months ago.
-        var today = new Date();
-        var startDate = new Date();
-        startDate.setMonth(today.getMonth() - 2);
-        if (today.getMonth() < 2) {
-            startDate.setYear(today.getFullYear() - 1);
-        }
-
-        var cal = new CalHeatMap();
-        cal.init({
-            itemSelector: "#statsCalendar",
-            domain: "month",
-            subDomain: "day",
-            data: activities,
-            start: startDate,
-            cellSize: 10,
-            domainGutter: 10,
-            range: 3,
-            legend: [1, 2, 5, 10],
-            displayLegend: false,
-            tooltip: true,
-            itemNamespace: "cal",
-            previousSelector: "#calPrev",
-            nextSelector: "#calNext",
-            domainLabelFormat: "%b '%y",
-            subDomainTitleFormat: {
-                empty: "No activity on {date}",
-                filled: "Saved {count} {name} {connector} {date}"
-            },
-            domainDynamicDimension: false
+            var cal = new CalHeatMap();
+            cal.init({
+                itemSelector: "#statsCalendar",
+                domain: "month",
+                subDomain: "day",
+                data: activities,
+                start: startDate,
+                cellSize: 10,
+                domainGutter: 10,
+                range: 3,
+                legend: [1, 2, 5, 10],
+                displayLegend: false,
+                tooltip: true,
+                itemNamespace: "cal",
+                previousSelector: "#calPrev",
+                nextSelector: "#calNext",
+                domainLabelFormat: "%b '%y",
+                subDomainTitleFormat: {
+                    empty: "No activity on {date}",
+                    filled: "Saved {count} {name} {connector} {date}"
+                },
+                domainDynamicDimension: false
+            });        
         });
-
     }
 
     function storeActivity(activityTime) {
