@@ -43,6 +43,7 @@ body {
 
 .content {
     text-align: left;
+    white-space: normal;
 }
 
 .list-group-item pre{
