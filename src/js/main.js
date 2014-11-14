@@ -168,7 +168,14 @@ require([
     jquery(document).on("click", "#searchMenu li", (function (e) {
         jquery("#searchMenu li").removeClass("active");
         jquery(e.target).parent().addClass("active");
-        jquery("#searchText").attr("placeholder", "Search " + jquery(e.currentTarget).text());
+        if (jquery("#searchText").val()) {
+            // If a search term already exists, then perform the search.
+            search();
+        }
+        else {
+            // Change the placeholder.
+            jquery("#searchText").attr("placeholder", "Search " + jquery(e.currentTarget).text());
+        }
     }));
 
     // Load the html templates.
@@ -281,7 +288,7 @@ require([
             jquery("#actionDropdown").before(searchHtml);
             
             // Add a listener for clicking the search icon.
-            jquery(document).on("click", "i.glyphicon-search ", (function () {
+            jquery(document).on("click", "i.glyphicon-search", (function () {
                 search();
             }));
             
