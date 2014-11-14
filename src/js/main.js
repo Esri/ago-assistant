@@ -28,10 +28,12 @@ require([
 
     // Do stuff when DOM is ready.
     jquery(document).ready(function () {
-
-        jquery("#logout").hide();
         
-        resizeContentAreas(); // Resize the content areas based on the window size.
+        // Enable the login button (ensures all required libraries have loaded).
+        jquery(".jumbotron > p > [data-action='login']").removeAttr("disabled");
+        
+        // Resize the content areas based on the window size.
+        resizeContentAreas();
 
         // Preformat the copy login screen.
         jquery("#destinationAgolBtn").button("toggle");
