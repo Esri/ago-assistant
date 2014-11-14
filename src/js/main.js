@@ -889,9 +889,7 @@ require([
                         jquery("#collapse_" + content.currentFolder.id).append(html);
                         storeActivity(content.items[item].modified);
                     });
-                    // Collapse the accordion to avoid cluttering the display.
                     setMaxWidth("#collapse_" + content.currentFolder.id);
-                    jquery("#collapse_" + content.currentFolder.id).collapse("hide");
                 });
             });
             setTimeout(function () {
