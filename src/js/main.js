@@ -822,7 +822,8 @@ require([
                 "icon": itemInfo(this.type).icon
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
-            jquery("#collapse_search").append(html);
+            jquery("#collapse_search").append(html)
+                                      .addClass("in");
         });
         
         highlightSupportedContent();
