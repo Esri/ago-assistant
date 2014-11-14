@@ -6,10 +6,10 @@ require([
     "esri/arcgis/Portal",
     "esri/arcgis/OAuthInfo",
     "esri/IdentityManager",
+    "highlight",
     "jquery.ui",
-    "bootstrap-shim",
-    "highlight"
-], function (jquery, portal, mustache, NProgress, arcgisPortal, arcgisOAuthInfo, esriId) {
+    "bootstrap-shim"
+], function (jquery, portal, mustache, NProgress, arcgisPortal, arcgisOAuthInfo, esriId, hljs) {
  
     function disableEnterKey() {
         // Disable the enter key to prevent accidentally firing forms.
@@ -383,46 +383,48 @@ require([
     }
 
     function inspectContent() {
-        jquery(".content").addClass("data-toggle");
-        jquery(".content").removeAttr("disabled");
-        jquery(".content").attr("data-toggle", "button");
-        jquery(".content").addClass("btn-info"); // Highlight everything
+        require(["nprogress", "portal", "highlight"], function(NProgress, portal, hljs) {
+            jquery(".content").addClass("data-toggle");
+            jquery(".content").removeAttr("disabled");
+            jquery(".content").attr("data-toggle", "button");
+            jquery(".content").addClass("btn-info"); // Highlight everything
 
-        jquery("#inspectModal").modal("hide");
-        jquery("#inspectBtn").button("reset");
-        // Add a listener for clicking on content buttons.
-        jquery(".content").click(function () {
-            var itemDescription,
-                itemData;
-            NProgress.start();
-            jquery(".content").addClass("btn-info"); // Highlight everything again.
-            jquery(".content").removeClass("active");
-            jquery(".content").removeClass("btn-primary");
-            jquery(this).addClass("btn-primary");
-            jquery(this).removeClass("btn-info");
-            var id = jquery(this).attr("data-id"),
-                title = jquery(this).text();
-            portal.content.itemDescription(app.user.server, id, app.user.token).done(function (description) {
-                portal.content.itemData(app.user.server, id, app.user.token).done(function (data) {
-                    itemData = data;
-                }).always(function (data) {
-                    var templateData = {
-                        title: title,
-                        description: JSON.stringify(description, undefined, 2), // Stringify it for display in the json window.
-                        data: JSON.stringify(itemData, undefined, 2)
-                    };
-                    // Add a download link for files (i.e. no data and not a service).
-                    if (templateData.data === undefined && description.typeKeywords.indexOf("Service") === -1) {
-                        templateData.downloadLink = app.user.server + "sharing/rest/content/items/" + id + "/data?token=" + app.user.token;
-                    }
-                    var html = mustache.to_html(jquery("#inspectTemplate").html(), templateData);
-                    // Add the HTML container with the item JSON.
-                    jquery("#dropArea").html(html);
-                    // Color code the JSON to make it easier to read (uses highlight.js).
-                    jquery("pre").each(function (i, e) {
-                        hljs.highlightBlock(e);
+            jquery("#inspectModal").modal("hide");
+            jquery("#inspectBtn").button("reset");
+            // Add a listener for clicking on content buttons.
+            jquery(".content").click(function () {
+                var itemDescription,
+                    itemData;
+                NProgress.start();
+                jquery(".content").addClass("btn-info"); // Highlight everything again.
+                jquery(".content").removeClass("active");
+                jquery(".content").removeClass("btn-primary");
+                jquery(this).addClass("btn-primary");
+                jquery(this).removeClass("btn-info");
+                var id = jquery(this).attr("data-id"),
+                    title = jquery(this).text();
+                portal.content.itemDescription(app.user.server, id, app.user.token).done(function (description) {
+                    portal.content.itemData(app.user.server, id, app.user.token).done(function (data) {
+                        itemData = data;
+                    }).always(function (data) {
+                        var templateData = {
+                            title: title,
+                            description: JSON.stringify(description, undefined, 2), // Stringify it for display in the json window.
+                            data: JSON.stringify(itemData, undefined, 2)
+                        };
+                        // Add a download link for files (i.e. no data and not a service).
+                        if (templateData.data === undefined && description.typeKeywords.indexOf("Service") === -1) {
+                            templateData.downloadLink = app.user.server + "sharing/rest/content/items/" + id + "/data?token=" + app.user.token;
+                        }
+                        var html = mustache.to_html(jquery("#inspectTemplate").html(), templateData);
+                        // Add the HTML container with the item JSON.
+                        jquery("#dropArea").html(html);
+                        // Color code the JSON to make it easier to read (uses highlight.js).
+                        jquery("pre").each(function (i, e) {
+                            hljs.highlightBlock(e);
+                        });
+                        NProgress.done();
                     });
-                    NProgress.done();
                 });
             });
         });
