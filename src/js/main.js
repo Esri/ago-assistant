@@ -219,20 +219,6 @@ require([
         jquery("#destinationForm").css("display", "none");
     });
 
-    function setMaxWidth(el) {
-        // Set the max-width of folder items so they don't fill the body when dragging.
-        function setWidth() {
-            jquery(el).children(".content").each(function (i) {
-                var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
-                jquery(this).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
-            });
-        }
-        setWidth();
-        jquery(el).on("shown.bs.collapse", function () {
-            setWidth();
-        });
-    }
-
     var app = {
         user: {}, 
         stats: {
@@ -674,10 +660,18 @@ require([
     }
     
     function highlightCopyableContent() {
+        
+        function setMaxWidth(el) {
+            // Set the max-width of folder items so they don't fill the body when dragging.
+            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+            jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
+        }
+
         jquery("#itemsArea .content").each(function (i) {
             var type = jquery(this).attr("data-type");
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
+                setMaxWidth(this);
                 makeDraggable(jquery(this)); //Make the content draggable.
             }
         });
@@ -829,7 +823,6 @@ require([
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html);
-            setMaxWidth("#collapse_search");
         });
         
         highlightSupportedContent();
@@ -864,7 +857,6 @@ require([
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
-                setMaxWidth("#collapse_");
                 storeActivity(content.items[item].modified);
             });
             jquery.each(content.folders, function (folder) {
@@ -889,7 +881,6 @@ require([
                         jquery("#collapse_" + content.currentFolder.id).append(html);
                         storeActivity(content.items[item].modified);
                     });
-                    setMaxWidth("#collapse_" + content.currentFolder.id);
                 });
             });
             setTimeout(function () {
