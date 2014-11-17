@@ -735,8 +735,7 @@ require([
     }
 
     function statsCalendar(activities) {
-        
-        require(["d3", "cal-heatmap-shim"], function(d3, CalHeatMap) {
+        require(["d3", "cal-heatmap"], function(d3, CalHeatMap) {
             // Create a date object for three months ago.
             var today = new Date();
             var startDate = new Date();
