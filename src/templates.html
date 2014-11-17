@@ -149,7 +149,12 @@
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
         </div>
-        <div class="panel-body" id="itemDescription>
+        <div class="panel-body" id="itemDescription">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank">Link to Item Details</a>
+                </li>
+            </ul>
             <ul class="list-group">
                 <li class="list-group-item">Description</li>
                 <li class="list-group-item"><pre>{{ description }}</pre></li>

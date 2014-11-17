@@ -404,6 +404,8 @@ require([
                     }).always(function (data) {
                         var templateData = {
                             title: title,
+                            url: app.user.server,
+                            id: id,
                             description: JSON.stringify(description, undefined, 2), // Stringify it for display in the json window.
                             data: JSON.stringify(itemData, undefined, 2)
                         };
