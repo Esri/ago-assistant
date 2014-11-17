@@ -166,15 +166,22 @@ require([
     
     // Add a listener for the future search bar picker.
     jquery(document).on("click", "#searchMenu li", (function (e) {
-        jquery("#searchMenu li").removeClass("active");
-        jquery(e.target).parent().addClass("active");
-        if (jquery("#searchText").val()) {
-            // If a search term already exists, then perform the search.
-            search();
+        if (jquery(e.target).parent().attr("data-action") !== "viewMyContent") {
+            jquery("#searchMenu li").removeClass("active");
+            jquery(e.target).parent().addClass("active");
+            if (jquery("#searchText").val()) {
+                // If a search term already exists, then perform the search.
+                search();
+            }
+            else {
+                // Change the placeholder.
+                jquery("#searchText").attr("placeholder", jquery(e.currentTarget).text());
+            }
         }
         else {
-            // Change the placeholder.
-            jquery("#searchText").attr("placeholder", "Search " + jquery(e.currentTarget).text());
+            NProgress.start();
+            listUserItems();
+            NProgress.done();
         }
     }));
 
@@ -186,7 +193,7 @@ require([
     jquery(document).on("click", "li [data-action]", (function (e) {
         // Highlight the selected action except for "View My Stats."
         var selectedAction = jquery(e.target).parent().attr("data-action");
-        if (selectedAction !== "stats" && selectedAction !== "viewMyContent") {
+        if (selectedAction !== "stats") {
             jquery("#actionDropdown li").removeClass("active");
             jquery(e.target).parent().addClass("active");
         }
@@ -207,11 +214,6 @@ require([
                 break;
             case "stats":
                 viewStats();
-                break;
-            case "viewMyContent":
-                NProgress.start();
-                listUserItems();
-                NProgress.done();
                 break;
             case "logout":
                 logout();
@@ -363,7 +365,7 @@ require([
             query = query + " accountid:" + jquery("#searchMenu li.active").attr("data-id");
         }
         // Add the username for "My Content" searches.
-        if (jquery("#searchMenu li.active").text() === "My Content") {
+        if (jquery("#searchMenu li.active").text() === "Search My Content") {
             query = query + " owner:" + app.user.userId;
         }
 
