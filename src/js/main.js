@@ -13,8 +13,9 @@ require([
  
     function disableEnterKey() {
         // Disable the enter key to prevent accidentally firing forms.
+        // Disable it for everything except the code edit windows.
         jquery("html").bind("keypress", function(e) {
-            if(e.keyCode == 13) {
+            if(e.keyCode === 13 && jquery(e.target).attr("contenteditable") !== "true") {
                 return false;
             }
         });
@@ -379,6 +380,17 @@ require([
 
     function inspectContent() {
         require(["nprogress", "portal", "highlight"], function(NProgress, portal, hljs) {
+            
+            function validateJson(jsonString) {
+                 try {
+                     var o = JSON.parse(jsonString);
+                     if (o && typeof o === "object" && o !== null) {
+                         return o;
+                     }
+                 } catch (e) {}
+                 return false;
+             }
+            
             jquery(".content").addClass("data-toggle");
             jquery(".content").removeAttr("disabled");
             jquery(".content").attr("data-toggle", "button");
@@ -419,6 +431,110 @@ require([
                         // Color code the JSON to make it easier to read (uses highlight.js).
                         jquery("pre").each(function (i, e) {
                             hljs.highlightBlock(e);
+                        });
+                        var jsonBackup;
+                        var jsonValid;
+                        var editButton;
+                        var saveButton;
+                        jquery(".btn-default[data-action='startEdits']").click(function (e) {
+                            
+                            if (!localStorage.hasOwnProperty("editsAllowed")) {
+                                // Show the caution modal.
+                                jquery("#editJsonModal").modal("show");
+                                jquery(".acknowledgeRisk").click(function (e) {
+                                    if (jquery(e.currentTarget).prop("checked")) {
+                                        jquery("#editJsonBtn").removeClass("disabled");
+                                    }
+                                    else {
+                                        jquery("#editJsonBtn").addClass("disabled");
+                                    }
+                                });
+                            }
+                            else {
+                                startEditing();
+                            }
+                            jquery("#editJsonBtn").click(function() {
+                                jquery("#editJsonModal").modal("hide");
+                                localStorage.setItem("editsAllowed", true);
+                                startEditing();
+                            });
+                            
+                            function startEditing() {
+                            
+                                e.stopImmediatePropagation(); // Allow removing the button active state.
+
+                                var codeBlock = jquery(e.currentTarget).parent().next();
+                                editButton = jquery(e.currentTarget);
+                                saveButton = jquery(e.currentTarget).parent().children("[data-action='saveEdits']");
+
+                                // Reset the save button.
+                                saveButton.children("span").attr("class", "fa fa-lg fa-save");
+
+                                if (codeBlock.attr("contentEditable") !== "true") {
+                                    // Start editing.
+                                    editButton.children("span").attr("class", "fa fa-lg fa-trash-o");
+                                    editButton.attr("data-toggle", "tooltip");
+                                    editButton.attr("data-placement", "bottom");
+                                    editButton.attr("title", "Discard your edits");
+                                    editButton.tooltip();
+                                    jsonBackup = codeBlock.text();
+                                    codeBlock.attr("contentEditable", "true");
+                                    codeBlock.bind("input", function (e) {
+                                        // Validate the JSON as it is edited.
+                                        jsonValid = validateJson(codeBlock.text());
+                                        saveButton.tooltip("destroy");
+                                        if (jsonValid) {
+                                            // Valid. Allow saving.
+                                            saveButton.removeClass("disabled");
+                                            saveButton.css("color", "green");
+                                            saveButton.attr("data-toggle", "tooltip");
+                                            saveButton.attr("data-placement", "bottom");
+                                            saveButton.attr("title", "JSON is valid. Click to save.");
+                                        }
+                                        else {
+                                            // Invalid. Prevent saving.
+                                            saveButton.css("color", "red");
+                                            saveButton.attr("data-toggle", "tooltip");
+                                            saveButton.attr("data-placement", "bottom");
+                                            saveButton.attr("title", "JSON is invalid. Saving not allowed.");
+                                        }
+                                        saveButton.tooltip({container:"body"});
+                                    });
+                                    editButton.attr("class", "btn btn-default");
+                                    saveButton.attr("class", "btn btn-default");
+                                }
+                                else {
+                                    // Let the user back out of editing without saving.
+                                    // End editing and restore the original json.
+                                    codeBlock.attr("contentEditable", "false");
+                                    codeBlock.text(jsonBackup);
+                                    codeBlock.each(function (i, e) {
+                                        hljs.highlightBlock(e);
+                                    });
+                                    editButton.attr("class", "btn btn-default");
+                                    editButton.children("span").attr("class", "fa fa-lg fa-pencil");
+                                    editButton.tooltip("destroy");
+                                    saveButton.attr("class", "btn btn-default disabled");
+                                    saveButton.css("color", "black");
+                                }
+
+                                // Post the edited JSON.
+                                saveButton.click(function (e) {
+                                    if (jsonValid) {
+                                        // JSON is valid. Allow saving.
+                                        var newJson = codeBlock.text();
+                                        editButton.attr("class", "btn btn-default");
+                                        editButton.children("span").attr("class", "fa fa-lg fa-pencil");
+                                        saveButton.attr("class", "btn btn-default disabled");
+                                        saveButton.css("color", "black");
+                                        codeBlock.attr("contentEditable", "false");
+                                    }
+                                    else {
+                                        saveButton.removeClass("active");
+                                    }
+                                });
+                            }
+                            
                         });
                         NProgress.done();
                     });

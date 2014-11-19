@@ -11,6 +11,7 @@
         <link rel="stylesheet" type="text/css" href="js/lib/nprogress.css" />
         <link rel="stylesheet" type="text/css" href="js/lib/cal-heatmap-3.5.0.css" />
         <link rel="stylesheet" type="text/css" href="js/lib/tomorrow.min.css">
+        <link rel="stylesheet" type="text/css" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
     </head>
     
     <body>
@@ -35,7 +36,7 @@
                                     <a href="#copyModal" data-toggle="modal">Copy Content</a>
                                 </li>
                                 <li data-action="inspectContent">
-                                    <a>Inspect Content (View JSON)</a>
+                                    <a>View an Item's JSON</a>
                                 </li>
                                 <li data-action="updateWebmapServices">
                                     <a>Update the URLs of a Service in a Web Map</a>
@@ -157,6 +158,34 @@
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
                             <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Edit JSON modal -->
+            <div id="editJsonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editJsonModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="changelogModalLabel">Warning</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to directly modify the contents of an item. Do not proceed unless you are absolutely certain of the risks.</p>
+                            <h3><b>THIS IS UNTESTED AND UNSUPPORTED.</b></h3>
+                            <p>Potential risks include:</p>
+                            <ul>
+                                <li>Corrupting your content</li>
+                                <li>Losing access to your items</li>
+                                <li>Breaking apps built on top of your web maps</li>
+                            </ul>
+                            <br>
+                            <div class="checkbox input-lg">
+                                <label><input type="checkbox" class="acknowledgeRisk"> I understand the risks</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Cancel</button>
+                            <button id="editJsonBtn" class="btn btn-primary disabled">Proceed</button>
                         </div>
                     </div>
                 </div>

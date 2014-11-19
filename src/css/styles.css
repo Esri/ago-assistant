@@ -94,6 +94,12 @@ body {
     margin-right: 10px;
 }
 
+.edit-controls {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+}
+
 .apps { 
     background:url(../assets/images/apps16.png); 
 }
