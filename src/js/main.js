@@ -104,7 +104,6 @@ require([
         }
     ).otherwise(
         function () {
-            console.log("not signed in");
             jquery("#itemsContainer").css("display", "none");
             jquery("#splashContainer").css("display", "block");
         }
@@ -166,7 +165,7 @@ require([
     });
     
     // Add a listener for the future search bar picker.
-    jquery(document).on("click", "#searchMenu li", (function (e) {
+    jquery(document).on("click", "#searchMenu li", function (e) {
         if (jquery(e.target).parent().attr("data-action") !== "viewMyContent") {
             jquery("#searchMenu li").removeClass("active");
             jquery(e.target).parent().addClass("active");
@@ -184,14 +183,14 @@ require([
             listUserItems();
             NProgress.done();
         }
-    }));
+    });
 
     // Load the html templates.
     jquery.get("templates.html", function (templates) {
         jquery("body").append(templates);
     });
     
-    jquery(document).on("click", "li [data-action]", (function (e) {
+    jquery(document).on("click", "li [data-action]", function (e) {
         // Highlight the selected action except for "View My Stats."
         var selectedAction = jquery(e.target).parent().attr("data-action");
         if (selectedAction !== "stats") {
@@ -220,7 +219,7 @@ require([
                 logout();
                 break;
         }
-    }));
+    });
 
     // Clean up the lists when copy content is selected.
     jquery("#copyModal").on("show.bs.modal", function () {
@@ -291,9 +290,9 @@ require([
             jquery("#actionDropdown").before(searchHtml);
             
             // Add a listener for clicking the search icon.
-            jquery(document).on("click", "i.glyphicon-search", (function () {
+            jquery(document).on("click", "i.glyphicon-search", function () {
                 search();
-            }));
+            });
             
             // Add a listener for the enter key on the search form.
             jquery("#searchForm").keypress(function (e) {
@@ -625,7 +624,7 @@ require([
             });
         });
 
-        jquery(document).on("click", "#btnUpdateWebmapServices", (function () {
+        jquery(document).on("click", "#btnUpdateWebmapServices", function () {
             var webmapServices = jquery("[data-original]");
             jquery.each(webmapServices, function (service) {
                 var originalUrl = jquery(webmapServices[service]).attr("data-original"),
@@ -651,9 +650,9 @@ require([
                     jquery("#btnResetWebmapServices").before(html);
                 }
             });
-        }));
+        });
 
-        jquery(document).on("click", "#btnResetWebmapServices", (function () {
+        jquery(document).on("click", "#btnResetWebmapServices", function () {
             var webmapServices = jquery("[data-original]");
             jquery.each(webmapServices, function (service) {
                 var originalUrl = jquery(webmapServices[service]).attr("data-original"),
@@ -661,7 +660,7 @@ require([
                 jquery(webmapServices[service]).val(originalUrl);
                 jquery(webmapServices[service]).attr("data-original", currentUrl);
             });
-        }));
+        });
 
     }
 
@@ -696,7 +695,7 @@ require([
             });
         });
 
-        jquery(document).on("click", "#btnUpdateContentUrl", (function () {
+        jquery(document).on("click", "#btnUpdateContentUrl", function () {
             var contentId = jquery(".content.active.btn-primary").attr("data-id"),
                 url = jquery("[data-original]").val();
             portal.content.updateUrl(app.user.server, owner, folder, contentId, url, app.user.token).done(function (response) {
@@ -715,13 +714,13 @@ require([
                     jquery("#btnResetContentUrl").before(html);
                 }
             });
-        }));
+        });
 
-        jquery(document).on("click", "#btnResetContentUrl", (function () {
+        jquery(document).on("click", "#btnResetContentUrl", function () {
             var originalUrl = jquery("[data-original]").attr("data-original"),
                 currentUrl = jquery("[data-original]").val();
             jquery("[data-original]").val(originalUrl);
-        }));
+        });
 
     }
 
