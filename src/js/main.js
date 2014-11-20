@@ -472,7 +472,7 @@ require([
 
                                 if (codeBlock.attr("contentEditable") !== "true") {
                                     // Start editing.
-                                    editButton.children("span").attr("class", "fa fa-lg fa-trash-o");
+                                    editButton.children("span").attr("class", "fa fa-lg fa-undo");
                                     editButton.attr("data-toggle", "tooltip");
                                     editButton.attr("data-placement", "bottom");
                                     editButton.attr("title", "Discard your edits");
@@ -523,11 +523,38 @@ require([
                                     if (jsonValid) {
                                         // JSON is valid. Allow saving.
                                         var newJson = codeBlock.text();
+                                        var itemInfo = JSON.parse(jquery("#descriptionJson").text());
                                         editButton.attr("class", "btn btn-default");
                                         editButton.children("span").attr("class", "fa fa-lg fa-pencil");
                                         saveButton.attr("class", "btn btn-default disabled");
                                         saveButton.css("color", "black");
                                         codeBlock.attr("contentEditable", "false");
+                                        
+                                        // Post the changes.
+                                        if (editButton.attr("data-container") === "Description") {
+                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, newJson, app.user.token).done(function(response) {
+                                                if (response.success) {
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                                    saveButton.css("color", "green");
+                                                }
+                                                else {
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-error");
+                                                    saveButton.css("color", "red");
+                                                }
+                                            });
+                                        }
+                                        else if (editButton.attr("data-container") === "Data") {
+                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, newJson, app.user.token).done(function(response) {
+                                                if (response.success) {
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                                    saveButton.css("color", "green");
+                                                }
+                                                else {
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-error");
+                                                    saveButton.css("color", "red");
+                                                }
+                                            });
+                                        }
                                     }
                                     else {
                                         saveButton.removeClass("active");

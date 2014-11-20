@@ -159,11 +159,11 @@
                         <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                             <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                         </button>
-                        <button type="button" class="btn btn-default" data-action="startEdits" aria-label="Left Align">
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
                             <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <pre>{{ description }}</pre>
+                    <pre id="descriptionJson">{{ description }}</pre>
                 </li>
             </ul>
             {{ #data }}
@@ -175,11 +175,11 @@
                             <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                                 <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                             </button>
-                            <button type="button" class="btn btn-default" data-action="startEdits" aria-label="Left Align">
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
                                 <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
                             </button>
                         </div>
-                        <pre>{{ data }}</pre>
+                        <pre id="dataJson">{{ data }}</pre>
                     </li>
                 </ul>
             {{ /data }}
