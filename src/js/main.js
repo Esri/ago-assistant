@@ -991,7 +991,17 @@ require([
             username = app.user.userId,
             token = app.user.token;
         
-        function sortAlpha(folder) {
+        function sortFoldersAlpha(container) {
+            console.log("sorting folders");
+            var folders = container.children(".panel").get();
+            folders.sort(function(a, b) {
+               return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
+            });
+            jquery.each(folders, function(idx, folder) { container.append(folder); });
+            container.prepend(jquery("[data-title='Root']").parent());
+        }
+        
+        function sortItemsAlpha(folder) {
             var folderItems = folder.children("button").get();
             folderItems.sort(function(a, b) {
                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
@@ -1020,7 +1030,7 @@ require([
                 jquery("#collapse_").append(html);
                 storeActivity(content.items[item].modified);
             });
-            sortAlpha(jquery("#collapse_"));
+            sortItemsAlpha(jquery("#collapse_"));
             jquery.each(content.folders, function (folder) {
                 portal.user.content(url, username, content.folders[folder].id, token).done(function (content) {
                     var folderData = {
@@ -1043,10 +1053,11 @@ require([
                         jquery("#collapse_" + content.currentFolder.id).append(html);
                         storeActivity(content.items[item].modified);
                     });
-                    sortAlpha(jquery("#collapse_" + content.currentFolder.id));
+                    sortItemsAlpha(jquery("#collapse_" + content.currentFolder.id));
                 });
             });
             setTimeout(function () {
+                sortFoldersAlpha(jquery("#itemsArea"));
                 // Wait a second to let all of the items populate before highlighting them.
                 highlightSupportedContent();
             }, 1000);

@@ -88,7 +88,7 @@
 <script type="text/template" id="folderTemplate">
 
     <div class="panel panel-primary">
-        <div class="panel-heading">
+        <div class="panel-heading" data-title="{{ title }}">
             <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
         </div>
         <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse" data-folder="{{ id }}">
