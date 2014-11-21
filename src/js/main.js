@@ -531,8 +531,14 @@ require([
                                         
                                         // Post the changes.
                                         saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
+                                        var ownerFolder;
+                                        if (itemInfo.ownerFolder) {
+                                            ownerFolder = itemInfo.ownerFolder;
+                                        } else {
+                                            ownerFolder = "/";
+                                        }
                                         if (editButton.attr("data-container") === "Description") {
-                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
@@ -545,7 +551,7 @@ require([
                                         }
                                         else if (editButton.attr("data-container") === "Data") {
                                             saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
@@ -994,7 +1000,6 @@ require([
             token = app.user.token;
         
         function sortFoldersAlpha(container) {
-            console.log("sorting folders");
             var folders = container.children(".panel").get();
             folders.sort(function(a, b) {
                return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
