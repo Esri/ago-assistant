@@ -990,7 +990,15 @@ require([
         var url = app.user.server,
             username = app.user.userId,
             token = app.user.token;
-
+        
+        function sortAlpha(folder) {
+            var folderItems = folder.children("button").get();
+            folderItems.sort(function(a, b) {
+               return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
+            });
+            jquery.each(folderItems, function(idx, item) { folder.append(item); });
+        }
+        
         portal.user.content(url, username, "/", token).done(function (content) {
             // Append the root folder accordion.
             var folderData = {
@@ -1012,6 +1020,7 @@ require([
                 jquery("#collapse_").append(html);
                 storeActivity(content.items[item].modified);
             });
+            sortAlpha(jquery("#collapse_"));
             jquery.each(content.folders, function (folder) {
                 portal.user.content(url, username, content.folders[folder].id, token).done(function (content) {
                     var folderData = {
@@ -1034,6 +1043,7 @@ require([
                         jquery("#collapse_" + content.currentFolder.id).append(html);
                         storeActivity(content.items[item].modified);
                     });
+                    sortAlpha(jquery("#collapse_" + content.currentFolder.id));
                 });
             });
             setTimeout(function () {
