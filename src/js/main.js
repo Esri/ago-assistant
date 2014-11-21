@@ -530,6 +530,7 @@ require([
                                         codeBlock.attr("contentEditable", "false");
                                         
                                         // Post the changes.
+                                        saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
                                         if (editButton.attr("data-container") === "Description") {
                                             portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
@@ -543,6 +544,7 @@ require([
                                             });
                                         }
                                         else if (editButton.attr("data-container") === "Data") {
+                                            saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
                                             portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
