@@ -666,7 +666,6 @@ require([
                 var originalUrl = jquery(webmapServices[service]).attr("data-original"),
                     currentUrl = jquery(webmapServices[service]).val();
                 jquery(webmapServices[service]).val(originalUrl);
-                jquery(webmapServices[service]).attr("data-original", currentUrl);
             });
         });
 
@@ -725,8 +724,8 @@ require([
         });
 
         jquery(document).on("click", "#btnResetContentUrl", function () {
-            var originalUrl = jquery("[data-original]").attr("data-original"),
-                currentUrl = jquery("[data-original]").val();
+            var originalUrl = jquery("[data-original]").attr("data-original");
+            var currentUrl = jquery("[data-original]").val();
             jquery("[data-original]").val(originalUrl);
         });
 
