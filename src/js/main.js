@@ -531,25 +531,25 @@ require([
                                         
                                         // Post the changes.
                                         if (editButton.attr("data-container") === "Description") {
-                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
                                                 }
                                                 else {
-                                                    saveButton.children("span").attr("class", "fa fa-lg fa-error");
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-times");
                                                     saveButton.css("color", "red");
                                                 }
                                             });
                                         }
                                         else if (editButton.attr("data-container") === "Data") {
-                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, itemInfo.ownerFolder, newJson, app.user.token).done(function(response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
                                                 }
                                                 else {
-                                                    saveButton.children("span").attr("class", "fa fa-lg fa-error");
+                                                    saveButton.children("span").attr("class", "fa fa-lg fa-times");
                                                     saveButton.css("color", "red");
                                                 }
                                             });

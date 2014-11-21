@@ -146,7 +146,7 @@ define(["jquery", "util"], function (jquery, util) {
                     dataType: "json"
                 });
             },
-            updateDescription: function (portal, username, id, description, token) {
+            updateDescription: function (portal, username, id, folder, description, token) {
                 // Update the description for an item.
                 // Clean up description items for posting.
                 // This is necessary because some of the item descriptions (e.g. tags and extent)
@@ -163,16 +163,16 @@ define(["jquery", "util"], function (jquery, util) {
                 postData.f = "json";
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/items/" + id + "/update?",
+                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: postData,
                     dataType: "json"
                 });
             },
-            updateData: function (portal, username, id, data, token) {
+            updateData: function (portal, username, id, folder, data, token) {
                 // Update the content in a web map.
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/items/" + id + "/update?",
+                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: {
                         text: data, // Stringify the Javascript object so it can be properly sent.
                         token: token,
