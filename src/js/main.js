@@ -10,12 +10,13 @@ require([
     "jquery.ui",
     "bootstrap-shim"
 ], function (jquery, portal, mustache, NProgress, arcgisPortal, arcgisOAuthInfo, esriId, hljs) {
- 
+
     function disableEnterKey() {
         // Disable the enter key to prevent accidentally firing forms.
         // Disable it for everything except the code edit windows.
-        jquery("html").bind("keypress", function(e) {
-            if(e.keyCode === 13 && jquery(e.target).attr("contenteditable") !== "true") {
+        "use strict";
+        jquery("html").bind("keypress", function (e) {
+            if (e.keyCode === 13 && jquery(e.target).attr("contenteditable") !== "true") {
                 return false;
             }
         });
@@ -29,10 +30,10 @@ require([
 
     // Do stuff when DOM is ready.
     jquery(document).ready(function () {
-        
+
         // Enable the login button (ensures all required libraries have loaded).
         jquery(".jumbotron > p > [data-action='login']").removeAttr("disabled");
-        
+
         // Resize the content areas based on the window size.
         resizeContentAreas();
 
@@ -84,10 +85,11 @@ require([
         }, 500);
     });
 
-    
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    ////////////////////////////////////////////////////////////////////////////
     // *** ArcGIS OAuth ***
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     var appInfo = new arcgisOAuthInfo({
         appId: "4E1s0Mv5r0c2l6W8",
         popup: true
@@ -107,11 +109,12 @@ require([
             jquery("#itemsContainer").css("display", "none");
             jquery("#splashContainer").css("display", "block");
         }
-    );    
-    
+    );
+
     // Source Login.
     jquery("[data-action='login']").click(function () {
         // Show the OAuth Sign-In.
+        //        oauthWindow = window.open("oauth.html", "Sign-In", "width=650, height=500");  // Opens a new window
         esriId.getCredential(appInfo.portalUrl, {
             oAuthPopupConfirmation: false
         }).then(function (user) {
@@ -122,9 +125,9 @@ require([
             startSession(user);
         });
     });
-    
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+
     // Use the existing credentials when "My Account" is selected as the copy target.
     jquery("[data-action='copyMyAccount']").click(function () {
         jquery.when(storeCredentials("destination", app.user.server, app.user.userId, app.user.token, function (callback) {
@@ -133,15 +136,15 @@ require([
             NProgress.start();
             showDestinationFolders();
             NProgress.done();
-        }));        
+        }));
     });
-    
+
     // Show other destination form when "Another Account" is selected as the copy target.
     jquery("[data-action='copyOtherAccount']").click(function () {
         jquery("#destinationChoice").css("display", "none");
         jquery("#destinationForm").css("display", "block");
     });
-    
+
     // Log in to the destination account.
     jquery("#destinationLoginBtn").click(function () {
         loginDestination();
@@ -151,19 +154,19 @@ require([
     jquery("#destinationLoginBtn").click(function () {
         jquery("#destinationLoginBtn").button("reset");
     });
-    
+
     // Clear the copy action when the cancel button is clicked.
     jquery("#destinationCancelBtn").click(function () {
         jquery("#actionDropdown li").removeClass("active");
     });
-    
+
     // Add a listener for the enter key on the destination login form.
     jquery("#destinationLoginForm").keypress(function (e) {
         if (e.which == 13) {
             jquery("#destinationLoginBtn").focus().click();
         }
     });
-    
+
     // Add a listener for the future search bar picker.
     jquery(document).on("click", "#searchMenu li", function (e) {
         if (jquery(e.target).parent().attr("data-action") !== "viewMyContent") {
@@ -172,13 +175,11 @@ require([
             if (jquery("#searchText").val()) {
                 // If a search term already exists, then perform the search.
                 search();
-            }
-            else {
+            } else {
                 // Change the placeholder.
                 jquery("#searchText").attr("placeholder", jquery(e.currentTarget).text());
             }
-        }
-        else {
+        } else {
             NProgress.start();
             listUserItems();
             NProgress.done();
@@ -189,7 +190,7 @@ require([
     jquery.get("templates.html", function (templates) {
         jquery("body").append(templates);
     });
-    
+
     jquery(document).on("click", "li [data-action]", function (e) {
         // Highlight the selected action except for "View My Stats."
         var selectedAction = jquery(e.target).parent().attr("data-action");
@@ -198,26 +199,26 @@ require([
             jquery(e.target).parent().addClass("active");
         }
         // Choose what to do based on the selection.
-        switch(selectedAction) {
-            case "inspectContent":
-                // Enable inspecting of content.
-                cleanUp();
-                inspectContent();
-                break;
-            case "updateWebmapServices":
-                cleanUp();
-                updateWebmapServices();
-                break;
-            case "updateContentUrl":
-                cleanUp();
-                updateContentUrls();
-                break;
-            case "stats":
-                viewStats();
-                break;
-            case "logout":
-                logout();
-                break;
+        switch (selectedAction) {
+        case "inspectContent":
+            // Enable inspecting of content.
+            cleanUp();
+            inspectContent();
+            break;
+        case "updateWebmapServices":
+            cleanUp();
+            updateWebmapServices();
+            break;
+        case "updateContentUrl":
+            cleanUp();
+            updateContentUrls();
+            break;
+        case "stats":
+            viewStats();
+            break;
+        case "logout":
+            logout();
+            break;
         }
     });
 
@@ -229,12 +230,12 @@ require([
     });
 
     var app = {
-        user: {}, 
+        user: {},
         stats: {
             activities: {}
         },
     };
-    
+
     function validateUrl(el) {
         // Check the url for errors (e.g. no trailing slash)
         // and update it before sending.
@@ -288,19 +289,19 @@ require([
                 id: data.id
             });
             jquery("#actionDropdown").before(searchHtml);
-            
+
             // Add a listener for clicking the search icon.
             jquery(document).on("click", "i.glyphicon-search", function () {
                 search();
             });
-            
+
             // Add a listener for the enter key on the search form.
             jquery("#searchForm").keypress(function (e) {
                 if (e.which == 13) {
                     search();
                 }
             });
-    
+
             NProgress.start();
             listUserItems();
             NProgress.done();
@@ -355,9 +356,9 @@ require([
         esriId.destroyCredentials();
         window.location.reload();
     }
-    
+
     function search() {
-    
+
         var query = jquery("#searchText").val();
         var portalUrl = jquery("#searchMenu li.active").attr("data-url");
         // Add the org id for "My Portal" searches.
@@ -374,22 +375,22 @@ require([
             listSearchItems(results);
             NProgress.done();
         });
-    
+
     }
 
     function inspectContent() {
-        require(["nprogress", "portal", "highlight"], function(NProgress, portal, hljs) {
-            
+        require(["nprogress", "portal", "highlight"], function (NProgress, portal, hljs) {
+
             function validateJson(jsonString) {
-                 try {
-                     var o = JSON.parse(jsonString);
-                     if (o && typeof o === "object" && o !== null) {
-                         return o;
-                     }
-                 } catch (e) {}
-                 return false;
-             }
-            
+                try {
+                    var o = JSON.parse(jsonString);
+                    if (o && typeof o === "object" && o !== null) {
+                        return o;
+                    }
+                } catch (e) {}
+                return false;
+            }
+
             jquery(".content").addClass("data-toggle");
             jquery(".content").removeAttr("disabled");
             jquery(".content").attr("data-toggle", "button");
@@ -436,30 +437,28 @@ require([
                         var editButton;
                         var saveButton;
                         jquery(".btn-default[data-action='startEdits']").click(function (e) {
-                            
+
                             if (!localStorage.hasOwnProperty("editsAllowed")) {
                                 // Show the caution modal.
                                 jquery("#editJsonModal").modal("show");
                                 jquery(".acknowledgeRisk").click(function (e) {
                                     if (jquery(e.currentTarget).prop("checked")) {
                                         jquery("#editJsonBtn").removeClass("disabled");
-                                    }
-                                    else {
+                                    } else {
                                         jquery("#editJsonBtn").addClass("disabled");
                                     }
                                 });
-                            }
-                            else {
+                            } else {
                                 startEditing();
                             }
-                            jquery("#editJsonBtn").click(function() {
+                            jquery("#editJsonBtn").click(function () {
                                 jquery("#editJsonModal").modal("hide");
                                 localStorage.setItem("editsAllowed", true);
                                 startEditing();
                             });
-                            
+
                             function startEditing() {
-                            
+
                                 e.stopImmediatePropagation(); // Allow removing the button active state.
 
                                 var codeBlock = jquery(e.currentTarget).parent().next();
@@ -489,20 +488,20 @@ require([
                                             saveButton.attr("data-toggle", "tooltip");
                                             saveButton.attr("data-placement", "bottom");
                                             saveButton.attr("title", "JSON is valid. Click to save.");
-                                        }
-                                        else {
+                                        } else {
                                             // Invalid. Prevent saving.
                                             saveButton.css("color", "red");
                                             saveButton.attr("data-toggle", "tooltip");
                                             saveButton.attr("data-placement", "bottom");
                                             saveButton.attr("title", "JSON is invalid. Saving not allowed.");
                                         }
-                                        saveButton.tooltip({container:"body"});
+                                        saveButton.tooltip({
+                                            container: "body"
+                                        });
                                     });
                                     editButton.attr("class", "btn btn-default");
                                     saveButton.attr("class", "btn btn-default");
-                                }
-                                else {
+                                } else {
                                     // Let the user back out of editing without saving.
                                     // End editing and restore the original json.
                                     codeBlock.attr("contentEditable", "false");
@@ -528,7 +527,7 @@ require([
                                         saveButton.attr("class", "btn btn-default disabled");
                                         saveButton.css("color", "black");
                                         codeBlock.attr("contentEditable", "false");
-                                        
+
                                         // Post the changes.
                                         saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
                                         var ownerFolder;
@@ -538,37 +537,33 @@ require([
                                             ownerFolder = "/";
                                         }
                                         if (editButton.attr("data-container") === "Description") {
-                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
-                                                }
-                                                else {
+                                                } else {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-times");
                                                     saveButton.css("color", "red");
                                                 }
                                             });
-                                        }
-                                        else if (editButton.attr("data-container") === "Data") {
+                                        } else if (editButton.attr("data-container") === "Data") {
                                             saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function(response) {
+                                            portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
                                                 if (response.success) {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                                     saveButton.css("color", "green");
-                                                }
-                                                else {
+                                                } else {
                                                     saveButton.children("span").attr("class", "fa fa-lg fa-times");
                                                     saveButton.css("color", "red");
                                                 }
                                             });
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         saveButton.removeClass("active");
                                     }
                                 });
                             }
-                            
+
                         });
                         NProgress.done();
                     });
@@ -818,9 +813,9 @@ require([
         // Clean up any existing content in the left hand column.
         jquery("#itemsArea").empty();
     }
-    
+
     function highlightCopyableContent() {
-        
+
         function setMaxWidth(el) {
             // Set the max-width of folder items so they don't fill the body when dragging.
             var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
@@ -836,25 +831,25 @@ require([
             }
         });
     }
-    
+
     function highlightSupportedContent() {
         // Highlight content supported by the currently selected action.
         switch (jquery("#actionDropdown li.active").attr("data-action")) {
-            case "copyContent":
-                highlightCopyableContent();
-                break;
-            case "updateWebmapServices":
-                cleanUp();
-                updateWebmapServices();
-                break;
-            case "updateContentUrl":
-                cleanUp();
-                updateContentUrls();
-                break;
-            case "inspectContent":
-                cleanUp();
-                inspectContent();
-                break;
+        case "copyContent":
+            highlightCopyableContent();
+            break;
+        case "updateWebmapServices":
+            cleanUp();
+            updateWebmapServices();
+            break;
+        case "updateContentUrl":
+            cleanUp();
+            updateContentUrls();
+            break;
+        case "inspectContent":
+            cleanUp();
+            inspectContent();
+            break;
         }
     }
 
@@ -886,7 +881,7 @@ require([
     }
 
     function statsCalendar(activities) {
-        require(["d3", "cal-heatmap"], function(d3, CalHeatMap) {
+        require(["d3", "cal-heatmap"], function (d3, CalHeatMap) {
             // Create a date object for three months ago.
             var today = new Date();
             var startDate = new Date();
@@ -917,7 +912,7 @@ require([
                     filled: "Saved {count} {name} {connector} {date}"
                 },
                 domainDynamicDimension: false
-            });        
+            });
         });
     }
 
@@ -925,37 +920,102 @@ require([
         seconds = activityTime / 1000;
         app.stats.activities[seconds] = 1;
     }
-    
+
     function itemInfo(type) {
         var types = [
-            {type: "Color Set", icon: "datafilesGray"},
-            {type: "Document Link", icon: "datafilesGray"},
-            {type: "Image Service", icon: "imagery"},
-            {type: "Feature Collection", icon: "features"},
-            {type: "Feature Collection Template", icon: "file"},
-            {type: "Feature Layer", icon: "features"},
-            {type: "Feature Service", icon: "features"},
-            {type: "Geocoding Service", icon: "layers"},
-            {type: "Geodata Service", icon: "layers"},
-            {type: "Geometry Service", icon: "layers"},
-            {type: "Geoprocessing Service", icon: "layers"},
-            {type: "Globe Service", icon: "layers"},
-            {type: "Network Analysis Service", icon: "layers"},
-            {type: "Map Service", icon: "layers"},
-            {type: "Mobile Application", icon: "apps"},
-            {type: "Operation View", icon: "apps"},
-            {type: "Service Definition", icon: "datafiles"},
-            {type: "Symbol Set", icon: "datafiles"},
-            {type: "Web Map", icon: "maps"},
-            {type: "Web Mapping Application", icon: "apps"},
-            {type: "WMS", icon: "layers"},
+            {
+                type: "Color Set",
+                icon: "datafilesGray"
+            },
+            {
+                type: "Document Link",
+                icon: "datafilesGray"
+            },
+            {
+                type: "Image Service",
+                icon: "imagery"
+            },
+            {
+                type: "Feature Collection",
+                icon: "features"
+            },
+            {
+                type: "Feature Collection Template",
+                icon: "file"
+            },
+            {
+                type: "Feature Layer",
+                icon: "features"
+            },
+            {
+                type: "Feature Service",
+                icon: "features"
+            },
+            {
+                type: "Geocoding Service",
+                icon: "layers"
+            },
+            {
+                type: "Geodata Service",
+                icon: "layers"
+            },
+            {
+                type: "Geometry Service",
+                icon: "layers"
+            },
+            {
+                type: "Geoprocessing Service",
+                icon: "layers"
+            },
+            {
+                type: "Globe Service",
+                icon: "layers"
+            },
+            {
+                type: "Network Analysis Service",
+                icon: "layers"
+            },
+            {
+                type: "Map Service",
+                icon: "layers"
+            },
+            {
+                type: "Mobile Application",
+                icon: "apps"
+            },
+            {
+                type: "Operation View",
+                icon: "apps"
+            },
+            {
+                type: "Service Definition",
+                icon: "datafiles"
+            },
+            {
+                type: "Symbol Set",
+                icon: "datafiles"
+            },
+            {
+                type: "Web Map",
+                icon: "maps"
+            },
+            {
+                type: "Web Mapping Application",
+                icon: "apps"
+            },
+            {
+                type: "WMS",
+                icon: "layers"
+            },
         ];
         var info = types.filter(function (item) {
             return item.type === type;
         })[0];
         if (!info) {
             // Handle types not found in the above list.
-            return {icon: "datafilesGray"};
+            return {
+                icon: "datafilesGray"
+            };
         }
         return info;
     }
@@ -982,11 +1042,11 @@ require([
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html)
-                                      .addClass("in");
+                .addClass("in");
         });
-        
+
         highlightSupportedContent();
-        
+
     }
 
     function listUserItems() {
@@ -997,24 +1057,28 @@ require([
         var url = app.user.server,
             username = app.user.userId,
             token = app.user.token;
-        
+
         function sortFoldersAlpha(container) {
             var folders = container.children(".panel").get();
-            folders.sort(function(a, b) {
-               return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
+            folders.sort(function (a, b) {
+                return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
             });
-            jquery.each(folders, function(idx, folder) { container.append(folder); });
+            jquery.each(folders, function (idx, folder) {
+                container.append(folder);
+            });
             container.prepend(jquery("[data-title='Root']").parent());
         }
-        
+
         function sortItemsAlpha(folder) {
             var folderItems = folder.children("button").get();
-            folderItems.sort(function(a, b) {
-               return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
+            folderItems.sort(function (a, b) {
+                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
             });
-            jquery.each(folderItems, function(idx, item) { folder.append(item); });
+            jquery.each(folderItems, function (idx, item) {
+                folder.append(item);
+            });
         }
-        
+
         portal.user.content(url, username, "/", token).done(function (content) {
             // Append the root folder accordion.
             var folderData = {
@@ -1038,6 +1102,7 @@ require([
             });
             sortItemsAlpha(jquery("#collapse_"));
             jquery.each(content.folders, function (folder) {
+                sortFoldersAlpha(jquery("#itemsArea"));
                 portal.user.content(url, username, content.folders[folder].id, token).done(function (content) {
                     var folderData = {
                         title: content.currentFolder.title,
@@ -1063,8 +1128,8 @@ require([
                 });
             });
             setTimeout(function () {
+                // Wait a second to let all of the items populate before sorting and highlighting them.
                 sortFoldersAlpha(jquery("#itemsArea"));
-                // Wait a second to let all of the items populate before highlighting them.
                 highlightSupportedContent();
             }, 1000);
         });
@@ -1109,11 +1174,11 @@ require([
         // Move the content DOM element from the source to the destination container on the page.
         "use strict";
         var itemId = jquery(item).attr("data-id");
-        var clone = jquery(item).clone();                           // Clone the original item.
-        clone.attr("id", itemId + "_clone");                        // Differentiate this object from the original.
-        clone.css("max-width", "");                                 // Remove the max-width property so it fills the folder.
-        clone.prependTo(destination);                               // Move it to the destination folder.
-        clone.removeClass("active btn-primary btn-info");           // Remove the contextual highlighting.
+        var clone = jquery(item).clone(); // Clone the original item.
+        clone.attr("id", itemId + "_clone"); // Differentiate this object from the original.
+        clone.css("max-width", ""); // Remove the max-width property so it fills the folder.
+        clone.prependTo(destination); // Move it to the destination folder.
+        clone.removeClass("active btn-primary btn-info"); // Remove the contextual highlighting.
         var destinationFolder = clone.parent().attr("data-folder"); // Get the folder the item was dragged into.
         copyItem(itemId, destinationFolder);
     }
