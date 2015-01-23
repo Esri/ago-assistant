@@ -1,12 +1,3 @@
-<script type="text/template" id="actionTemplate">
-    
-    <select>
-        <option>Copy my content</option>
-        <option>Update a map service</option>
-    </select>
-
-</script>
-                
 <script type="text/template" id="sessionTemplate">
 
     <ul class="nav navbar-nav navbar-right" id="sessionDropdown">
@@ -15,14 +6,14 @@
                 {{#user}}
                     {{username}}
                 {{/user}}
-                {{#name}}
-                    @ {{name}}
-                {{/name}}
-                {{^name}}
-                    @ ArcGIS Online
-                {{/name}}
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
+                <li>
+                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
+                </li>
+                <li>
+                    <a data-toggle="modal" data-target="#aboutModal">Help</a>
+                </li>
                 <li data-action="logout">
                     <a>Logout</a>
                 </li>
@@ -36,22 +27,8 @@
 
     <div class="alert alert-danger alert-dismissable" style="position: absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>Uh oh!</strong> That doesn't appear to be a valid url.
-    </div>
-
-</script>
-
-<script type="text/template" id="loginSuccessTemplate">
-
-    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99" id="loginSuccess">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>Great!</strong> You're logged into 
-            {{#name}}
-                {{name}}
-            {{/name}}
-            {{^name}}
-                ArcGIS Online
-            {{/name}}
+        <p><strong>Uh oh!</strong> That doesn't appear to be a valid url.</p>
+        <p>Try opening your Portal's homepage in another tab, then try again.</p>
     </div>
 
 </script>
@@ -65,13 +42,42 @@
 
 </script>
 
+<script type="text/template" id="searchTemplate">
+
+    <form id="searchForm" class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+            <div class="input-group add-on">
+                <div class="form-group has-feedback">
+                    <input id="searchText" type="text" class="form-control" placeholder="Search My Content">
+                    <i class="glyphicon glyphicon-search form-control-feedback" style="color:black"></i>
+                </div>
+                <div class="input-group-btn">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="searchMenu" class="dropdown-menu" role="menu">
+                            <li id="searchAGO" data-url="https://www.arcgis.com/"><a>Search ArcGIS Online</a></li>
+                            <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a>Search {{ name }}</a></li>
+                            <li id="searchContent" data-url={{ portal }} class="active"><a>Search My Content</a></li>
+                            <li class="divider"></li>
+                            <li data-action="viewMyContent"><a>View My Content</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</script>
+
 <script type="text/template" id="folderTemplate">
 
     <div class="panel panel-primary">
-        <div class="panel-heading">
+        <div class="panel-heading" data-title="{{ title }}">
             <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
         </div>
-        <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse in" data-folder="{{ id }}">
+        <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse" data-folder="{{ id }}">
             <!-- content gets inserted here -->
         </div>
     </div>
@@ -97,10 +103,11 @@
 </script>
 
 <script type="text/template" id="contentTemplate">
-       
+
     <button id="{{ id }}" class="btn btn-default btn-block content" disabled="disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
-        {{ title }} ({{ type }})
-    <span class="glyphicon glyphicon-{{ icon }}" style="display:block; float:right; margin-right:10px"></span></button>
+        <span class="icon {{ icon }}"></span>
+        {{ title }}
+    </button>
 
 </script>
 
@@ -123,30 +130,50 @@
 </script>
 
 <script type="text/template" id="inspectTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
         </div>
-        <div class="panel-body" id="itemDescription>
+        <div class="panel-body" id="itemDescription">
             <ul class="list-group">
-                <li class="list-group-item">Description</li>
-                <li class="list-group-item"><pre>{{ description }}</pre></li>
+                <li class="list-group-item">Description
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (Link to Item Details)</a>
+                </li>
+                <li class="list-group-item">
+                    <div class="btn-group btn-group-lg edit-controls" role="group">
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                            <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
+                            <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <pre id="descriptionJson">{{ description }}</pre>
+                </li>
             </ul>
             {{ #data }}
                 <br>
                 <ul class="list-group">
                     <li class="list-group-item">Data</li>
-                    <li class="list-group-item"><pre>{{ data }}</pre></li>
+                    <li class="list-group-item">
+                        <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                                <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
+                                <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <pre id="dataJson">{{ data }}</pre>
+                    </li>
                 </ul>
             {{ /data }}
-            {{ ^data }}
+            {{! Add a download link }}
+            {{ #downloadLink }}
                 <br>
-                <ul class="list-group">
-                    <li class="list-group-item">Data</li>
-                    <li class="list-group-item">There is no data associated with this item or it is a file item which will not be displayed here.</li>
-                </ul>
-            {{ /data }}
+                <a href="{{ downloadLink }}" target="_blank" class="btn btn-link btn-lg btn-block" role="button">Download {{ title }}</a>
+            {{ /downloadLink }}
         </div>
     </div>
 
@@ -193,7 +220,7 @@
             </div>
         </div>
     </div>
-            
+
 </script>
 
 <script type="text/template" id="mostViewedContentTemplate">
@@ -216,7 +243,7 @@
 </script>
 
 <script type="text/template" id="webmapServicesTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ webmapTitle }}</h2>
@@ -274,7 +301,7 @@
 </script>
 
 <script type="text/template" id="itemContentTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>

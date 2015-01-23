@@ -146,6 +146,41 @@ define(["jquery", "util"], function (jquery, util) {
                     dataType: "json"
                 });
             },
+            updateDescription: function (portal, username, id, folder, description, token) {
+                // Update the description for an item.
+                // Clean up description items for posting.
+                // This is necessary because some of the item descriptions (e.g. tags and extent)
+                // are returned as arrays, but the post operation expects comma separated strings.
+                var postData = JSON.parse(description);
+                jquery.each(postData, function (item, value) {
+                    if (value === null) {
+                        postData[item] = "";
+                    } else if (value instanceof Array) {
+                        postData[item] = value.join(",");
+                    }
+                });
+                postData.token = token;
+                postData.f = "json";
+                return jquery.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    data: postData,
+                    dataType: "json"
+                });
+            },
+            updateData: function (portal, username, id, folder, data, token) {
+                // Update the content in a web map.
+                return jquery.ajax({
+                    type: "POST",
+                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    data: {
+                        text: data, // Stringify the Javascript object so it can be properly sent.
+                        token: token,
+                        f: "json"
+                    },
+                    dataType: "json"
+                });
+            },
             updateUrl: function (portal, username, folder, id, url, token) {
                 // Update the URL of a registered service or web application.
                 return $.ajax({

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
-    
+
     <head>
         <meta charset="utf-8">
         <title>ArcGIS Online Assistant</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="js/lib/require-2.1.14.min.js" data-main="js/main"></script>
-        <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.css" />
-        <link rel="stylesheet" type="text/css" href="js/lib/bootstrap/css/bootstrap.min.css"/>
-        <link rel="stylesheet" type="text/css" href="css/styles.css"/>
-        <link rel="stylesheet" type="text/css" href="js/lib/nprogress/nprogress.css" />
-        <link rel="stylesheet" type="text/css" href="js/lib/cal-heatmap/cal-heatmap-3.3.10.css" />
-        <link rel="stylesheet" type="text/css" href="js/lib/highlight/tomorrow.min.css">
+        <link rel="stylesheet" href="js/lib/jquery-ui-1.9.2.css" />
+        <link rel="stylesheet" href="js/lib/bootstrap/css/bootstrap-3.3.2.min.css"/>
+        <link rel="stylesheet" href="css/styles.css"/>
+        <link rel="stylesheet" href="js/lib/nprogress.css" />
+        <link rel="stylesheet" href="js/lib/cal-heatmap-3.5.0.css" />
+        <link rel="stylesheet" href="js/lib/tomorrow.min.css">
+        <link rel="stylesheet" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
     </head>
-    
+
     <body>
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
@@ -27,19 +27,6 @@
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li id="helpDropdown" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help
-                                <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a data-toggle="modal" data-target="#aboutModal">About</a>
-                                </li>
-                                <li>
-                                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
-                                </li>
-                            </ul>
-                        </li>
                         <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
                                 <b class="caret"></b>
@@ -49,7 +36,7 @@
                                     <a href="#copyModal" data-toggle="modal">Copy Content</a>
                                 </li>
                                 <li data-action="inspectContent">
-                                    <a>Inspect Content (View JSON)</a>
+                                    <a>View an Item's JSON</a>
                                 </li>
                                 <li data-action="updateWebmapServices">
                                     <a>Update the URLs of a Service in a Web Map</a>
@@ -62,22 +49,35 @@
                                 </li>
                             </ul>
                         </li>
-                        <li id="currentAction"></li>
                     </ul>
-                    <form class="navbar-form navbar-right" id="sourceLoginForm">
-                        <div class="form-group">
-                            <input class="form-control" type="text" value="https://www.arcgis.com/" id="sourceUrl">
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="text" placeholder="username" id="sourceUsername">
-                        </div>
-                        <div class="form-group">
-                            <input class="form-control" type="password" placeholder="password" id="sourcePassword">
-                        </div>
-                        <button type="button" class="btn btn-default" id="sourceLoginBtn" style="" data-loading-text="Logging in...">Login</button>
-                    </form>
                 </div>
                 <!--/.navbar-collapse -->
+            </div>
+        </div>
+        <!-- Splash jumbotron -->
+        <div id="splashContainer" class="container col-md-6 center">
+            <div class="jumbotron">
+                <h2>ArcGIS Online Assistant</h2>
+                <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
+                <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
+                <p><a class="portal-signin" href="#portalLoginModal" data-toggle="modal">
+                    Click here to log in to a Portal instance
+                </a></p>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>Inspect</h4>
+                    <p>View the underlying JSON for any item in ArcGIS Online or your Portal.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Update</h4>
+                    <p>Modify the URLs for services in web maps and registered applications.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Copy</h4>
+                    <p>Search for and copy content to your account and other accounts.</p>
+                </div>
             </div>
         </div>
         <div class="container col-md-10 center">
@@ -117,57 +117,149 @@
                     </div>
                 </div>
             </div>
+            <!-- Portal login modal -->
+            <div id="portalLoginModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="portalLoginLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="portalLoginLabel">Log in to your Portal</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <p>Enter the URL to your Portal</p>
+                                <div class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control portalUrl" type="text" value="https://myportal.com/" id="portalUrl">
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Enter your credentials:</p>
+                                <div id="portalLoginForm" class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" placeholder="username" id="portalUsername">
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" type="password" placeholder="password" id="portalPassword">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="portalCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="portalLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Copy content modal -->
             <div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                            <h3 id="copyModalLabel">Copy my content</h3>
+                            <h3 id="copyModalLabel">Copy content</h3>
                         </div>
                         <div class="modal-body">
-                            <p>Login to the destination account. You will then be able to select which items to copy.</p>
-                            <br>
-                            <form>
-                                <p>Select the destination:</p>
-                                <div class="form-inline">
-                                    <div class="btn-group" data-toggle="buttons-radio">
-                                        <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
-                                        <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
-                                    </div>
-                                    <div class="form-group">
-                                        <input class="form-control" type="text" value="https://www.arcgis.com/" id="destinationUrl">
-                                    </div>
-                                </div>
+                            <div id="destinationChoice">
+                                <p>Select the account you want to copy into.</p>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyMyAccount">My account</button>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyOtherAccount">Another account</button>
+                            </div>
+                            <div id="destinationForm" style="display:none">
+                                <p>Log in to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
                                 <br>
-                                <p>Enter your credentials:</p>
-                                <div id="destinationLoginForm" class="form-inline">
-                                    <div class="form-group">
-                                        <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                <form>
+                                    <p>Select the destination:</p>
+                                    <div class="form-inline">
+                                        <div class="btn-group" data-toggle="buttons-radio">
+                                            <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
+                                            <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control portalUrl" type="text" value="https://www.arcgis.com/" id="destinationUrl">
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                    <br>
+                                    <p>Enter your credentials:</p>
+                                    <div id="destinationLoginForm" class="form-inline">
+                                        <div class="form-group">
+                                            <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                        </div>
                                     </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Login</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Edit JSON modal -->
+            <div id="editJsonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editJsonModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="changelogModalLabel">Warning</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to directly modify the contents of an item. Do not proceed unless you are absolutely certain of the risks.</p>
+                            <h3><b>THIS IS UNTESTED AND UNSUPPORTED.</b></h3>
+                            <p>Potential risks include:</p>
+                            <ul>
+                                <li>Corrupting your content</li>
+                                <li>Losing access to your items</li>
+                                <li>Breaking apps built on top of your web maps</li>
+                            </ul>
+                            <br>
+                            <div class="checkbox input-lg">
+                                <label><input type="checkbox" class="acknowledgeRisk"> I understand the risks</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Cancel</button>
+                            <button id="editJsonBtn" class="btn btn-primary disabled">Proceed</button>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Item containers -->
             <div id="itemsContainer" class="row">
-                <div id="itemsArea" class="col-md-6 itemArea">
-                    <!-- folder accordions go here -->
+                <div id="itemsArea" class="col-md-5 itemArea">
+                    <!-- content goes here -->
                 </div>
-                <div id="dropArea" class="col-md-6 itemArea">
+                <div id="dropArea" class="col-md-7 itemArea">
                     <!-- dropped items will go here -->
                 </div>
             </div>
         </div>
+
+        <script type="text/javascript">
+            var dojoConfig = {
+                async: true,
+                packages: [
+                    {name: "jquery", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-1.10.2.min"},
+                    {name: "jquery.ui", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-ui-1.9.2.min"},
+                    {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.2.min"},
+                    {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
+                    {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
+                    {name: "d3", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "d3-3.4.13.min"},
+                    {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
+                    {name: "cal-heatmap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "cal-heatmap-3.5.0.min"},
+                    {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
+                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal", main: "portal"},
+                    {name: "util", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal", main: "util"}
+                ],
+            };
+        </script>
+        <script src="js/lib/arcgis-3.11.min.js"></script>
+        <script src="js/main.js"></script>
+
     </body>
 
 </html>
