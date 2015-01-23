@@ -27,7 +27,8 @@
 
     <div class="alert alert-danger alert-dismissable" style="position: absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>Uh oh!</strong> That doesn't appear to be a valid url.
+        <p><strong>Uh oh!</strong> That doesn't appear to be a valid url.</p>
+        <p>Try opening your Portal's homepage in another tab, then try again.</p>
     </div>
 
 </script>
@@ -36,7 +37,7 @@
 
     <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99" id="loginSuccess">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>Great!</strong> You're logged into 
+        <strong>Great!</strong> You're logged into
             {{#name}}
                 {{name}}
             {{/name}}
@@ -82,7 +83,7 @@
             </div>
         </div>
     </form>
-    
+
 </script>
 
 <script type="text/template" id="folderTemplate">
@@ -117,7 +118,7 @@
 </script>
 
 <script type="text/template" id="contentTemplate">
-       
+
     <button id="{{ id }}" class="btn btn-default btn-block content" disabled="disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}">
         <span class="icon {{ icon }}"></span>
         {{ title }}
@@ -144,7 +145,7 @@
 </script>
 
 <script type="text/template" id="inspectTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
@@ -234,7 +235,7 @@
             </div>
         </div>
     </div>
-            
+
 </script>
 
 <script type="text/template" id="mostViewedContentTemplate">
@@ -257,7 +258,7 @@
 </script>
 
 <script type="text/template" id="webmapServicesTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ webmapTitle }}</h2>
@@ -315,7 +316,7 @@
 </script>
 
 <script type="text/template" id="itemContentTemplate">
-    
+
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
