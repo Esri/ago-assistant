@@ -18,9 +18,9 @@ body {
     position: relative;
     top: 5px;
     height: 45px;
-    margin: 5px; 
+    margin: 5px;
     border: #c3c3c3;
-    border-width: 2px;	
+    border-width: 2px;
     border-style: dashed;
 }
 
@@ -100,54 +100,58 @@ body {
     right: 25px;
 }
 
-.apps { 
-    background:url(../assets/images/apps16.png); 
+.portal-signin {
+    font-size: .8em;
 }
 
-.appsGray { 
-    background:url(../assets/images/appsGray16.png); 
+.apps {
+    background:url(../assets/images/apps16.png);
 }
 
-.datafiles { 
-    background:url(../assets/images/datafiles16.png); 
+.appsGray {
+    background:url(../assets/images/appsGray16.png);
 }
 
-.datafilesGray { 
-    background:url(../assets/images/datafilesGray16.png); 
+.datafiles {
+    background:url(../assets/images/datafiles16.png);
 }
 
-.features { 
-    background:url(../assets/images/Features16.png); 
+.datafilesGray {
+    background:url(../assets/images/datafilesGray16.png);
 }
 
-.imagery { 
-    background:url(../assets/images/Imagery16.png); 
+.features {
+    background:url(../assets/images/Features16.png);
 }
 
-.layers { 
-    background:url(../assets/images/layers16.png); 
+.imagery {
+    background:url(../assets/images/Imagery16.png);
 }
 
-.layersGray { 
-    background:url(../assets/images/layersGray16.png); 
+.layers {
+    background:url(../assets/images/layers16.png);
 }
 
-.mapImages { 
-    background:url(../assets/images/MapImages16.png); 
+.layersGray {
+    background:url(../assets/images/layersGray16.png);
 }
 
-.maps { 
-    background:url(../assets/images/maps16.png); 
+.mapImages {
+    background:url(../assets/images/MapImages16.png);
 }
 
-.mapsGray { 
-    background:url(../assets/images/mapsGray16.png); 
+.maps {
+    background:url(../assets/images/maps16.png);
 }
 
-.tools { 
-    background:url(../assets/images/tools16.png); 
+.mapsGray {
+    background:url(../assets/images/mapsGray16.png);
 }
 
-.toolsGray { 
-    background:url(../assets/images/toolsGray16.png); 
+.tools {
+    background:url(../assets/images/tools16.png);
+}
+
+.toolsGray {
+    background:url(../assets/images/toolsGray16.png);
 }

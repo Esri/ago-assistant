@@ -76,6 +76,14 @@ require([
     });
 
     // Validate the url when the input loses focus.
+    jquery("#portalUrl").blur(function () {
+        // Give the DOM time to update before firing the validation.
+        setTimeout(function () {
+            validateUrl("#portalUrl");
+        }, 500);
+    });
+
+    // Validate the url when the input loses focus.
     jquery("#destinationUrl").blur(function () {
         // Give the DOM time to update before firing the validation.
         setTimeout(function () {
@@ -84,8 +92,6 @@ require([
             }
         }, 500);
     });
-
-
 
     ////////////////////////////////////////////////////////////////////////////
     // *** ArcGIS OAuth ***
@@ -113,20 +119,21 @@ require([
 
     // Source Login.
     jquery("[data-action='login']").click(function () {
-        // Show the OAuth Sign-In.
-        //        oauthWindow = window.open("oauth.html", "Sign-In", "width=650, height=500");  // Opens a new window
         esriId.getCredential(appInfo.portalUrl, {
             oAuthPopupConfirmation: false
         }).then(function (user) {
             jquery("#splashContainer").css("display", "none");
             jquery("#itemsContainer").css("display", "block");
-            app.user = user;
-            app.user.server = app.user.server + "/";
             startSession(user);
         });
     });
 
     ////////////////////////////////////////////////////////////////////////////
+
+    // Log into a Portal.
+    jquery("#portalLoginBtn").click(function () {
+        loginPortal();
+    });
 
     // Use the existing credentials when "My Account" is selected as the copy target.
     jquery("[data-action='copyMyAccount']").click(function () {
@@ -275,6 +282,8 @@ require([
         "use strict";
         var portalUrl = user.server + "/",
             token = user.token;
+        app.user = user;
+        app.user.server = app.user.server + "/";
         portal.self(portalUrl, token).done(function (data) {
             var template = jquery("#sessionTemplate").html(),
                 html = mustache.to_html(template, data);
@@ -316,6 +325,35 @@ require([
         callback();
     }
 
+    function loginPortal() {
+        jquery("#portalLoginBtn").button("loading");
+        portal.generateToken(jquery("#portalUrl").val(), jquery("#portalUsername").val(), jquery("#portalPassword").val()).done(function (response) {
+            jquery("#portalLoginBtn").button("reset");
+            if (response.token) {
+                var user = {
+                    userId: jquery("#portalUsername").val(),
+                    server: jquery("#portalUrl").val(),
+                    token: response.token,
+                    expires: response.expires,
+                    ssl: response.ssl
+                };
+                jquery("#portalLoginModal").modal("hide");
+                jquery("#splashContainer").css("display", "none");
+                jquery("#itemsContainer").css("display", "block");
+                startSession(user);
+            } else if (response.error.code === 400) {
+                var html = jquery("#loginErrorTemplate").html();
+                jquery("#portalLoginForm").before(html);
+                jquery("#portalLoginBtn").button("reset");
+            }
+        }).fail(function (response) {
+            console.log(response.statusText);
+            var html = jquery("#loginErrorTemplate").html();
+            jquery("#portalLoginForm").before(html);
+            jquery("#portalLoginBtn").button("reset");
+        });
+    }
+
     function loginDestination() {
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty(); //Clear any old items.
@@ -332,11 +370,13 @@ require([
             } else if (response.error.code === 400) {
                 var html = jquery("#loginErrorTemplate").html();
                 jquery("#destinationLoginForm").before(html);
+                jquery("#destinationLoginBtn").button("reset");
             }
         }).fail(function (response) {
             console.log(response.statusText);
             var html = jquery("#loginErrorTemplate").html();
             jquery("#destinationLoginForm").before(html);
+            jquery("#destinationLoginBtn").button("reset");
         });
     }
 
