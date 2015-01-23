@@ -389,7 +389,6 @@ require([
         jquery("#dropArea").empty(); //Clear any old items.
         jquery("#sessionDropdown").remove();
         jquery("#searchForm").remove();
-        jquery("#loginSuccess").remove();
         jquery("#actionDropdown").css({
             "visibility": "hidden"
         });
