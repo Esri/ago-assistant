@@ -1,21 +1,21 @@
 # ago-assistant
 
-This app uses the [ArcGIS Admin API](http://www.arcgis.com/apidocs/rest/) in [ArcGIS Online](http://www.arcgis.com/home/) and/or [Portal for ArcGIS](http://www.esri.com/software/arcgis/portal-for-arcgis) to copy items between accounts and across organizations.
+This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to provide several different utilities for working with content in [ArcGIS Online](http://www.arcgis.com/home/) and [Portal for ArcGIS](http://www.esri.com/software/arcgis/portal-for-arcgis).
 
 [View it live](https://ago-assistant.esri.com)
 
 ![App](ago-assistant.png)
 
 ## Features
-* Copy content between accounts
-* Inspect content (view JSON)
+* Copy content between Portals and Organizations
+* View and edit the JSON of content
 * Update the URLs of services in a web map
 * Update the URL of a registered application or service
 * View user stats
 
 ## Instructions
 
-1. Fork and then clone the repo -OR- [download a recent release](https://github.com/Esri/ago-assistant/releases). 
+1. Fork and then clone the repo -OR- [download a recent release](https://github.com/Esri/ago-assistant/releases).
 2. Run and try the samples.
 
 #### Using Grunt
@@ -55,10 +55,10 @@ Find a bug or want to request a new feature?  Please let us know by submitting a
 
 ## Contributing
 
-Esri welcomes contributions from anyone and everyone. Please see our [guidelines for contributing](https://github.com/esri/contributing).
+Anyone and everyone is welcome to contribute.
 
 ## Licensing
-Copyright 2013 Esri
+Copyright 2015 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
