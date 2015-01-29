@@ -663,43 +663,41 @@ require([
                 var html = mustache.to_html(jquery("#webmapServicesTemplate").html(), templateData);
                 // Add the HTML container with the item JSON.
                 jquery("#dropArea").html(html);
-            });
-        });
 
-        jquery(document).on("click", "#btnUpdateWebmapServices", function () {
-            var webmapServices = jquery("[data-original]");
-            jquery.each(webmapServices, function (service) {
-                var originalUrl = jquery(webmapServices[service]).attr("data-original"),
-                    newUrl = jquery(webmapServices[service]).val();
-                // Find and replace each URL.
-                webmapData = webmapData.replace(originalUrl, newUrl);
-                jquery(webmapServices[service]).val(newUrl);
-            });
-            var webmapId = jquery(".content.active.btn-primary").attr("data-id"),
-                itemData = JSON.parse(webmapData);
-            portal.content.updateWebmapData(app.user.server, owner, folder, webmapId, itemData, app.user.token).done(function (response) {
-                var html;
-                if (response.success) {
-                    html = mustache.to_html(jquery("#updateSuccessTemplate").html());
-                    jquery("#btnResetWebmapServices").before(html);
-                } else if (response.error.code === 400) {
-                    jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
-                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
-                    jquery("#btnResetWebmapServices").before(html);
-                } else if (response.error.code === 403) {
-                    jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
-                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
-                    jquery("#btnResetWebmapServices").before(html);
-                }
-            });
-        });
+                // Event listener for update button.
+                jquery("#btnUpdateWebmapServices").click(function (e) {
+                    var webmapServices = jquery("[data-original]");
+                    jquery.each(webmapServices, function (service) {
+                        var originalUrl = jquery(webmapServices[service]).attr("data-original"),
+                            newUrl = jquery(webmapServices[service]).val();
+                        // Find and replace each URL.
+                        webmapData = webmapData.replace(originalUrl, newUrl);
+                        jquery(webmapServices[service]).val(newUrl);
+                    });
+                    var webmapId = jquery(".content.active.btn-primary").attr("data-id"),
+                        itemData = JSON.parse(webmapData);
+                    portal.content.updateWebmapData(app.user.server, owner, folder, webmapId, itemData, app.user.token).done(function (response) {
+                        var html;
+                        if (response.success) {
+                            html = mustache.to_html(jquery("#updateSuccessTemplate").html());
+                            jquery("#btnResetWebmapServices").before(html);
+                        } else if (response.error.code === 400 || response.error.code === 403) {
+                            jquery("#btnResetWebmapServices").click(); // Reset the displayed URLs to their original values.
+                            html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                            jquery("#btnResetWebmapServices").before(html);
+                        }
+                    });
+                });
 
-        jquery(document).on("click", "#btnResetWebmapServices", function () {
-            var webmapServices = jquery("[data-original]");
-            jquery.each(webmapServices, function (service) {
-                var originalUrl = jquery(webmapServices[service]).attr("data-original"),
-                    currentUrl = jquery(webmapServices[service]).val();
-                jquery(webmapServices[service]).val(originalUrl);
+                // Event listener for reset button.
+                jquery("#btnResetWebmapServices").click(function (e) {
+                    var webmapServices = jquery("[data-original]");
+                    jquery.each(webmapServices, function (service) {
+                        var originalUrl = jquery(webmapServices[service]).attr("data-original"),
+                            currentUrl = jquery(webmapServices[service]).val();
+                        jquery(webmapServices[service]).val(originalUrl);
+                    });
+                });
             });
         });
 
@@ -733,34 +731,36 @@ require([
                 var html = mustache.to_html(jquery("#itemContentTemplate").html(), description);
                 // Add the HTML container with the item JSON.
                 jquery("#dropArea").html(html);
-            });
-        });
 
-        jquery(document).on("click", "#btnUpdateContentUrl", function () {
-            var contentId = jquery(".content.active.btn-primary").attr("data-id"),
-                url = jquery("[data-original]").val();
-            portal.content.updateUrl(app.user.server, owner, folder, contentId, url, app.user.token).done(function (response) {
-                var html;
-                if (response.success) {
-                    jquery("[data-original]").attr("data-original", url);
-                    html = mustache.to_html(jquery("#updateSuccessTemplate").html());
-                    jquery("#btnResetContentUrl").before(html);
-                } else if (response.error.code === 400) {
-                    jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
-                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
-                    jquery("#btnResetContentUrl").before(html);
-                } else if (response.error.code === 403) {
-                    jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
-                    html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
-                    jquery("#btnResetContentUrl").before(html);
-                }
-            });
-        });
+                // Event listener for update button.
+                jquery("#btnUpdateContentUrl").click(function (e) {
+                    var contentId = jquery(".content.active.btn-primary").attr("data-id"),
+                        url = jquery("[data-original]").val();
+                    portal.content.updateUrl(app.user.server, owner, folder, contentId, url, app.user.token).done(function (response) {
+                        var html;
+                        if (response.success) {
+                            jquery("[data-original]").attr("data-original", url);
+                            html = mustache.to_html(jquery("#updateSuccessTemplate").html());
+                            jquery("#btnResetContentUrl").before(html);
+                        } else if (response.error.code === 400) {
+                            jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
+                            html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                            jquery("#btnResetContentUrl").before(html);
+                        } else if (response.error.code === 403) {
+                            jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
+                            html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
+                            jquery("#btnResetContentUrl").before(html);
+                        }
+                    });
+                });
 
-        jquery(document).on("click", "#btnResetContentUrl", function () {
-            var originalUrl = jquery("[data-original]").attr("data-original");
-            var currentUrl = jquery("[data-original]").val();
-            jquery("[data-original]").val(originalUrl);
+                // Event listener for reset button.
+                jquery("#btnResetContentUrl").click(function (e) {
+                    var originalUrl = jquery("[data-original]").attr("data-original");
+                    var currentUrl = jquery("[data-original]").val();
+                    jquery("[data-original]").val(originalUrl);
+                });
+            });
         });
 
     }
