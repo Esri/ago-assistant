@@ -679,6 +679,10 @@ require([
                     portal.content.updateWebmapData(app.user.server, owner, folder, webmapId, itemData, app.user.token).done(function (response) {
                         var html;
                         if (response.success) {
+                            // Set the stored original URL to the new value.
+                            jquery.each(webmapServices, function (service) {
+                                jquery(webmapServices[service]).attr("data-original", jquery(webmapServices[service]).val());
+                            });
                             html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                             jquery("#btnResetWebmapServices").before(html);
                         } else if (response.error.code === 400 || response.error.code === 403) {
@@ -739,14 +743,11 @@ require([
                     portal.content.updateUrl(app.user.server, owner, folder, contentId, url, app.user.token).done(function (response) {
                         var html;
                         if (response.success) {
+                            // Set the stored original URL to the new value.
                             jquery("[data-original]").attr("data-original", url);
                             html = mustache.to_html(jquery("#updateSuccessTemplate").html());
                             jquery("#btnResetContentUrl").before(html);
-                        } else if (response.error.code === 400) {
-                            jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
-                            html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
-                            jquery("#btnResetContentUrl").before(html);
-                        } else if (response.error.code === 403) {
+                        } else if (response.error.code === 400 || response.error.code === 403) {
                             jquery("#btnResetContentUrl").click(); // Reset the displayed URLs to their original values.
                             html = mustache.to_html(jquery("#updateErrorTemplate").html(), response);
                             jquery("#btnResetContentUrl").before(html);
