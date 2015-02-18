@@ -97,9 +97,6 @@ require([
                 name: data.name,
                 id: data.id
             });
-            console.log("template", template);
-            console.log("searchHtml", searchHtml);
-            console.log("html", html);
             jquery("#actionDropdown").before(searchHtml);
 
             // Add a listener for clicking the search icon.
@@ -1206,12 +1203,10 @@ require([
 
     // Do stuff when the DOM is ready.
     jquery(document).ready(function () {
-        console.log("loaded");
 
         // Load the html templates.
         jquery.get("templates.html", function (templates) {
             jquery("body").append(templates);
-            console.log("appended");
 
             // Enable the login button.
             // Doing it here ensures all required libraries have loaded.
