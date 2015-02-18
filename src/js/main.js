@@ -20,251 +20,19 @@ require([
     hljs
 ) {
 
+    // *** ArcGIS OAuth ***
+    var appInfo = new arcgisOAuthInfo({
+        appId: "4E1s0Mv5r0c2l6W8",
+        popup: true
+    });
+
+    // Some app level variables.
     var app = {
         user: {},
         stats: {
             activities: {}
         },
     };
-
-    // Do stuff when the DOM is ready.
-    jquery(document).ready(function () {
-
-        // Resize the content areas to fill the window.
-        var resizeContentAreas = function () {
-            "use strict";
-            jquery(".itemArea").height(jquery(window).height() - 50);
-        };
-        resizeContentAreas();
-
-        // Disable the enter key to prevent accidentally firing forms.
-        // Disable it for everything except the code edit windows.
-        var disableEnterKey = function () {
-            "use strict";
-            jquery("html").bind("keypress", function (e) {
-                if (e.keyCode === 13 &&
-                    jquery(e.target).attr("contenteditable") !== "true") {
-                    return false;
-                }
-            });
-        };
-        disableEnterKey();
-
-        // Enable the login button.
-        // Doing it  here ensures all required libraries have loaded.
-        jquery(".jumbotron > p > [data-action='login']")
-            .removeAttr("disabled");
-
-        // Preformat the copy login screen.
-        jquery("#destinationAgolBtn").button("toggle");
-        jquery("#destinationAgolBtn").addClass("btn-primary");
-        jquery("#destinationUrl").css({
-            "visibility": "hidden"
-        });
-
-        // *** Global Listeners ***
-        jquery("#destinationAgolBtn").click(function () {
-            jquery("#destinationUrl").attr({
-                "placeholder": "",
-                "value": "https://www.arcgis.com/"
-            });
-            jquery("#destinationUrl").val("https://www.arcgis.com/");
-            jquery("#destinationUrl").css({
-                "visibility": "hidden"
-            });
-            jquery("#destinationAgolBtn").addClass("btn-primary active");
-            jquery("#destinationPortalBtn").removeClass("btn-primary active");
-        });
-        jquery("#destinationPortalBtn").click(function () {
-            jquery("#destinationUrl").attr({
-                "placeholder": "https://myportal.com/",
-                "value": ""
-            });
-            jquery("#destinationUrl").val("");
-            jquery("#destinationUrl").css({
-                "visibility": "visible"
-            });
-            jquery("#destinationPortalBtn").addClass("btn-primary active");
-            jquery("#destinationAgolBtn").removeClass("btn-primary active");
-        });
-
-        // Make DOM adjustments when the browser is resized.
-        jquery(window).resize(function () {
-            resizeContentAreas();
-        });
-
-        // Validate the entered url when the input loses focus.
-        jquery("#portalUrl").blur(function () {
-
-            // Give the DOM time to update before firing the validation.
-            setTimeout(function () {
-                validateUrl("#portalUrl");
-            }, 500);
-        });
-
-        // Validate the url when the input loses focus.
-        jquery("#destinationUrl").blur(function () {
-
-            // Give the DOM time to update before firing the validation.
-            setTimeout(function () {
-                if (jquery("#destinationPortalBtn").hasClass("active")) {
-                    validateUrl("#destinationUrl");
-                }
-            }, 500);
-        });
-    });
-
-    // Load the html templates.
-    jquery.get("templates.html", function (templates) {
-        jquery("body").append(templates);
-    });
-
-    // *** ArcGIS OAuth ***
-    var appInfo = new arcgisOAuthInfo({
-        appId: "4E1s0Mv5r0c2l6W8",
-        popup: true
-    });
-    esriId.registerOAuthInfos([appInfo]);
-
-    esriId.checkSignInStatus(appInfo.portalUrl)
-        .then(
-            function (user) {
-                jquery("#splashContainer").css("display", "none");
-                jquery("#itemsContainer").css("display", "block");
-                app.user = user;
-                app.user.server = app.user.server + "/";
-                startSession(user);
-            })
-        .otherwise(
-            function () {
-                jquery("#itemsContainer").css("display", "none");
-                jquery("#splashContainer").css("display", "block");
-            }
-        );
-
-    // Source Login.
-    jquery("[data-action='login']").click(function () {
-        esriId.getCredential(appInfo.portalUrl, {
-                oAuthPopupConfirmation: false
-            })
-            .then(function (user) {
-                jquery("#splashContainer").css("display", "none");
-                jquery("#itemsContainer").css("display", "block");
-                startSession(user);
-            });
-    });
-
-    // Log into a Portal.
-    jquery("#portalLoginBtn").click(function () {
-        loginPortal();
-    });
-
-    /**
-     * Use the existing credentials when "My Account"
-     * is selected as the copy target.
-     */
-    jquery("[data-action='copyMyAccount']").click(function () {
-        storeCredentials("destination", app.user.server, app.user.userId,
-                app.user.token)
-            .then(function () {
-                jquery("#copyModal").modal("hide");
-                highlightCopyableContent();
-                NProgress.start();
-                showDestinationFolders();
-                NProgress.done();
-            });
-    });
-
-    /**
-     * Show other destination form when "Another Account"
-     * is selected as the copy target.
-     */
-    jquery("[data-action='copyOtherAccount']").click(function () {
-        jquery("#destinationChoice").css("display", "none");
-        jquery("#destinationForm").css("display", "block");
-    });
-
-    // Log in to the destination account.
-    jquery("#destinationLoginBtn").click(function () {
-        loginDestination();
-    });
-
-    // Reset the destination login form when the modal is canceled.
-    jquery("#destinationLoginBtn").click(function () {
-        jquery("#destinationLoginBtn").button("reset");
-    });
-
-    // Clear the copy action when the cancel button is clicked.
-    jquery("#destinationCancelBtn").click(function () {
-        jquery("#actionDropdown li").removeClass("active");
-    });
-
-    // Add a listener for the enter key on the destination login form.
-    jquery("#destinationLoginForm").keypress(function (e) {
-        if (e.which == 13) {
-            jquery("#destinationLoginBtn").focus().click();
-        }
-    });
-
-    // Add a listener for the future search bar picker.
-    jquery(document).on("click", "#searchMenu li", function (e) {
-        var selectedAction = jquery(e.target).parent().attr("data-action");
-        if (selectedAction !== "viewMyContent") {
-            jquery("#searchMenu li").removeClass("active");
-            jquery(e.target).parent().addClass("active");
-            if (jquery("#searchText").val()) {
-                // If a search term already exists, then perform the search.
-                search();
-            } else {
-                // Change the placeholder.
-                jquery("#searchText").attr("placeholder",
-                    jquery(e.currentTarget).text());
-            }
-        } else {
-            NProgress.start();
-            listUserItems();
-            NProgress.done();
-        }
-    });
-
-
-    jquery(document).on("click", "li [data-action]", function (e) {
-        // Highlight the selected action except for "View My Stats."
-        var selectedAction = jquery(e.target).parent().attr("data-action");
-        if (selectedAction !== "stats") {
-            jquery("#actionDropdown li").removeClass("active");
-            jquery(e.target).parent().addClass("active");
-        }
-        // Choose what to do based on the selection.
-        switch (selectedAction) {
-        case "inspectContent":
-            // Enable inspecting of content.
-            cleanUp();
-            inspectContent();
-            break;
-        case "updateWebmapServices":
-            cleanUp();
-            updateWebmapServices();
-            break;
-        case "updateContentUrl":
-            cleanUp();
-            updateContentUrls();
-            break;
-        case "stats":
-            viewStats();
-            break;
-        case "logout":
-            logout();
-            break;
-        }
-    });
-
-    // Clean up the lists when copy content is selected.
-    jquery("#copyModal").on("show.bs.modal", function () {
-        cleanUp();
-        jquery("#destinationChoice").css("display", "block");
-        jquery("#destinationForm").css("display", "none");
-    });
 
     /**
      * Check the url for errors (e.g. no trailing slash)
@@ -317,8 +85,8 @@ require([
         app.user = user;
         app.user.server = app.user.server + "/";
         portal.self(portalUrl, token).done(function (data) {
-            var template = jquery("#sessionTemplate").html(),
-                html = mustache.to_html(template, data);
+            var template = jquery("#sessionTemplate").html();
+            var html = mustache.to_html(template, data);
             jquery(".nav.navbar-nav").after(html);
             jquery("#logout").show();
             jquery("#actionDropdown").css({
@@ -329,6 +97,9 @@ require([
                 name: data.name,
                 id: data.id
             });
+            console.log("template", template);
+            console.log("searchHtml", searchHtml);
+            console.log("html", html);
             jquery("#actionDropdown").before(searchHtml);
 
             // Add a listener for clicking the search icon.
@@ -788,7 +559,8 @@ require([
         var owner;
         var folder;
         var supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
-        supportedContent.addClass("data-toggle btn-info"); // Highlight support content
+        // Highlight supported content.
+        supportedContent.addClass("data-toggle btn-info");
         supportedContent.removeAttr("disabled");
         supportedContent.attr("data-toggle", "button");
 
@@ -797,7 +569,8 @@ require([
             // Display the selected item's URL.
             var id = jquery(this).attr("data-id");
             var title = jquery(this).text();
-            supportedContent.addClass("btn-info"); // Highlight Web Maps
+            // Highlight Web Maps.
+            supportedContent.addClass("btn-info");
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
@@ -844,6 +617,43 @@ require([
     };
 
     var viewStats = function () {
+
+        var statsCalendar = function (activities) {
+            require(["d3", "cal-heatmap"], function (d3, CalHeatMap) {
+                // Create a date object for three months ago.
+                var today = new Date();
+                var startDate = new Date();
+                startDate.setMonth(today.getMonth() - 2);
+                if (today.getMonth() < 2) {
+                    startDate.setYear(today.getFullYear() - 1);
+                }
+
+                var cal = new CalHeatMap();
+                cal.init({
+                    itemSelector: "#statsCalendar",
+                    domain: "month",
+                    subDomain: "day",
+                    data: activities,
+                    start: startDate,
+                    cellSize: 10,
+                    domainGutter: 10,
+                    range: 3,
+                    legend: [1, 2, 5, 10],
+                    displayLegend: false,
+                    tooltip: true,
+                    itemNamespace: "cal",
+                    previousSelector: "#calPrev",
+                    nextSelector: "#calNext",
+                    domainLabelFormat: "%b '%y",
+                    subDomainTitleFormat: {
+                        empty: "No activity on {date}",
+                        filled: "Saved {count} {name} {connector} {date}"
+                    },
+                    domainDynamicDimension: false
+                });
+            });
+        };
+
         portal.user.profile(app.user.server, app.user.userId, app.user.token)
             .done(function (user) {
 
@@ -907,19 +717,95 @@ require([
             });
     };
 
-    var makeDraggable = function (el) {
-        el.draggable({
-            cancel: false,
-            helper: "clone",
-            appendTo: "body",
-            revert: true,
-            opacity: 0.7
-        });
-        el.removeAttr("disabled");
-    };
-
+    // Make the drop area accept content items.
     var makeDroppable = function (id) {
-        // Make the drop area accept content items.
+
+        /**
+         * Move the content DOM element from the source
+         * to the destination container on the page.
+         */
+        var moveItem = function (item, destination) {
+            "use strict";
+            var itemId = jquery(item).attr("data-id");
+
+            // Clone the original item.
+            var clone = jquery(item).clone();
+
+            // Differentiate this object from the original.
+            clone.attr("id", itemId + "_clone");
+
+            // Remove the max-width property so it fills the folder.
+            clone.css("max-width", "");
+
+            // Move it to the destination folder.
+            clone.prependTo(destination);
+
+            // Remove the contextual highlighting.
+            clone.removeClass("active btn-primary btn-info");
+
+            // Get the folder the item was dragged into.
+            var destinationFolder = clone.parent().attr("data-folder");
+
+            /**
+             * copyItem() Copies a given item ID.
+             * @id {String} ID of the source item
+             * @folder {String} id of the destination folder
+             */
+            var copyItem = function (id, folder) {
+                var sourcePortal = app.user.server;
+                var sourceToken = app.user.token;
+                var destinationPortal = sessionStorage.destinationUrl;
+                var destinationUsername = sessionStorage.destinationUsername;
+                var destinationToken = sessionStorage.destinationToken;
+                var type = jquery("#" + id).attr("data-type");
+                // Ensure the content type is supported before trying to copy it.
+                if (isSupported(type)) {
+                    // Get the full item description and data from the source.
+                    portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
+                        var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
+                        portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
+                            /**
+                             * Post it to the destination using always
+                             * to ensure that it copies Web Mapping Applications
+                             * which don't have a data component and therefore
+                             f* generate a failed response.
+                             */
+                            portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
+                                var html;
+                                if (response.success === true) {
+                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                } else if (response.error) {
+                                    jquery("#" + id + "_clone").addClass("btn-danger");
+                                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                        id: id,
+                                        message: response.error.message
+                                    });
+                                    jquery("#" + id + "_clone").before(html);
+                                }
+                            }).fail(function (response) {
+                                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                                    id: id,
+                                    message: "Something went wrong."
+                                });
+                                jquery("#" + id + "_clone").before(html);
+                            });
+                        });
+                    });
+                } else {
+                    // Not supported.
+                    jquery("#" + id).addClass("btn-warning");
+                    var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
+                        id: id,
+                        type: type
+                    });
+                    jquery("#" + id).before(html);
+                    jquery("#" + id + "_alert").fadeOut(6000);
+                }
+            };
+
+            copyItem(itemId, destinationFolder);
+        };
+
         jquery("#dropFolder_" + id).droppable({
             accept: ".content",
             activeClass: "ui-state-hover",
@@ -951,6 +837,18 @@ require([
         };
 
         jquery("#itemsArea .content").each(function (i) {
+
+            var makeDraggable = function (el) {
+                el.draggable({
+                    cancel: false,
+                    helper: "clone",
+                    appendTo: "body",
+                    revert: true,
+                    opacity: 0.7
+                });
+                el.removeAttr("disabled");
+            };
+
             var type = jquery(this).attr("data-type");
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
@@ -1050,42 +948,6 @@ require([
         if (jquery.inArray(type, urlTypes) > -1) {
             return true;
         }
-    };
-
-    var statsCalendar = function (activities) {
-        require(["d3", "cal-heatmap"], function (d3, CalHeatMap) {
-            // Create a date object for three months ago.
-            var today = new Date();
-            var startDate = new Date();
-            startDate.setMonth(today.getMonth() - 2);
-            if (today.getMonth() < 2) {
-                startDate.setYear(today.getFullYear() - 1);
-            }
-
-            var cal = new CalHeatMap();
-            cal.init({
-                itemSelector: "#statsCalendar",
-                domain: "month",
-                subDomain: "day",
-                data: activities,
-                start: startDate,
-                cellSize: 10,
-                domainGutter: 10,
-                range: 3,
-                legend: [1, 2, 5, 10],
-                displayLegend: false,
-                tooltip: true,
-                itemNamespace: "cal",
-                previousSelector: "#calPrev",
-                nextSelector: "#calNext",
-                domainLabelFormat: "%b '%y",
-                subDomainTitleFormat: {
-                    empty: "No activity on {date}",
-                    filled: "Saved {count} {name} {connector} {date}"
-                },
-                domainDynamicDimension: false
-            });
-        });
     };
 
     var itemInfo = function (type) {
@@ -1342,91 +1204,241 @@ require([
         });
     };
 
-    /**
-     * Move the content DOM element from the source
-     * to the destination container on the page.
-     */
-    var moveItem = function (item, destination) {
-        "use strict";
-        var itemId = jquery(item).attr("data-id");
+    // Do stuff when the DOM is ready.
+    jquery(document).ready(function () {
+        console.log("loaded");
 
-        // Clone the original item.
-        var clone = jquery(item).clone();
+        // Load the html templates.
+        jquery.get("templates.html", function (templates) {
+            jquery("body").append(templates);
+            console.log("appended");
 
-        // Differentiate this object from the original.
-        clone.attr("id", itemId + "_clone");
+            // Enable the login button.
+            // Doing it here ensures all required libraries have loaded.
+            jquery(".jumbotron > p > [data-action='login']")
+                .removeAttr("disabled");
 
-        // Remove the max-width property so it fills the folder.
-        clone.css("max-width", "");
+            // Check for previously authenticated sessions.
+            esriId.registerOAuthInfos([appInfo]);
+            esriId.checkSignInStatus(appInfo.portalUrl)
+                .then(
+                    function (user) {
+                        jquery("#splashContainer").css("display", "none");
+                        jquery("#itemsContainer").css("display", "block");
+                        app.user = user;
+                        app.user.server = app.user.server + "/";
+                        startSession(user);
+                    })
+                .otherwise(
+                    function () {
+                        jquery("#itemsContainer").css("display", "none");
+                        jquery("#splashContainer").css("display", "block");
+                    }
+                );
+        });
 
-        // Move it to the destination folder.
-        clone.prependTo(destination);
+        // Resize the content areas to fill the window.
+        var resizeContentAreas = function () {
+            "use strict";
+            jquery(".itemArea").height(jquery(window).height() - 50);
+        };
+        resizeContentAreas();
 
-        // Remove the contextual highlighting.
-        clone.removeClass("active btn-primary btn-info");
+        // Disable the enter key to prevent accidentally firing forms.
+        // Disable it for everything except the code edit windows.
+        var disableEnterKey = function () {
+            "use strict";
+            jquery("html").bind("keypress", function (e) {
+                if (e.keyCode === 13 &&
+                    jquery(e.target).attr("contenteditable") !== "true") {
+                    return false;
+                }
+            });
+        };
+        disableEnterKey();
 
-        // Get the folder the item was dragged into.
-        var destinationFolder = clone.parent().attr("data-folder");
 
-        copyItem(itemId, destinationFolder);
-    };
+        // Preformat the copy login screen.
+        jquery("#destinationAgolBtn").button("toggle");
+        jquery("#destinationAgolBtn").addClass("btn-primary");
+        jquery("#destinationUrl").css({
+            "visibility": "hidden"
+        });
 
-    /**
-     * copyItem() Copies a given item ID.
-     * @id {String} ID of the source item
-     * @folder {String} id of the destination folder
-     */
-    var copyItem = function (id, folder) {
-        "use strict";
-        var sourcePortal = app.user.server;
-        var sourceToken = app.user.token;
-        var destinationPortal = sessionStorage.destinationUrl;
-        var destinationUsername = sessionStorage.destinationUsername;
-        var destinationToken = sessionStorage.destinationToken;
-        var type = jquery("#" + id).attr("data-type");
-        // Ensure the content type is supported before trying to copy it.
-        if (isSupported(type)) {
-            // Get the full item description and data from the source.
-            portal.content.itemDescription(sourcePortal, id, sourceToken).done(function (description) {
-                var thumbnailUrl = sourcePortal + "sharing/rest/content/items/" + id + "/info/" + description.thumbnail + "?token=" + sourceToken;
-                portal.content.itemData(sourcePortal, id, sourceToken).always(function (data) {
-                    /**
-                     * Post it to the destination using always
-                     * to ensure that it copies Web Mapping Applications
-                     * which don't have a data component and therefore
-                     f* generate a failed response.
-                     */
-                    portal.content.addItem(destinationPortal, destinationUsername, folder, description, data, thumbnailUrl, destinationToken).done(function (response) {
-                        var html;
-                        if (response.success === true) {
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                        } else if (response.error) {
-                            jquery("#" + id + "_clone").addClass("btn-danger");
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: response.error.message
-                            });
-                            jquery("#" + id + "_clone").before(html);
-                        }
-                    }).fail(function (response) {
-                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                            id: id,
-                            message: "Something went wrong."
-                        });
-                        jquery("#" + id + "_clone").before(html);
-                    });
+        // *** Global Listeners ***
+        jquery("#destinationAgolBtn").click(function () {
+            jquery("#destinationUrl").attr({
+                "placeholder": "",
+                "value": "https://www.arcgis.com/"
+            });
+            jquery("#destinationUrl").val("https://www.arcgis.com/");
+            jquery("#destinationUrl").css({
+                "visibility": "hidden"
+            });
+            jquery("#destinationAgolBtn").addClass("btn-primary active");
+            jquery("#destinationPortalBtn").removeClass("btn-primary active");
+        });
+        jquery("#destinationPortalBtn").click(function () {
+            jquery("#destinationUrl").attr({
+                "placeholder": "https://myportal.com/",
+                "value": ""
+            });
+            jquery("#destinationUrl").val("");
+            jquery("#destinationUrl").css({
+                "visibility": "visible"
+            });
+            jquery("#destinationPortalBtn").addClass("btn-primary active");
+            jquery("#destinationAgolBtn").removeClass("btn-primary active");
+        });
+
+        // Make DOM adjustments when the browser is resized.
+        jquery(window).resize(function () {
+            resizeContentAreas();
+        });
+
+        // Validate the entered url when the input loses focus.
+        jquery("#portalUrl").blur(function () {
+
+            // Give the DOM time to update before firing the validation.
+            setTimeout(function () {
+                validateUrl("#portalUrl");
+            }, 500);
+        });
+
+        // Validate the url when the input loses focus.
+        jquery("#destinationUrl").blur(function () {
+
+            // Give the DOM time to update before firing the validation.
+            setTimeout(function () {
+                if (jquery("#destinationPortalBtn").hasClass("active")) {
+                    validateUrl("#destinationUrl");
+                }
+            }, 500);
+        });
+
+        // Login.
+        jquery("[data-action='login']").click(function () {
+            esriId.getCredential(appInfo.portalUrl, {
+                    oAuthPopupConfirmation: false
+                })
+                .then(function (user) {
+                    jquery("#splashContainer").css("display", "none");
+                    jquery("#itemsContainer").css("display", "block");
+                    startSession(user);
                 });
-            });
-        } else {
-            // Not supported.
-            jquery("#" + id).addClass("btn-warning");
-            var html = mustache.to_html(jquery("#contentTypeErrorTemplate").html(), {
-                id: id,
-                type: type
-            });
-            jquery("#" + id).before(html);
-            jquery("#" + id + "_alert").fadeOut(6000);
-        }
-    };
+        });
+
+        // Log into a Portal.
+        jquery("#portalLoginBtn").click(function () {
+            loginPortal();
+        });
+
+        /**
+         * Use the existing credentials when "My Account"
+         * is selected as the copy target.
+         */
+        jquery("[data-action='copyMyAccount']").click(function () {
+            storeCredentials("destination", app.user.server, app.user.userId,
+                    app.user.token)
+                .then(function () {
+                    jquery("#copyModal").modal("hide");
+                    highlightCopyableContent();
+                    NProgress.start();
+                    showDestinationFolders();
+                    NProgress.done();
+                });
+        });
+
+        /**
+         * Show other destination form when "Another Account"
+         * is selected as the copy target.
+         */
+        jquery("[data-action='copyOtherAccount']").click(function () {
+            jquery("#destinationChoice").css("display", "none");
+            jquery("#destinationForm").css("display", "block");
+        });
+
+        // Log in to the destination account.
+        jquery("#destinationLoginBtn").click(function () {
+            loginDestination();
+        });
+
+        // Reset the destination login form when the modal is canceled.
+        jquery("#destinationLoginBtn").click(function () {
+            jquery("#destinationLoginBtn").button("reset");
+        });
+
+        // Clear the copy action when the cancel button is clicked.
+        jquery("#destinationCancelBtn").click(function () {
+            jquery("#actionDropdown li").removeClass("active");
+        });
+
+        // Add a listener for the enter key on the destination login form.
+        jquery("#destinationLoginForm").keypress(function (e) {
+            if (e.which == 13) {
+                jquery("#destinationLoginBtn").focus().click();
+            }
+        });
+
+        // Add a listener for the future search bar picker.
+        jquery(document).on("click", "#searchMenu li", function (e) {
+            var selectedAction = jquery(e.target).parent().attr("data-action");
+            if (selectedAction !== "viewMyContent") {
+                jquery("#searchMenu li").removeClass("active");
+                jquery(e.target).parent().addClass("active");
+                if (jquery("#searchText").val()) {
+                    // If a search term already exists, then perform the search.
+                    search();
+                } else {
+                    // Change the placeholder.
+                    jquery("#searchText").attr("placeholder",
+                        jquery(e.currentTarget).text());
+                }
+            } else {
+                NProgress.start();
+                listUserItems();
+                NProgress.done();
+            }
+        });
+
+        jquery(document).on("click", "li [data-action]", function (e) {
+            // Highlight the selected action except for "View My Stats."
+            var selectedAction = jquery(e.target).parent().attr("data-action");
+            if (selectedAction !== "stats") {
+                jquery("#actionDropdown li").removeClass("active");
+                jquery(e.target).parent().addClass("active");
+            }
+            // Choose what to do based on the selection.
+            switch (selectedAction) {
+            case "inspectContent":
+                // Enable inspecting of content.
+                cleanUp();
+                inspectContent();
+                break;
+            case "updateWebmapServices":
+                cleanUp();
+                updateWebmapServices();
+                break;
+            case "updateContentUrl":
+                cleanUp();
+                updateContentUrls();
+                break;
+            case "stats":
+                viewStats();
+                break;
+            case "logout":
+                logout();
+                break;
+            }
+        });
+
+        // Clean up the lists when copy content is selected.
+        jquery("#copyModal").on("show.bs.modal", function () {
+            cleanUp();
+            jquery("#destinationChoice").css("display", "block");
+            jquery("#destinationForm").css("display", "none");
+        });
+
+    });
 
 });
