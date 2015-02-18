@@ -31,7 +31,7 @@ require([
     jquery(document).ready(function () {
 
         // Resize the content areas to fill the window.
-        var resizeContentAreas = function resizeContentAreas() {
+        var resizeContentAreas = function () {
             "use strict";
             jquery(".itemArea").height(jquery(window).height() - 50);
         };
@@ -39,7 +39,7 @@ require([
 
         // Disable the enter key to prevent accidentally firing forms.
         // Disable it for everything except the code edit windows.
-        var disableEnterKey = function disableEnterKey() {
+        var disableEnterKey = function () {
             "use strict";
             jquery("html").bind("keypress", function (e) {
                 if (e.keyCode === 13 &&
@@ -112,6 +112,11 @@ require([
                 }
             }, 500);
         });
+    });
+
+    // Load the html templates.
+    jquery.get("templates.html", function (templates) {
+        jquery("body").append(templates);
     });
 
     // *** ArcGIS OAuth ***
@@ -222,10 +227,6 @@ require([
         }
     });
 
-    // Load the html templates.
-    jquery.get("templates.html", function (templates) {
-        jquery("body").append(templates);
-    });
 
     jquery(document).on("click", "li [data-action]", function (e) {
         // Highlight the selected action except for "View My Stats."
@@ -269,7 +270,7 @@ require([
      * Check the url for errors (e.g. no trailing slash)
      * and update it before sending.
      */
-    function validateUrl(el) {
+    var validateUrl = function (el) {
         "use strict";
         var portalUrl = jquery.trim(jquery(el).val());
         var html = jquery("#urlErrorTemplate").html();
@@ -306,9 +307,9 @@ require([
                 jquery(el).parent().after(html);
             });
         });
-    }
+    };
 
-    function startSession(user) {
+    var startSession = function (user) {
         "use strict";
         var searchHtml;
         var portalUrl = user.server + "/";
@@ -347,7 +348,7 @@ require([
             listUserItems();
             NProgress.done();
         });
-    }
+    };
 
     var storeCredentials = function (direction, portal, username, token) {
         var deferred = jquery.Deferred();
@@ -358,7 +359,7 @@ require([
         return deferred.promise();
     };
 
-    function loginPortal() {
+    var loginPortal = function () {
         var portalUrl = jquery("#portalUrl").val();
         var username = jquery("#portalUsername").val();
         var password = jquery("#portalPassword").val();
@@ -390,9 +391,9 @@ require([
                 jquery("#portalLoginForm").before(html);
                 jquery("#portalLoginBtn").button("reset");
             });
-    }
+    };
 
-    function loginDestination() {
+    var loginDestination = function () {
         var portalUrl = jquery("#destinationUrl").val();
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
@@ -423,9 +424,9 @@ require([
                 jquery("#destinationLoginForm").before(html);
                 jquery("#destinationLoginBtn").button("reset");
             });
-    }
+    };
 
-    function logout() {
+    var logout = function () {
         sessionStorage.clear();
         app.user = {};
         app.stats.activities = {};
@@ -439,9 +440,9 @@ require([
         });
         esriId.destroyCredentials();
         window.location.reload();
-    }
+    };
 
-    function search() {
+    var search = function () {
 
         var query = jquery("#searchText").val();
         var portalUrl = jquery("#searchMenu li.active").attr("data-url");
@@ -462,9 +463,9 @@ require([
                 NProgress.done();
             });
 
-    }
+    };
 
-    function inspectContent() {
+    var inspectContent = function () {
         require(["nprogress", "portal", "highlight"],
             function (NProgress, portal, hljs) {
 
@@ -679,9 +680,9 @@ require([
                         });
                 });
             });
-    }
+    };
 
-    function updateWebmapServices() {
+    var updateWebmapServices = function () {
         var webmapData;
         var owner;
         var folder;
@@ -781,9 +782,9 @@ require([
                 });
         });
 
-    }
+    };
 
-    function updateContentUrls() {
+    var updateContentUrls = function () {
         var owner;
         var folder;
         var supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
@@ -840,9 +841,9 @@ require([
             });
         });
 
-    }
+    };
 
-    function viewStats() {
+    var viewStats = function () {
         portal.user.profile(app.user.server, app.user.userId, app.user.token)
             .done(function (user) {
 
@@ -904,9 +905,9 @@ require([
                 });
 
             });
-    }
+    };
 
-    function makeDraggable(el) {
+    var makeDraggable = function (el) {
         el.draggable({
             cancel: false,
             helper: "clone",
@@ -915,9 +916,9 @@ require([
             opacity: 0.7
         });
         el.removeAttr("disabled");
-    }
+    };
 
-    function makeDroppable(id) {
+    var makeDroppable = function (id) {
         // Make the drop area accept content items.
         jquery("#dropFolder_" + id).droppable({
             accept: ".content",
@@ -927,27 +928,27 @@ require([
                 moveItem(ui.draggable, jquery(this).parent().parent());
             }
         });
-    }
+    };
 
-    function cleanUp() {
+    var cleanUp = function () {
         jquery("#dropArea").empty(); //Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
         jquery(".content").attr("disabled", "disabled");
-    }
+    };
 
-    function clearResults() {
+    var clearResults = function () {
         // Clean up any existing content in the left hand column.
         jquery("#itemsArea").empty();
-    }
+    };
 
-    function highlightCopyableContent() {
+    var highlightCopyableContent = function () {
 
-        function setMaxWidth(el) {
+        var setMaxWidth = function (el) {
             // Set the max-width of folder items so they don't fill the body when dragging.
             var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
             jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
-        }
+        };
 
         jquery("#itemsArea .content").each(function (i) {
             var type = jquery(this).attr("data-type");
@@ -957,9 +958,9 @@ require([
                 makeDraggable(jquery(this)); //Make the content draggable.
             }
         });
-    }
+    };
 
-    function highlightSupportedContent() {
+    var highlightSupportedContent = function () {
         // Highlight content supported by the currently selected action.
         switch (jquery("#actionDropdown li.active").attr("data-action")) {
         case "copyContent":
@@ -978,7 +979,7 @@ require([
             inspectContent();
             break;
         }
-    }
+    };
 
     /**
      * isSupported() returns true if the content type is supported
@@ -986,7 +987,7 @@ require([
      * @return (Boolean)
      * List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
      */
-    function isSupported(type) {
+    var isSupported = function (type) {
         // Check if the content type is supported.
         //
         var supportedTypes = [
@@ -1013,9 +1014,9 @@ require([
         if (jquery.inArray(type, supportedTypes) > -1) {
             return true;
         }
-    }
+    };
 
-    function isTypeText(type) {
+    var isTypeText = function (type) {
         var textTypes = [
             "Web Map",
             "Feature Collection",
@@ -1028,9 +1029,9 @@ require([
         if (jquery.inArray(type, textTypes) > -1) {
             return true;
         }
-    }
+    };
 
-    function isTypeUrl(type) {
+    var isTypeUrl = function (type) {
         var urlTypes = [
             "Feature Service",
             "Map Service",
@@ -1049,9 +1050,9 @@ require([
         if (jquery.inArray(type, urlTypes) > -1) {
             return true;
         }
-    }
+    };
 
-    function statsCalendar(activities) {
+    var statsCalendar = function (activities) {
         require(["d3", "cal-heatmap"], function (d3, CalHeatMap) {
             // Create a date object for three months ago.
             var today = new Date();
@@ -1085,9 +1086,9 @@ require([
                 domainDynamicDimension: false
             });
         });
-    }
+    };
 
-    function itemInfo(type) {
+    var itemInfo = function (type) {
         var types = [
             {
                 type: "Color Set",
@@ -1184,9 +1185,9 @@ require([
             };
         }
         return info;
-    }
+    };
 
-    function listSearchItems(results) {
+    var listSearchItems = function (results) {
         "use strict";
         clearResults();
         cleanUp();
@@ -1212,10 +1213,9 @@ require([
         });
 
         highlightSupportedContent();
+    };
 
-    }
-
-    function listUserItems() {
+    var listUserItems = function () {
         "use strict";
         cleanUp();
         clearResults();
@@ -1305,9 +1305,9 @@ require([
                 highlightSupportedContent();
             }, 1000);
         });
-    }
+    };
 
-    function showDestinationFolders() {
+    var showDestinationFolders = function () {
         "use strict";
         var url = sessionStorage.destinationUrl;
         var username = sessionStorage.destinationUsername;
@@ -1340,13 +1340,13 @@ require([
                 });
             });
         });
-    }
+    };
 
     /**
      * Move the content DOM element from the source
      * to the destination container on the page.
      */
-    function moveItem(item, destination) {
+    var moveItem = function (item, destination) {
         "use strict";
         var itemId = jquery(item).attr("data-id");
 
@@ -1369,14 +1369,14 @@ require([
         var destinationFolder = clone.parent().attr("data-folder");
 
         copyItem(itemId, destinationFolder);
-    }
+    };
 
     /**
      * copyItem() Copies a given item ID.
      * @id {String} ID of the source item
      * @folder {String} id of the destination folder
      */
-    function copyItem(id, folder) {
+    var copyItem = function (id, folder) {
         "use strict";
         var sourcePortal = app.user.server;
         var sourceToken = app.user.token;
@@ -1427,6 +1427,6 @@ require([
             jquery("#" + id).before(html);
             jquery("#" + id + "_alert").fadeOut(6000);
         }
-    }
+    };
 
 });
