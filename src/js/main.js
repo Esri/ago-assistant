@@ -349,13 +349,14 @@ require([
         });
     }
 
-    function storeCredentials(direction, portal, username, token, callback) {
-        "use strict";
+    var storeCredentials = function (direction, portal, username, token) {
+        var deferred = jquery.Deferred();
         sessionStorage[direction + "Token"] = token;
         sessionStorage[direction + "Url"] = portal;
         sessionStorage[direction + "Username"] = username;
-        callback();
-    }
+        deferred.resolve();
+        return deferred.promise();
+    };
 
     function loginPortal() {
         var portalUrl = jquery("#portalUrl").val();
