@@ -237,7 +237,7 @@ require([
         require(["nprogress", "portal", "highlight"],
             function (NProgress, portal, hljs) {
 
-                function validateJson(jsonString) {
+                var validateJson = function (jsonString) {
                     try {
                         var o = JSON.parse(jsonString);
                         if (o && typeof o === "object" && o !== null) {
@@ -245,7 +245,134 @@ require([
                         }
                     } catch (e) {}
                     return false;
-                }
+                };
+
+                var startEditing = function (e) {
+
+                    // Allow removing the button active state.
+                    e.stopImmediatePropagation();
+
+                    var codeBlock = jquery(e.currentTarget)
+                        .parent()
+                        .next();
+                    editButton = jquery(e.currentTarget);
+                    saveButton = jquery(e.currentTarget)
+                        .parent()
+                        .children("[data-action='saveEdits']");
+
+                    // Reset the save button.
+                    saveButton
+                        .children("span")
+                        .attr("class", "fa fa-lg fa-save");
+
+                    if (codeBlock.attr("contentEditable") !== "true") {
+                        // Start editing.
+                        editButton
+                            .children("span")
+                            .attr("class", "fa fa-lg fa-undo");
+                        editButton.attr("data-toggle", "tooltip");
+                        editButton.attr("data-placement", "bottom");
+                        editButton.attr("title", "Discard your edits");
+                        editButton.tooltip();
+                        jsonBackup = codeBlock.text();
+                        codeBlock.attr("contentEditable", "true");
+                        codeBlock.bind("input", function (e) {
+                            // Validate the JSON as it is edited.
+                            jsonValid = validateJson(codeBlock.text());
+                            saveButton.tooltip("destroy");
+                            if (jsonValid) {
+                                // Valid. Allow saving.
+                                saveButton.removeClass("disabled");
+                                saveButton.css("color", "green");
+                                saveButton.attr("data-toggle", "tooltip");
+                                saveButton.attr("data-placement", "bottom");
+                                saveButton.attr("title",
+                                    "JSON is valid. Click to save."
+                                );
+                            } else {
+                                // Invalid. Prevent saving.
+                                saveButton.css("color", "red");
+                                saveButton.attr("data-toggle", "tooltip");
+                                saveButton.attr("data-placement", "bottom");
+                                saveButton.attr("title",
+                                    "JSON is invalid. Saving not allowed."
+                                );
+                            }
+                            saveButton.tooltip({
+                                container: "body"
+                            });
+                        });
+                        editButton.attr("class", "btn btn-default");
+                        saveButton.attr("class", "btn btn-default");
+                    } else {
+                        // Let the user back out of editing without saving.
+                        // End editing and restore the original json.
+                        codeBlock.attr("contentEditable", "false");
+                        codeBlock.text(jsonBackup);
+                        codeBlock.each(function (i, e) {
+                            hljs.highlightBlock(e);
+                        });
+                        editButton.attr("class", "btn btn-default");
+                        editButton.children("span")
+                            .attr("class", "fa fa-lg fa-pencil");
+                        editButton.tooltip("destroy");
+                        saveButton.attr("class", "btn btn-default disabled");
+                        saveButton.css("color", "black");
+                    }
+
+                    // Post the edited JSON.
+                    saveButton.click(function (e) {
+                        if (jsonValid) {
+                            // JSON is valid. Allow saving.
+                            var newJson = codeBlock.text();
+                            var itemInfo = JSON.parse(
+                                jquery("#descriptionJson").text()
+                            );
+                            editButton.attr("class", "btn btn-default");
+                            editButton.children("span")
+                                .attr("class", "fa fa-lg fa-pencil");
+                            saveButton.attr("class",
+                                "btn btn-default disabled"
+                            );
+                            saveButton.css("color", "black");
+                            codeBlock.attr("contentEditable", "false");
+
+                            // Post the changes.
+                            saveButton.children("span")
+                                .attr("class", "fa fa-lg fa-spinner fa-spin");
+                            var ownerFolder;
+                            if (itemInfo.ownerFolder) {
+                                ownerFolder = itemInfo.ownerFolder;
+                            } else {
+                                ownerFolder = "/";
+                            }
+                            if (editButton.attr("data-container") === "Description") {
+                                portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
+                                    if (response.success) {
+                                        saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                        saveButton.css("color", "green");
+                                    } else {
+                                        saveButton.children("span").attr("class", "fa fa-lg fa-times");
+                                        saveButton.css("color", "red");
+                                    }
+                                });
+                            } else if (editButton.attr("data-container") === "Data") {
+                                saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
+                                portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
+                                    if (response.success) {
+                                        saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                        saveButton.css("color", "green");
+                                    } else {
+                                        saveButton.children("span").attr("class", "fa fa-lg fa-times");
+                                        saveButton.css("color", "red");
+                                    }
+                                });
+                            }
+                        } else {
+                            saveButton.removeClass("active");
+                        }
+                    });
+                };
 
                 jquery(".content").addClass("data-toggle");
                 jquery(".content").removeAttr("disabled");
@@ -315,11 +442,10 @@ require([
                                     var editButton;
                                     var saveButton;
                                     jquery(".btn-default[data-action='startEdits']").click(function (e) {
-
                                         if (!localStorage.hasOwnProperty("editsAllowed")) {
                                             // Show the caution modal.
                                             jquery("#editJsonModal").modal("show");
-                                            jquery(".acknowledgeRisk").click(function (e) {
+                                            jquery(".acknowledgeRisk").click(function () {
                                                 if (jquery(e.currentTarget).prop("checked")) {
                                                     jquery("#editJsonBtn").removeClass("disabled");
                                                 } else {
@@ -327,120 +453,13 @@ require([
                                                 }
                                             });
                                         } else {
-                                            startEditing();
+                                            startEditing(e);
                                         }
                                         jquery("#editJsonBtn").click(function () {
                                             jquery("#editJsonModal").modal("hide");
                                             localStorage.setItem("editsAllowed", true);
-                                            startEditing();
+                                            startEditing(e);
                                         });
-
-                                        function startEditing() {
-
-                                            e.stopImmediatePropagation(); // Allow removing the button active state.
-
-                                            var codeBlock = jquery(e.currentTarget).parent().next();
-                                            editButton = jquery(e.currentTarget);
-                                            saveButton = jquery(e.currentTarget).parent().children("[data-action='saveEdits']");
-
-                                            // Reset the save button.
-                                            saveButton.children("span").attr("class", "fa fa-lg fa-save");
-
-                                            if (codeBlock.attr("contentEditable") !== "true") {
-                                                // Start editing.
-                                                editButton.children("span").attr("class", "fa fa-lg fa-undo");
-                                                editButton.attr("data-toggle", "tooltip");
-                                                editButton.attr("data-placement", "bottom");
-                                                editButton.attr("title", "Discard your edits");
-                                                editButton.tooltip();
-                                                jsonBackup = codeBlock.text();
-                                                codeBlock.attr("contentEditable", "true");
-                                                codeBlock.bind("input", function (e) {
-                                                    // Validate the JSON as it is edited.
-                                                    jsonValid = validateJson(codeBlock.text());
-                                                    saveButton.tooltip("destroy");
-                                                    if (jsonValid) {
-                                                        // Valid. Allow saving.
-                                                        saveButton.removeClass("disabled");
-                                                        saveButton.css("color", "green");
-                                                        saveButton.attr("data-toggle", "tooltip");
-                                                        saveButton.attr("data-placement", "bottom");
-                                                        saveButton.attr("title", "JSON is valid. Click to save.");
-                                                    } else {
-                                                        // Invalid. Prevent saving.
-                                                        saveButton.css("color", "red");
-                                                        saveButton.attr("data-toggle", "tooltip");
-                                                        saveButton.attr("data-placement", "bottom");
-                                                        saveButton.attr("title", "JSON is invalid. Saving not allowed.");
-                                                    }
-                                                    saveButton.tooltip({
-                                                        container: "body"
-                                                    });
-                                                });
-                                                editButton.attr("class", "btn btn-default");
-                                                saveButton.attr("class", "btn btn-default");
-                                            } else {
-                                                // Let the user back out of editing without saving.
-                                                // End editing and restore the original json.
-                                                codeBlock.attr("contentEditable", "false");
-                                                codeBlock.text(jsonBackup);
-                                                codeBlock.each(function (i, e) {
-                                                    hljs.highlightBlock(e);
-                                                });
-                                                editButton.attr("class", "btn btn-default");
-                                                editButton.children("span").attr("class", "fa fa-lg fa-pencil");
-                                                editButton.tooltip("destroy");
-                                                saveButton.attr("class", "btn btn-default disabled");
-                                                saveButton.css("color", "black");
-                                            }
-
-                                            // Post the edited JSON.
-                                            saveButton.click(function (e) {
-                                                if (jsonValid) {
-                                                    // JSON is valid. Allow saving.
-                                                    var newJson = codeBlock.text();
-                                                    var itemInfo = JSON.parse(jquery("#descriptionJson").text());
-                                                    editButton.attr("class", "btn btn-default");
-                                                    editButton.children("span").attr("class", "fa fa-lg fa-pencil");
-                                                    saveButton.attr("class", "btn btn-default disabled");
-                                                    saveButton.css("color", "black");
-                                                    codeBlock.attr("contentEditable", "false");
-
-                                                    // Post the changes.
-                                                    saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                                                    var ownerFolder;
-                                                    if (itemInfo.ownerFolder) {
-                                                        ownerFolder = itemInfo.ownerFolder;
-                                                    } else {
-                                                        ownerFolder = "/";
-                                                    }
-                                                    if (editButton.attr("data-container") === "Description") {
-                                                        portal.content.updateDescription(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
-                                                            if (response.success) {
-                                                                saveButton.children("span").attr("class", "fa fa-lg fa-check");
-                                                                saveButton.css("color", "green");
-                                                            } else {
-                                                                saveButton.children("span").attr("class", "fa fa-lg fa-times");
-                                                                saveButton.css("color", "red");
-                                                            }
-                                                        });
-                                                    } else if (editButton.attr("data-container") === "Data") {
-                                                        saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                                                        portal.content.updateData(app.user.server, itemInfo.owner, itemInfo.id, ownerFolder, newJson, app.user.token).done(function (response) {
-                                                            if (response.success) {
-                                                                saveButton.children("span").attr("class", "fa fa-lg fa-check");
-                                                                saveButton.css("color", "green");
-                                                            } else {
-                                                                saveButton.children("span").attr("class", "fa fa-lg fa-times");
-                                                                saveButton.css("color", "red");
-                                                            }
-                                                        });
-                                                    }
-                                                } else {
-                                                    saveButton.removeClass("active");
-                                                }
-                                            });
-                                        }
 
                                     });
                                     NProgress.done();
@@ -1179,23 +1198,30 @@ require([
                 count: content.items.length
             };
             // Append the root folder accordion.
-            var html = mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
+            var html = mustache.to_html(jquery("#dropFolderTemplate").html(),
+                folderData
+            );
             jquery("#dropArea").append(html);
             makeDroppable(""); // Enable the droppable area.
             // Append the other folders.
             jquery.each(content.folders, function (folder) {
-                portal.user.content(url, username, content.folders[folder].id, token).done(function (content) {
+                portal.user.content(
+                    url, username, content.folders[folder].id, token
+                ).done(function (content) {
                     var folderData = {
                         title: content.currentFolder.title,
                         id: content.currentFolder.id,
                         count: content.items.length
                     };
                     // Append an accordion for the folder.
-                    var html = mustache.to_html(jquery("#dropFolderTemplate").html(), folderData);
+                    var template = jquery("#dropFolderTemplate").html();
+                    var html = mustache.to_html(template, folderData);
                     jquery("#dropArea").append(html);
                     // Collapse the accordion to avoid cluttering the display.
-                    jquery("#collapse" + content.currentFolder.id).collapse("hide");
-                    makeDroppable(content.currentFolder.id); // Enable the droppable area.
+                    jquery("#collapse" + content.currentFolder.id)
+                        .collapse("hide");
+                    // Enable the droppable area.
+                    makeDroppable(content.currentFolder.id);
                 });
             });
         });
