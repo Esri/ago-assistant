@@ -443,12 +443,13 @@ require([
                                     jquery(".btn-default[data-action='startEdits']").click(function (e) {
                                         if (!localStorage.hasOwnProperty("editsAllowed")) {
                                             // Show the caution modal.
+                                            var editJsonBtn = jquery("#editJsonBtn");
                                             jquery("#editJsonModal").modal("show");
-                                            jquery(".acknowledgeRisk").click(function () {
+                                            jquery(".acknowledgeRisk").click(function (e) {
                                                 if (jquery(e.currentTarget).prop("checked")) {
-                                                    jquery("#editJsonBtn").removeClass("disabled");
+                                                    editJsonBtn.removeClass("disabled");
                                                 } else {
-                                                    jquery("#editJsonBtn").addClass("disabled");
+                                                    editJsonBtn.addClass("disabled");
                                                 }
                                             });
                                         } else {
