@@ -135,7 +135,6 @@ require([
         jquery("#portalLoginBtn").button("loading");
         portal.generateToken(portalUrl, username, password)
             .done(function (response) {
-                jquery("#portalLoginBtn").button("reset");
                 if (response.token) {
                     var user = {
                         token: response.token,
@@ -149,13 +148,14 @@ require([
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
                     jquery("#portalLoginForm").before(html);
-                    jquery("#portalLoginBtn").button("reset");
                 }
             })
             .fail(function (response) {
                 console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
                 jquery("#portalLoginForm").before(html);
+            })
+            .always(function () {
                 jquery("#portalLoginBtn").button("reset");
             });
     };
@@ -168,7 +168,6 @@ require([
         jquery("#dropArea").empty();
         portal.generateToken(portalUrl, username, password)
             .done(function (response) {
-                jquery("#destinationLoginBtn").button("reset");
                 if (response.token) {
                     storeCredentials("destination", portalUrl, username,
                         response.token).
@@ -182,13 +181,14 @@ require([
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
                     jquery("#destinationLoginForm").before(html);
-                    jquery("#destinationLoginBtn").button("reset");
                 }
             })
             .fail(function (response) {
                 console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
                 jquery("#destinationLoginForm").before(html);
+            })
+            .always(function () {
                 jquery("#destinationLoginBtn").button("reset");
             });
     };
