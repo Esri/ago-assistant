@@ -23,7 +23,8 @@ require([
     // *** ArcGIS OAuth ***
     var appInfo = new arcgisOAuthInfo({
         appId: "4E1s0Mv5r0c2l6W8",
-        popup: true
+        popup: true,
+        portalUrl: "https://www.arcgis.com/"
     });
 
     // Some app level variables.
@@ -77,23 +78,23 @@ require([
         });
     };
 
-    var startSession = function (user) {
+    var startSession = function (portalUrl, user) {
         "use strict";
         var searchHtml;
-        var portalUrl = user.server + "/";
         var token = user.token;
         app.user = user;
-        app.user.server = app.user.server + "/";
         portal.self(portalUrl, token).done(function (data) {
             var template = jquery("#sessionTemplate").html();
             var html = mustache.to_html(template, data);
+            app.user.userId = data.user.username;
+            app.user.server = "https://" + data.portalHostname + "/";
             jquery(".nav.navbar-nav").after(html);
             jquery("#logout").show();
             jquery("#actionDropdown").css({
                 "visibility": "visible"
             });
             searchHtml = mustache.to_html(jquery("#searchTemplate").html(), {
-                portal: portalUrl,
+                portal: app.user.server,
                 name: data.name,
                 id: data.id
             });
@@ -137,8 +138,6 @@ require([
                 jquery("#portalLoginBtn").button("reset");
                 if (response.token) {
                     var user = {
-                        userId: username,
-                        server: portalUrl,
                         token: response.token,
                         expires: response.expires,
                         ssl: response.ssl
@@ -146,7 +145,7 @@ require([
                     jquery("#portalLoginModal").modal("hide");
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
-                    startSession(user);
+                    startSession(portalUrl, user);
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
                     jquery("#portalLoginForm").before(html);
@@ -1247,8 +1246,7 @@ require([
                         jquery("#splashContainer").css("display", "none");
                         jquery("#itemsContainer").css("display", "block");
                         app.user = user;
-                        app.user.server = app.user.server + "/";
-                        startSession(user);
+                        startSession(appInfo.portalUrl, user);
                     })
                 .otherwise(
                     function () {
@@ -1345,7 +1343,7 @@ require([
                 .then(function (user) {
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
-                    startSession(user);
+                    startSession(appInfo.portalUrl, user);
                 });
         });
 
