@@ -221,12 +221,12 @@ require([
         var query = jquery("#searchText").val();
         var portalUrl = jquery("#searchMenu li.active").attr("data-url");
         var token;
-        
+
         // Append the token only for searches in the user's portal.
         if (portalUrl === app.user.server) {
             token = app.user.token;
         }
-        
+
         // Add the org id for "My Portal" searches.
         if (jquery("#searchMenu li.active").attr("data-id")) {
             query += " accountid:" +
@@ -236,7 +236,7 @@ require([
         if (jquery("#searchMenu li.active").text() === "Search My Content") {
             query += " owner:" + app.user.userId;
         }
-        
+
         NProgress.start();
         portal.search(portalUrl, query, 100, "numViews", "desc", token)
             .done(function (results) {
@@ -1258,34 +1258,52 @@ require([
                 }
             }, 500);
         });
-        
+
         // Disable username and password if web tier auth is selected.
-        jquery("#sourceWebTierAuth").click(function(e){
+        jquery("#sourceWebTierAuth").click(function (e) {
             var checkboxState = jquery(e.currentTarget).prop("checked");
             if (checkboxState === true) {
                 jquery("#portalUsername").attr("disabled", true);
                 jquery("#portalPassword").attr("disabled", true);
                 jquery("#portalLoginBtn").text("Proceed");
-            }
-            else {
+                jquery.ajaxSetup({
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                });
+            } else {
                 jquery("#portalUsername").removeAttr("disabled");
                 jquery("#portalPassword").removeAttr("disabled");
                 jquery("#portalLoginBtn").text("Log in");
+                jquery.ajaxSetup({
+                    xhrFields: {
+                        withCredentials: false
+                    }
+                });
             }
         });
-        
+
         // Disable username and password if web tier auth is selected.
-        jquery("#destWebTierAuthChk").click(function(e){
+        jquery("#destWebTierAuthChk").click(function (e) {
             var checkboxState = jquery(e.currentTarget).prop("checked");
             if (checkboxState === true) {
                 jquery("#destinationUsername").attr("disabled", true);
                 jquery("#destinationPassword").attr("disabled", true);
                 jquery("#destinationLoginBtn").text("Proceed");
-            }
-            else {
+                jquery.ajaxSetup({
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                });
+            } else {
                 jquery("#destinationUsername").removeAttr("disabled");
                 jquery("#destinationPassword").removeAttr("disabled");
                 jquery("#destinationLoginBtn").text("Log in");
+                jquery.ajaxSetup({
+                    xhrFields: {
+                        withCredentials: false
+                    }
+                });
             }
         });
 
