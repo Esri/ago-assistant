@@ -220,6 +220,13 @@ require([
 
         var query = jquery("#searchText").val();
         var portalUrl = jquery("#searchMenu li.active").attr("data-url");
+        var token;
+        
+        // Append the token only for searches in the user's portal.
+        if (portalUrl === app.user.server) {
+            token = app.user.token;
+        }
+        
         // Add the org id for "My Portal" searches.
         if (jquery("#searchMenu li.active").attr("data-id")) {
             query += " accountid:" +
@@ -229,9 +236,9 @@ require([
         if (jquery("#searchMenu li.active").text() === "Search My Content") {
             query += " owner:" + app.user.userId;
         }
-
+        
         NProgress.start();
-        portal.search(portalUrl, query, 100, "numViews", "desc", app.user.token)
+        portal.search(portalUrl, query, 100, "numViews", "desc", token)
             .done(function (results) {
                 listSearchItems(results);
                 NProgress.done();
