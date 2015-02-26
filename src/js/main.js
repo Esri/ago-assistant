@@ -171,14 +171,19 @@ require([
         portal.generateToken(portalUrl, username, password)
             .done(function (response) {
                 if (response.token) {
-                    storeCredentials("destination", portalUrl, username,
-                        response.token).
-                    then(function () {
-                        jquery("#copyModal").modal("hide");
-                        highlightCopyableContent();
-                        NProgress.start();
-                        showDestinationFolders();
-                        NProgress.done();
+                    var token = response.token;
+                    portal.self(portalUrl, token).done(function (data) {
+                        username = data.user.username;
+                        portalUrl = "https://" + data.portalHostname + "/";
+                        storeCredentials("destination", portalUrl, username,
+                                token)
+                            .then(function () {
+                                jquery("#copyModal").modal("hide");
+                                highlightCopyableContent();
+                                NProgress.start();
+                                showDestinationFolders();
+                                NProgress.done();
+                            });
                     });
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
