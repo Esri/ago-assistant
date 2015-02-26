@@ -1,7 +1,7 @@
 require([
     "jquery",
-    "portal",
-    "info",
+    "portal/portal",
+    "portal/info",
     "mustache",
     "nprogress",
     "esri/arcgis/Portal",
@@ -235,7 +235,7 @@ require([
     };
 
     var inspectContent = function () {
-        require(["nprogress", "portal", "highlight"],
+        require(["nprogress", "portal/portal", "highlight"],
             function (NProgress, portal, hljs) {
 
                 var validateJson = function (jsonString) {

@@ -1,4 +1,4 @@
-define(["jquery", "util"], function (jquery, util) {
+define(["jquery", "portal/util"], function (jquery, util) {
     return {
         version: function (portal) {
             // Returns the version of the portal.
