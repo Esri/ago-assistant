@@ -1185,11 +1185,13 @@ require([
         };
         disableEnterKey();
 
-
         // Preformat the copy login screen.
         jquery("#destinationAgolBtn").button("toggle");
         jquery("#destinationAgolBtn").addClass("btn-primary");
         jquery("#destinationUrl").css({
+            "visibility": "hidden"
+        });
+        jquery("#destinationWebTierAuth").css({
             "visibility": "hidden"
         });
 
@@ -1203,6 +1205,9 @@ require([
             jquery("#destinationUrl").css({
                 "visibility": "hidden"
             });
+            jquery("#destinationWebTierAuth").css({
+                "visibility": "hidden"
+            });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
         });
@@ -1213,6 +1218,9 @@ require([
             });
             jquery("#destinationUrl").val("");
             jquery("#destinationUrl").css({
+                "visibility": "visible"
+            });
+            jquery("#destinationWebTierAuth").css({
                 "visibility": "visible"
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
@@ -1242,6 +1250,36 @@ require([
                     validateUrl("#destinationUrl");
                 }
             }, 500);
+        });
+        
+        // Disable username and password if web tier auth is selected.
+        jquery("#sourceWebTierAuth").click(function(e){
+            var checkboxState = jquery(e.currentTarget).prop("checked");
+            if (checkboxState === true) {
+                jquery("#portalUsername").attr("disabled", true);
+                jquery("#portalPassword").attr("disabled", true);
+                jquery("#portalLoginBtn").text("Proceed");
+            }
+            else {
+                jquery("#portalUsername").removeAttr("disabled");
+                jquery("#portalPassword").removeAttr("disabled");
+                jquery("#portalLoginBtn").text("Log in");
+            }
+        });
+        
+        // Disable username and password if web tier auth is selected.
+        jquery("#destWebTierAuthChk").click(function(e){
+            var checkboxState = jquery(e.currentTarget).prop("checked");
+            if (checkboxState === true) {
+                jquery("#destinationUsername").attr("disabled", true);
+                jquery("#destinationPassword").attr("disabled", true);
+                jquery("#destinationLoginBtn").text("Proceed");
+            }
+            else {
+                jquery("#destinationUsername").removeAttr("disabled");
+                jquery("#destinationPassword").removeAttr("disabled");
+                jquery("#destinationLoginBtn").text("Log in");
+            }
         });
 
         // Login.
