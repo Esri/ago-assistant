@@ -1166,6 +1166,7 @@ require([
             // Doing it here ensures all required libraries have loaded.
             jquery(".jumbotron > p > [data-action='login']")
                 .removeAttr("disabled");
+            jquery("a.portal-signin").attr("href", "#portalLoginModal");
 
             // Check for previously authenticated sessions.
             esriId.registerOAuthInfos([appInfo]);
