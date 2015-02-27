@@ -403,16 +403,16 @@ require([
                     var itemDescription;
                     var itemData;
                     var token;
-                    
+
                     /**
                      * Append the token only for content in the user's portal.
-                     * This prevents trying to pass a portal token when 
+                     * This prevents trying to pass a portal token when
                      * inspecting content from an ArcGIS Online search.
                      */
                     if (server === app.user.server) {
                         token = app.user.token;
                     }
-                    
+
                     NProgress.start();
                     jquery(".content").addClass("btn-info");
                     jquery(".content").removeClass("active");
