@@ -34,6 +34,7 @@ module.exports = function (grunt) {
                 files: {
                     'src/js/main.min.js': 'src/js/main.js',
                     'src/js/portal/portal.min.js': 'src/js/portal/portal.js',
+                    'src/js/portal/info.min.js': 'src/js/portal/info.js',
                     'src/js/portal/util.min.js': 'src/js/portal/util.js'
                 }
             }
