@@ -240,7 +240,7 @@ require([
         NProgress.start();
         portal.search(portalUrl, query, 100, "numViews", "desc", token)
             .done(function (results) {
-                listSearchItems(results);
+                listSearchItems(portalUrl, results);
                 NProgress.done();
             });
 
@@ -397,12 +397,22 @@ require([
 
                 // Add a listener for clicking on content buttons.
                 jquery(".content").click(function () {
-                    var server = app.user.server;
-                    var token = app.user.token;
+                    var server = jquery(this).attr("data-portal");
                     var id = jquery(this).attr("data-id");
                     var title = jquery(this).text();
                     var itemDescription;
                     var itemData;
+                    var token;
+                    
+                    /**
+                     * Append the token only for content in the user's portal.
+                     * This prevents trying to pass a portal token when 
+                     * inspecting content from an ArcGIS Online search.
+                     */
+                    if (server === app.user.server) {
+                        token = app.user.token;
+                    }
+                    
                     NProgress.start();
                     jquery(".content").addClass("btn-info");
                     jquery(".content").removeClass("active");
@@ -980,7 +990,7 @@ require([
         }
     };
 
-    var listSearchItems = function (results) {
+    var listSearchItems = function (portalUrl, results) {
         "use strict";
         clearResults();
         cleanUp();
@@ -998,7 +1008,8 @@ require([
                 "id": this.id,
                 "title": this.title,
                 "type": this.type,
-                "icon": info.items(this.type).icon
+                "icon": info.items(this.type).icon,
+                "portal": portalUrl
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html)
@@ -1059,7 +1070,8 @@ require([
                     "id": this.id,
                     "title": this.title,
                     "type": this.type,
-                    "icon": info.items(this.type).icon
+                    "icon": info.items(this.type).icon,
+                    "portal": url
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
@@ -1083,7 +1095,8 @@ require([
                             "id": this.id,
                             "title": this.title,
                             "type": this.type,
-                            "icon": info.items(this.type).icon
+                            "icon": info.items(this.type).icon,
+                            "portal": url
                         };
                         var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                         jquery("#collapse_" + content.currentFolder.id).append(html);
