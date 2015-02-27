@@ -44,7 +44,6 @@ require([
     var validateUrl = function (el) {
         "use strict";
         var portalUrl = jquery.trim(jquery(el).val());
-        var html = jquery("#urlErrorTemplate").html();
         var fixUrl = function (url) {
             var deferred = jquery.Deferred();
             if (portalUrl === "") {
@@ -72,11 +71,15 @@ require([
         };
 
         fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
-            portal.version(url).done(function (data) {
-                console.log("API v" + data.currentVersion);
-            }).fail(function (response) {
-                jquery(el).parent().after(html);
-            });
+            portal.version(url)
+                .done(function (data) {
+                    console.log("API v" + data.currentVersion);
+                })
+                .fail(function (xhr, textStatus) {
+                    var html = jquery("#urlErrorTemplate").html();
+                    jquery(".alert-danger.alert-dismissable").remove();
+                    jquery(el).parent().parent().after(html);
+                });
         });
     };
 
