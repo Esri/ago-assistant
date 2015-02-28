@@ -71,14 +71,40 @@ require([
         };
 
         fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
+            jquery(el).parent().removeClass("has-error");
+            jquery(el).next().removeClass("glyphicon-ok");
             portal.version(url)
                 .done(function (data) {
                     console.log("API v" + data.currentVersion);
+                    jquery(".alert-danger.alert-dismissable").remove();
+                    jquery(el).next().addClass("glyphicon-ok");
                 })
                 .fail(function (xhr, textStatus) {
-                    var html = jquery("#urlErrorTemplate").html();
-                    jquery(".alert-danger.alert-dismissable").remove();
-                    jquery(el).parent().parent().after(html);
+                    // Try it again with enterprise auth.
+                    jquery.ajaxSetup({
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    }); 
+                    portal.version(url)
+                        .done(function (data) {
+                            console.log("API v" + data.currentVersion);
+                            jquery(".alert-danger.alert-dismissable").remove();
+                            jquery(el).next().addClass("glyphicon-ok");
+                            jquery("#sourceWebTierAuth").trigger("click");
+                        })
+                        .fail(function (xhr, textStatus) {
+                            // OK, it's really not working.
+                            var urlError = jquery("#urlErrorTemplate").html();
+                            jquery.ajaxSetup({
+                                xhrFields: {
+                                    withCredentials: false
+                                }
+                            });
+                            jquery(".alert-danger.alert-dismissable").remove();
+                            jquery(el).parent().parent().after(urlError);
+                            jquery(el).parent().addClass("has-error");
+                        });
                 });
         });
     };
@@ -1213,24 +1239,27 @@ require([
         jquery("#destinationAgolBtn").button("toggle");
         jquery("#destinationAgolBtn").addClass("btn-primary");
         jquery("#destinationUrl").css({
-            "visibility": "hidden"
+            "display": "none"
         });
         jquery("#destinationWebTierAuth").css({
-            "visibility": "hidden"
+            "display": "none"
         });
 
         // *** Global Listeners ***
         jquery("#destinationAgolBtn").click(function () {
+            jquery(".alert-danger.alert-dismissable").remove();
+            jquery("#destinationUrl").next().removeClass("glyphicon-ok");
+            jquery("#destinationUrl").parent().removeClass("has-error");
             jquery("#destinationUrl").attr({
                 "placeholder": "",
                 "value": "https://www.arcgis.com/"
             });
             jquery("#destinationUrl").val("https://www.arcgis.com/");
             jquery("#destinationUrl").css({
-                "visibility": "hidden"
+                "display": "none"
             });
             jquery("#destinationWebTierAuth").css({
-                "visibility": "hidden"
+                "display": "none"
             });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
@@ -1242,10 +1271,10 @@ require([
             });
             jquery("#destinationUrl").val("");
             jquery("#destinationUrl").css({
-                "visibility": "visible"
+                "display": "block"
             });
             jquery("#destinationWebTierAuth").css({
-                "visibility": "visible"
+                "display": "block"
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
             jquery("#destinationAgolBtn").removeClass("btn-primary active");
