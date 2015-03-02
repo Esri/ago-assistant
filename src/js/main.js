@@ -71,6 +71,8 @@ require([
         };
 
         fixUrl(jquery.trim(jquery(el).val())).done(function (url) {
+            var urlError = jquery("#urlErrorTemplate").html();
+            var checkbox = jquery(el).parent().parent().find("input[type='checkbox']");
             jquery(el).parent().removeClass("has-error");
             jquery(el).next().removeClass("glyphicon-ok");
             portal.version(url)
@@ -91,11 +93,10 @@ require([
                             console.log("API v" + data.currentVersion);
                             jquery(".alert-danger.alert-dismissable").remove();
                             jquery(el).next().addClass("glyphicon-ok");
-                            jquery("#sourceWebTierAuth").trigger("click");
+                            jquery(checkbox).trigger("click");
                         })
                         .fail(function (xhr, textStatus) {
                             // OK, it's really not working.
-                            var urlError = jquery("#urlErrorTemplate").html();
                             jquery.ajaxSetup({
                                 xhrFields: {
                                     withCredentials: false
