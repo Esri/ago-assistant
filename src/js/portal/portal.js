@@ -1,9 +1,10 @@
 define(["jquery", "portal/util"], function (jquery, util) {
     return {
-        Portal: function (portalUrl, token) {
-            this.portalUrl = portalUrl;
-            this.username = null;
-            this.token = token;
+        Portal: function (config) {
+            config = typeof config !== "undefined" ? config : {};
+            this.portalUrl = config.portalUrl;
+            this.username = config.username;
+            this.token = config.token;
             this.withCredentials = false;
             /**
              * Return the version of the portal.

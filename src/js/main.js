@@ -35,11 +35,13 @@ require([
     var app = {
         stats: {
             activities: {}
-        },
+        }
     };
     var sourcePortal = new portalSelf.Portal();
     var destinationPortal = new portalSelf.Portal();
-    var arcgisOnline = new portalSelf.Portal("https://www.arcgis.com/");
+    var arcgisOnline = new portalSelf.Portal({
+        portalUrl: "https://www.arcgis.com/"
+    });
 
     /**
      * Check the url for errors (e.g. no trailing slash)
@@ -211,8 +213,6 @@ require([
 
         var query = jquery("#searchText").val();
         var portalUrl = jquery("#searchMenu li.active").attr("data-url");
-        var token;
-
         // Add the org id for "My Portal" searches.
         if (jquery("#searchMenu li.active").attr("data-id")) {
             query += " accountid:" +
