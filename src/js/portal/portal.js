@@ -1,110 +1,149 @@
 define(["jquery", "portal/util"], function (jquery, util) {
     return {
-        version: function (portal) {
-            // Returns the version of the portal.
-            return jquery.ajax({
-                type: "GET",
-                url: portal + "sharing/rest?f=json",
-                dataType: "json"
-            });
-        },
-        self: function (portal, token) {
-            // Return the view of the portal as seen by the current user, anonymous or logged in.
-            return jquery.ajax({
-                type: "GET",
-                url: portal + "sharing/rest/portals/self?" + jquery.param({
-                    token: token,
-                    f: "json"
-                }),
-                dataType: "json"
-            });
-        },
-        generateToken: function (portal, username, password) {
-            // Generates an access token in exchange for user credentials that can be used by clients when working with the ArcGIS Portal API.
-            return jquery.ajax({
-                type: "POST",
-                url: portal + "sharing/rest/generateToken?",
-                data: {
-                    username: username,
-                    password: password,
-                    referer: jquery(location).attr("href"), // URL of the sending app.
-                    expiration: 60, // Lifetime of the token in minutes.
-                    f: "json"
-                },
-                dataType: "json"
-            });
-        },
-        search: function (portal, query, numResults, sortField, sortOrder, token) {
-            // Searches for content items in the portal.
-            // The results of a search only contain items that the user (token) has permission to access.
-            // Excluding a token will yield only public items.
-            return jquery.ajax({
-                type: "GET",
-                url: portal + "sharing/rest/search?",
-                data: {
-                    q: query,
-                    num: numResults,
-                    sortField: sortField,
-                    sortOrder: sortOrder,
-                    token: token,
-                    f: "json"
-                },
-                dataType: "json"
-            });
-        },
-        user: {
-            profile: function (portal, username, token) {
+        Portal: function (portalUrl, token) {
+            this.portalUrl = portalUrl;
+            this.username = null;
+            this.token = token;
+            this.withCredentials = false;
+            /**
+             * Return the version of the portal.
+             */
+            this.version = function () {
+                return jquery.ajax({
+                    type: "GET",
+                    url: this.portalUrl + "sharing/rest?f=json",
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             * Return the view of the portal as seen by the current user,
+             * anonymous or logged in.
+             */
+            this.self = function () {
+                return jquery.ajax({
+                    type: "GET",
+                    url: this.portalUrl + "sharing/rest/portals/self?" + jquery.param({
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             * Generates an access token in exchange for user credentials that
+             * can be used by clients when working with the ArcGIS Portal API.
+             */
+            this.generateToken = function (username, password) {
+                return jquery.ajax({
+                    type: "POST",
+                    url: this.portalUrl + "sharing/rest/generateToken?",
+                    data: {
+                        username: username,
+                        password: password,
+                        referer: jquery(location).attr("href"), // URL of the sending app.
+                        expiration: 60, // Lifetime of the token in minutes.
+                        f: "json"
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             * Searches for content items in the portal.
+             * The results of a search only contain items that the user
+             * (token) has permission to access.
+             * Excluding a token will yield only public items.
+             */
+            this.search = function (query, numResults, sortField, sortOrder) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: this.portalUrl + "sharing/rest/search?",
+                    data: {
+                        q: query,
+                        num: numResults,
+                        sortField: sortField,
+                        sortOrder: sortOrder,
+                        token: this.token,
+                        f: "json"
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            this.userProfile = function (username) {
                 // 
                 return jquery.ajax({
                     type: "GET",
-                    url: portal + "sharing/rest/community/users/" + username + "?",
+                    url: this.portalUrl + "sharing/rest/community/users/" + username + "?",
                     data: {
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            content: function (portal, username, folder, token) {
+            };
+            this.userContent = function (username, folder) {
                 // 
                 return jquery.ajax({
                     type: "GET",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "?",
                     data: {
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-        },
-        content: {
-            itemDescription: function (portal, id, token) {
+            };
+            this.itemDescription = function (id) {
                 // 
                 return jquery.ajax({
                     type: "GET",
-                    url: portal + "sharing/rest/content/items/" + id + "?",
+                    url: this.portalUrl + "sharing/rest/content/items/" + id + "?",
                     data: {
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            itemData: function (portal, id, token) {
+            };
+            this.itemData = function (id) {
                 // 
                 return jquery.ajax({
                     type: "GET",
-                    url: portal + "sharing/rest/content/items/" + id + "/data?",
+                    url: this.portalUrl + "sharing/rest/content/items/" + id + "/data?",
                     data: {
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            addItem: function (portal, username, folder, description, data, thumbnailUrl, token) {
-                // Create a new item on the specified portal.
+            };
+            /**
+             * Create a new item on the specified portal.
+             */
+            this.addItem = function (username, folder, description, data, thumbnailUrl) {
 
                 // Clean up description items for posting.
                 // This is necessary because some of the item descriptions (e.g. tags and extent)
@@ -124,34 +163,47 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     overwrite: false, // Prevent users from accidentally overwriting items with the same name.
                     thumbnailurl: thumbnailUrl,
                     f: "json",
-                    token: token
+                    token: this.token
                 };
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/addItem?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/addItem?",
                     data: jquery.extend(description, params), // Merge the description and params JSON objects.
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            updateWebmapData: function (portal, username, folder, id, data, token) {
-                // Update the content in a web map.
+            };
+            /**
+             * Update the content in a web map.
+             */
+            this.updateWebmapData = function (username, folder, id, data) {
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: {
                         text: JSON.stringify(data), // Stringify the Javascript object so it can be properly sent.
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            updateDescription: function (portal, username, id, folder, description, token) {
-                // Update the description for an item.
-                // Clean up description items for posting.
-                // This is necessary because some of the item descriptions (e.g. tags and extent)
-                // are returned as arrays, but the post operation expects comma separated strings.
+            };
+            /**
+             * Update the description for an item.
+             */
+            this.updateDescription = function (username, id, folder, description) {
                 var postData = JSON.parse(description);
+                /**
+                 * Clean up description items for posting.
+                 * This is necessary because some of the item descriptions
+                 * (e.g. tags and extent) are returned as arrays, but the post
+                 * operation expects comma separated strings.
+                 */
                 jquery.each(postData, function (item, value) {
                     if (value === null) {
                         postData[item] = "";
@@ -159,41 +211,52 @@ define(["jquery", "portal/util"], function (jquery, util) {
                         postData[item] = value.join(",");
                     }
                 });
-                postData.token = token;
+                postData.token = this.token;
                 postData.f = "json";
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: postData,
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            updateData: function (portal, username, id, folder, data, token) {
+            };
+            this.updateData = function (username, id, folder, data) {
                 // Update the content in a web map.
                 return jquery.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: {
                         text: data, // Stringify the Javascript object so it can be properly sent.
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            },
-            updateUrl: function (portal, username, folder, id, url, token) {
-                // Update the URL of a registered service or web application.
+            };
+            /**
+             * Update the URL of a registered service or web application.
+             */
+            this.updateUrl = function (username, folder, id, url) {
                 return $.ajax({
                     type: "POST",
-                    url: portal + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: {
                         url: url,
-                        token: token,
+                        token: this.token,
                         f: "json"
                     },
-                    dataType: "json"
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
                 });
-            }
+            };
         }
     };
 });
