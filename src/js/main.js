@@ -50,6 +50,7 @@ require([
         var inputUrl = jquery.trim(jquery(el).val());
 
         portalUtil.fixUrl(inputUrl).done(function (portalUrl) {
+            jquery(el).val(portalUrl);
             var urlError = jquery("#urlErrorTemplate").html();
             var checkbox = jquery(el).parent().parent()
                 .find("input[type='checkbox']");
