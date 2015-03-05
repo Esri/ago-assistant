@@ -145,12 +145,14 @@ require([
                     startSession();
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
+                    jquery(".alert-danger.alert-dismissable").remove();
                     jquery("#portalLoginForm").before(html);
                 }
             })
             .fail(function (response) {
                 console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
+                jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
             })
             .always(function () {
@@ -180,12 +182,14 @@ require([
                     });
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
+                    jquery(".alert-danger.alert-dismissable").remove();
                     jquery("#destinationLoginForm").before(html);
                 }
             })
             .fail(function (response) {
                 console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
+                jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#destinationLoginForm").before(html);
             })
             .always(function () {
