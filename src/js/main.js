@@ -35,13 +35,13 @@ require([
     var app = {
         stats: {
             activities: {}
+        },
+        portals: {
+            arcgisOnline: new portalSelf.Portal({
+                portalUrl: "https://www.arcgis.com/"
+            })
         }
     };
-    var sourcePortal = new portalSelf.Portal();
-    var destinationPortal = new portalSelf.Portal();
-    var arcgisOnline = new portalSelf.Portal({
-        portalUrl: "https://www.arcgis.com/"
-    });
 
     /**
      * Check the url for errors (e.g. no trailing slash)
@@ -90,18 +90,18 @@ require([
     var startSession = function () {
         "use strict";
         var searchHtml;
-        sourcePortal.self().done(function (data) {
+        app.portals.sourcePortal.self().done(function (data) {
             var template = jquery("#sessionTemplate").html();
             var html = mustache.to_html(template, data);
-            sourcePortal.username = data.user.username;
-            sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
+            app.portals.sourcePortal.username = data.user.username;
+            app.portals.sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
             jquery(".nav.navbar-nav").after(html);
             jquery("#logout").show();
             jquery("#actionDropdown").css({
                 "visibility": "visible"
             });
             searchHtml = mustache.to_html(jquery("#searchTemplate").html(), {
-                portal: sourcePortal.portalUrl,
+                portal: app.portals.sourcePortal.portalUrl,
                 name: data.name,
                 id: data.id
             });
@@ -130,7 +130,7 @@ require([
         var username = jquery("#portalUsername").val();
         var password = jquery("#portalPassword").val();
         jquery("#portalLoginBtn").button("loading");
-        sourcePortal.generateToken(username, password)
+        app.portals.sourcePortal.generateToken(username, password)
             .done(function (response) {
                 if (response.token) {
                     var user = {
@@ -138,7 +138,7 @@ require([
                         expires: response.expires,
                         ssl: response.ssl
                     };
-                    sourcePortal.token = response.token;
+                    app.portals.sourcePortal.token = response.token;
                     jquery("#portalLoginModal").modal("hide");
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
@@ -161,16 +161,15 @@ require([
     var loginDestination = function () {
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
-        destinationPortal.portalUrl = jquery("#destinationUrl").val();
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
-        destinationPortal.generateToken(username, password)
+        app.portals.destinationPortal.generateToken(username, password)
             .done(function (response) {
                 if (response.token) {
-                    destinationPortal.token = response.token;
-                    destinationPortal.self().done(function (data) {
-                        destinationPortal.username = data.user.username;
-                        destinationPortal.portalUrl = "https://" +
+                    app.portals.destinationPortal.token = response.token;
+                    app.portals.destinationPortal.self().done(function (data) {
+                        app.portals.destinationPortal.username = data.user.username;
+                        app.portals.destinationPortal.portalUrl = "https://" +
                             data.portalHostname + "/";
                         jquery("#copyModal").modal("hide");
                         highlightCopyableContent();
@@ -206,6 +205,8 @@ require([
             "visibility": "hidden"
         });
         esriId.destroyCredentials();
+        delete app.portals.sourcePortal;
+        delete app.portals.destinationPortal;
         window.location.reload();
     };
 
@@ -221,7 +222,7 @@ require([
         }
         // Add the username for "My Content" searches.
         if (jquery("#searchMenu li.active").text() === "Search My Content") {
-            query += " owner:" + sourcePortal.username;
+            query += " owner:" + app.portals.sourcePortal.username;
         }
 
         /**
@@ -229,10 +230,10 @@ require([
          * searching ArcGIS Online.
          */
         if (portalUrl === "https://www.arcgis.com/" &&
-            portalUrl !== sourcePortal.portalUrl) {
-            portal = arcgisOnline;
+            portalUrl !== app.portals.sourcePortal.portalUrl) {
+            portal = app.portals.arcgisOnline;
         } else {
-            portal = sourcePortal;
+            portal = app.portals.sourcePortal;
         }
 
         NProgress.start();
@@ -407,10 +408,10 @@ require([
                      * inspecting content from an ArcGIS Online search.
                      */
                     if (server === "https://www.arcgis.com/" &&
-                        server !== sourcePortal.portalUrl) {
-                        portal = arcgisOnline;
+                        server !== app.portals.sourcePortal.portalUrl) {
+                        portal = app.portals.arcgisOnline;
                     } else {
-                        portal = sourcePortal;
+                        portal = app.portals.sourcePortal;
                     }
                     NProgress.start();
                     jquery(".content").addClass("btn-info");
@@ -497,7 +498,7 @@ require([
         var owner;
         var folder;
         var supportedContent = jquery(".content[data-type='Web Map']");
-        var portal = sourcePortal;
+        var portal = app.portals.sourcePortal;
         // Highlight supported content.
         supportedContent.addClass("data-toggle btn-info");
         supportedContent.removeAttr("disabled");
@@ -599,7 +600,7 @@ require([
         var owner;
         var folder;
         var supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application']");
-        var portal = sourcePortal;
+        var portal = app.portals.sourcePortal;
         // Highlight supported content.
         supportedContent.addClass("data-toggle btn-info");
         supportedContent.removeAttr("disabled");
@@ -658,7 +659,7 @@ require([
 
     var viewStats = function () {
 
-        var portal = sourcePortal;
+        var portal = app.portals.sourcePortal;
 
         var statsCalendar = function (activities) {
             require(["d3", "cal-heatmap"], function (d3, CalHeatMap) {
@@ -762,6 +763,7 @@ require([
     // Make the drop area accept content items.
     var makeDroppable = function (id) {
 
+        var destinationPortal = app.portals.destinationPortal;
         var portal;
 
         /**
@@ -777,10 +779,10 @@ require([
              * copying content from ArcGIS Online.
              */
             if (portalUrl === "https://www.arcgis.com/" &&
-                portalUrl !== sourcePortal.portalUrl) {
-                portal = arcgisOnline;
+                portalUrl !== app.portals.sourcePortal.portalUrl) {
+                portal = app.portals.arcgisOnline;
             } else {
-                portal = sourcePortal;
+                portal = app.portals.sourcePortal;
             }
             // Ensure the content type is supported before trying to copy it.
             if (isSupported(type)) {
@@ -1033,7 +1035,7 @@ require([
 
     var listUserItems = function () {
         "use strict";
-        var portal = sourcePortal;
+        var portal = app.portals.sourcePortal;
 
         cleanUp();
         clearResults();
@@ -1126,7 +1128,7 @@ require([
 
     var showDestinationFolders = function () {
         "use strict";
-        var portal = destinationPortal;
+        var portal = app.portals.destinationPortal;
         portal.userContent(portal.username, "/").done(function (content) {
             var folderData = {
                 title: "Root",
@@ -1183,9 +1185,11 @@ require([
                     function (user) {
                         jquery("#splashContainer").css("display", "none");
                         jquery("#itemsContainer").css("display", "block");
-                        sourcePortal.portalUrl = user.server + "/";
-                        sourcePortal.username = user.userId;
-                        sourcePortal.token = user.token;
+                        app.portals.sourcePortal = new portalSelf.Portal({
+                            portalUrl: user.server + "/",
+                            username: user.userId,
+                            token: user.token
+                        });
                         startSession();
                     })
                 .otherwise(
@@ -1268,20 +1272,28 @@ require([
 
         // Validate the entered url when the input loses focus.
         jquery("#portalUrl").blur(function () {
+            
+            if (!app.portals.sourcePortal) {
+                app.portals.sourcePortal = new portalSelf.Portal();
+            }
 
             // Give the DOM time to update before firing the validation.
             setTimeout(function () {
-                validateUrl("#portalUrl", sourcePortal);
+                validateUrl("#portalUrl", app.portals.sourcePortal);
             }, 500);
         });
 
         // Validate the url when the input loses focus.
         jquery("#destinationUrl").blur(function () {
+            
+            if (!app.portals.destinationPortal) {
+                app.portals.destinationPortal = new portalSelf.Portal();
+            }
 
             // Give the DOM time to update before firing the validation.
             setTimeout(function () {
                 if (jquery("#destinationPortalBtn").hasClass("active")) {
-                    validateUrl("#destinationUrl", destinationPortal);
+                    validateUrl("#destinationUrl", app.portals.destinationPortal);
                 }
             }, 500);
         });
@@ -1293,12 +1305,12 @@ require([
                 jquery("#portalUsername").attr("disabled", true);
                 jquery("#portalPassword").attr("disabled", true);
                 jquery("#portalLoginBtn").text("Proceed");
-                sourcePortal.withCredentials = true;
+                app.portals.sourcePortal.withCredentials = true;
             } else {
                 jquery("#portalUsername").removeAttr("disabled");
                 jquery("#portalPassword").removeAttr("disabled");
                 jquery("#portalLoginBtn").text("Log in");
-                sourcePortal.withCredentials = false;
+                app.portals.sourcePortal.withCredentials = false;
             }
         });
 
@@ -1309,12 +1321,12 @@ require([
                 jquery("#destinationUsername").attr("disabled", true);
                 jquery("#destinationPassword").attr("disabled", true);
                 jquery("#destinationLoginBtn").text("Proceed");
-                destinationPortal.withCredentials = true;
+                app.portals.destinationPortal.withCredentials = true;
             } else {
                 jquery("#destinationUsername").removeAttr("disabled");
                 jquery("#destinationPassword").removeAttr("disabled");
                 jquery("#destinationLoginBtn").text("Log in");
-                destinationPortal.withCredentials = false;
+                app.portals.destinationPortal.withCredentials = false;
             }
         });
 
@@ -1326,9 +1338,11 @@ require([
                 .then(function (user) {
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
-                    sourcePortal.portalUrl = user.server + "/";
-                    sourcePortal.username = user.userId;
-                    sourcePortal.token = user.token;
+                    app.portals.sourcePortal = new portalSelf.Portal({
+                        portalUrl: user.server + "/",
+                        username: user.userId,
+                        token: user.token
+                    });
                     startSession();
                 });
         });
@@ -1343,7 +1357,7 @@ require([
          * is selected as the copy target.
          */
         jquery("[data-action='copyMyAccount']").click(function () {
-            destinationPortal = sourcePortal;
+            app.portals.destinationPortal = app.portals.sourcePortal;
             jquery("#copyModal").modal("hide");
             highlightCopyableContent();
             NProgress.start();
