@@ -75,7 +75,7 @@
                 <h2>ArcGIS Online Assistant</h2>
                 <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
                 <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
-                <p><a class="portal-signin" href="#portalLoginModal" data-toggle="modal">
+                <p><a class="portal-signin" data-toggle="modal">
                     Click here to log in to a Portal instance
                 </a></p>
             </div>
@@ -109,7 +109,10 @@
                             <ul>
                                 <li>
                                     Copy content between accounts (even on different organizations or Portals)
-                                    <p align="middle"><em>Files and Hosted Feature Services cannot be copied at this time.</em></p>
+                                    <ul>
+                                        <li><em>Files cannot be copied at this time.</em></li>
+                                        <li><em>Copying hosted feature services adds a reference to the original service in the destination portal. Deep copying is planned for a future release.</em></li>
+                                    </ul>
                                 </li>
                                 <li>Inspect content</li>
                                 <li>Update the URLs for services in a Web Map</li>
@@ -143,9 +146,20 @@
                         <div class="modal-body">
                             <form>
                                 <p>Enter the URL to your Portal</p>
-                                <div class="form-inline">
-                                    <div class="form-group">
-                                        <input class="form-control portalUrl" type="text" value="https://myportal.com/" id="portalUrl">
+                                <div class="form-horizontal">
+                                    <div class="form-group has-feedback">
+                                        <div class="col-md-6">
+                                            <input class="form-control portalUrl" type="text" value="https://myportal.com/" id="portalUrl">
+                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input id="sourceWebTierAuth" type="checkbox">
+                                                    Secured with PKI or IWA
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <br>
@@ -186,13 +200,28 @@
                                 <br>
                                 <form>
                                     <p>Select the destination:</p>
-                                    <div class="form-inline">
-                                        <div class="btn-group" data-toggle="buttons-radio">
-                                            <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
-                                            <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
-                                        </div>
+                                    <div class="form-horizontal">
                                         <div class="form-group">
-                                            <input class="form-control portalUrl" type="text" value="https://www.arcgis.com/" id="destinationUrl">
+                                            <div class="col-md-6">
+                                                <div class="btn-group" data-toggle="buttons-radio">
+                                                    <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
+                                                    <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group has-feedback">
+                                            <div class="col-md-6">
+                                                <input class="form-control portalUrl" type="text" value="https://www.arcgis.com/" id="destinationUrl">
+                                                <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="checkbox" id="destinationWebTierAuth">
+                                                    <label>
+                                                        <input id="destWebTierAuthChk" type="checkbox">
+                                                        Secured with PKI or IWA
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <br>
@@ -267,8 +296,7 @@
                     {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
                     {name: "cal-heatmap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "cal-heatmap-3.5.0.min"},
                     {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
-                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal", main: "portal"},
-                    {name: "util", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal", main: "util"}
+                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal"}
                 ],
             };
         </script>
