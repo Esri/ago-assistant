@@ -564,7 +564,7 @@ require([
                                 .attr("data-original");
                             var newUrl = jquery(webmapServices[service]).val();
                             // Find and replace each URL.
-                            webmapData = webmapData.replace(originalUrl, newUrl);
+                            webmapData = webmapData.replace("\"" + originalUrl + "\"", "\"" + newUrl + "\"");
                             jquery(webmapServices[service]).val(newUrl);
                         });
                         var webmapId = jquery(".content.active.btn-primary").attr("data-id");
