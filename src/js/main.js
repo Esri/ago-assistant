@@ -1011,7 +1011,6 @@ require([
     var listSearchItems = function (portalUrl, results) {
         "use strict";
         clearResults();
-        cleanUp();
 
         var folderData = {
             title: "Search Results (" + results.query + ")",
