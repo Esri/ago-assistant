@@ -163,6 +163,14 @@ require([
     var loginDestination = function () {
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
+        var portalUrl = jquery("#destinationUrl").val();
+
+        if (!app.portals.destinationPortal) {
+            app.portals.destinationPortal = new portalSelf.Portal({
+                portalUrl: portalUrl
+            });
+        }
+
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
         app.portals.destinationPortal.generateToken(username, password)
@@ -853,7 +861,7 @@ require([
             clone.css("max-width", "");
 
             // Move it to the destination folder.
-            clone.prependTo(destination);
+            clone.insertAfter(destination.children(".dropArea"));
 
             // Remove the contextual highlighting.
             clone.removeClass("active btn-primary btn-info");
@@ -1011,7 +1019,6 @@ require([
     var listSearchItems = function (portalUrl, results) {
         "use strict";
         clearResults();
-        cleanUp();
 
         var folderData = {
             title: "Search Results (" + results.query + ")",
@@ -1133,6 +1140,17 @@ require([
     var showDestinationFolders = function () {
         "use strict";
         var portal = app.portals.destinationPortal;
+
+        function sortItemsAlpha(folder) {
+            var folderItems = folder.children("button").get();
+            folderItems.sort(function (a, b) {
+                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
+            });
+            jquery.each(folderItems, function (idx, item) {
+                folder.append(item);
+            });
+        }
+
         portal.userContent(portal.username, "/").done(function (content) {
             var folderData = {
                 title: "Root",
@@ -1144,6 +1162,19 @@ require([
                 folderData
             );
             jquery("#dropArea").append(html);
+            // Append the root items to the Root folder.
+            jquery.each(content.items, function (item) {
+                var templateData = {
+                    "id": this.id,
+                    "title": this.title,
+                    "type": this.type,
+                    "icon": portalInfo.items(this.type).icon,
+                    "portal": portal.portalUrl
+                };
+                var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                jquery("#collapseDest_").append(html);
+            });
+            sortItemsAlpha(jquery("#collapseDest_"));
             // Enable the droppable area.
             makeDroppable("");
             // Append the other folders.
@@ -1159,9 +1190,22 @@ require([
                         var template = jquery("#dropFolderTemplate").html();
                         var html = mustache.to_html(template, folderData);
                         jquery("#dropArea").append(html);
+                        // Append the items to the folder.
+                        jquery.each(content.items, function (item) {
+                            var templateData = {
+                                "id": this.id,
+                                "title": this.title,
+                                "type": this.type,
+                                "icon": portalInfo.items(this.type).icon,
+                                "portal": portal.portalUrl
+                            };
+                            var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                            jquery("#collapseDest_" + content.currentFolder.id).append(html);
+                        });
                         // Collapse the accordion to avoid cluttering the display.
-                        jquery("#collapse" + content.currentFolder.id)
+                        jquery("#collapseDest_" + content.currentFolder.id)
                             .collapse("hide");
+                        sortItemsAlpha(jquery("#collapseDest_" + content.currentFolder.id));
                         // Enable the droppable area.
                         makeDroppable(content.currentFolder.id);
                     });
@@ -1252,6 +1296,9 @@ require([
             });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
+            if (app.portals.destinationPortal) {
+                app.portals.destinationPortal.portalUrl = "https://www.arcgis.com/";
+            }
         });
         jquery("#destinationPortalBtn").click(function () {
             jquery("#destinationUrl").attr({
@@ -1276,7 +1323,7 @@ require([
 
         // Validate the entered url when the input loses focus.
         jquery("#portalUrl").blur(function () {
-            
+
             if (!app.portals.sourcePortal) {
                 app.portals.sourcePortal = new portalSelf.Portal();
             }
@@ -1289,7 +1336,7 @@ require([
 
         // Validate the url when the input loses focus.
         jquery("#destinationUrl").blur(function () {
-            
+
             if (!app.portals.destinationPortal) {
                 app.portals.destinationPortal = new portalSelf.Portal();
             }
