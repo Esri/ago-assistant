@@ -2,7 +2,7 @@
   "name": "ago-assistant",
   "title": "ArcGIS Online Assistant",
   "description": "A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.x",
-  "version": "2.1.0",
+  "version": "2.1.7",
   "author": "Evan Caldwell",
   "homepage": "https://github.com/Esri/ago-assistant",
   "repository": {
