@@ -163,6 +163,14 @@ require([
     var loginDestination = function () {
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
+        var portalUrl = jquery("#destinationUrl").val();
+
+        if (!app.portals.destinationPortal) {
+            app.portals.destinationPortal = new portalSelf.Portal({
+                portalUrl: portalUrl
+            });
+        }
+
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
         app.portals.destinationPortal.generateToken(username, password)
@@ -1132,7 +1140,7 @@ require([
     var showDestinationFolders = function () {
         "use strict";
         var portal = app.portals.destinationPortal;
-        
+
         function sortItemsAlpha(folder) {
             var folderItems = folder.children("button").get();
             folderItems.sort(function (a, b) {
@@ -1142,7 +1150,7 @@ require([
                 folder.append(item);
             });
         }
-        
+
         portal.userContent(portal.username, "/").done(function (content) {
             var folderData = {
                 title: "Root",
@@ -1288,6 +1296,9 @@ require([
             });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
+            if (app.portals.destinationPortal) {
+                app.portals.destinationPortal.portalUrl = "https://www.arcgis.com/";
+            }
         });
         jquery("#destinationPortalBtn").click(function () {
             jquery("#destinationUrl").attr({
@@ -1312,7 +1323,7 @@ require([
 
         // Validate the entered url when the input loses focus.
         jquery("#portalUrl").blur(function () {
-            
+
             if (!app.portals.sourcePortal) {
                 app.portals.sourcePortal = new portalSelf.Portal();
             }
@@ -1325,7 +1336,7 @@ require([
 
         // Validate the url when the input loses focus.
         jquery("#destinationUrl").blur(function () {
-            
+
             if (!app.portals.destinationPortal) {
                 app.portals.destinationPortal = new portalSelf.Portal();
             }
