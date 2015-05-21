@@ -148,10 +148,18 @@ body {
     background:url(../assets/images/mapsGray16.png);
 }
 
+.sceneLayer {
+    background:url(../assets/images/sceneweblayer16.png);
+}
+
 .tools {
     background:url(../assets/images/tools16.png);
 }
 
 .toolsGray {
     background:url(../assets/images/toolsGray16.png);
+}
+
+.webScene {
+    background:url(../assets/images/webscene16.png);
 }

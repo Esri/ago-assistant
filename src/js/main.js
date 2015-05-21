@@ -509,7 +509,10 @@ require([
         var webmapData;
         var owner;
         var folder;
-        var supportedContent = jquery(".content[data-type='Web Map']");
+        var supportedContent = jquery.merge(
+            jquery(".content[data-type='Web Map']"),
+            jquery(".content[data-type='Web Scene']")
+        );
         var portal = app.portals.sourcePortal;
         // Highlight supported content.
         supportedContent.addClass("data-toggle btn-info");
@@ -956,8 +959,10 @@ require([
         //
         var supportedTypes = [
             "Web Map",
+            "Web Scene",
             "Map Service",
             "Image Service",
+            "Scene Service",
             "WMS",
             "Feature Collection",
             "Feature Collection Template",
