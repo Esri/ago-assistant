@@ -509,7 +509,10 @@ require([
         var webmapData;
         var owner;
         var folder;
-        var supportedContent = jquery(".content[data-type='Web Map']");
+        var supportedContent = jquery.merge(
+            jquery(".content[data-type='Web Map']"),
+            jquery(".content[data-type='Web Scene']")
+        );
         var portal = app.portals.sourcePortal;
         // Highlight supported content.
         supportedContent.addClass("data-toggle btn-info");
@@ -814,7 +817,18 @@ require([
                         destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl).done(function (response) {
                             var html;
                             if (response.success === true) {
-                                jquery("#" + id + "_clone").addClass("btn-success");
+                                // Update the id parameter to reflect the new item's id.
+                                if (description.url.indexOf("id=") > -1) {
+                                    var newUrl = description.url.substring(description.url.indexOf("/apps/"));
+                                    newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
+                                    var folder = response.folder || "";
+                                    destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
+                                        .done(function (status) {
+                                            jquery("#" + id + "_clone").addClass("btn-success");
+                                        });
+                                } else {
+                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                }
                             } else if (response.error) {
                                 jquery("#" + id + "_clone").addClass("btn-danger");
                                 html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
@@ -956,8 +970,10 @@ require([
         //
         var supportedTypes = [
             "Web Map",
+            "Web Scene",
             "Map Service",
             "Image Service",
+            "Scene Service",
             "WMS",
             "Feature Collection",
             "Feature Collection Template",

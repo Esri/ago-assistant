@@ -1,6 +1,10 @@
 define([], function () {
     var types = [
         {
+            type: "CityEngine Web Scene",
+            icon: "webScene"
+        },
+        {
             type: "Color Set",
             icon: "datafilesGray"
         },
@@ -65,6 +69,14 @@ define([], function () {
             icon: "apps"
         },
         {
+            type: "Scene Layer",
+            icon: "sceneLayer"
+        },
+        {
+            type: "Scene Service",
+            icon: "sceneLayer"
+        },
+        {
             type: "Service Definition",
             icon: "datafiles"
         },
@@ -79,6 +91,10 @@ define([], function () {
         {
             type: "Web Mapping Application",
             icon: "apps"
+        },
+        {
+            type: "Web Scene",
+            icon: "webScene"
         },
         {
             type: "WMS",
