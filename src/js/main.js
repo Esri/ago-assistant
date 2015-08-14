@@ -1037,10 +1037,14 @@ require([
                             var item = jquery.grep(portal.items, function (item, i) {
                                 return (item.id === id);
                             });
+                            var name = description.name;
+                            if (name === null) {
+                                name = description.title;
+                            }
+                            jquery("#serviceName").val(name);
                             item[0].serviceDescription = serviceDescription;
                             jquery("#btnCancelCopy").attr("data-id", description.id);
                             jquery("#btnCopyService").attr("data-id", description.id);
-                            jquery("#serviceName").val(description.name);
                             jquery("#deepCopyModal").modal("show");
                             jquery("#btnCopyService").removeClass("disabled");
                             // Add a listener for the service name form.
