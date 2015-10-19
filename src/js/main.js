@@ -844,6 +844,14 @@ require([
         });
         return deferred.promise();
     };
+    
+    var showCopyError = function(id, message) {
+        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+            id: id,
+            message: message
+        });
+        jquery("#" + id + "_clone").before(html);
+    };
 
     /**
      * simpleCopy() Copies a given item ID.
@@ -876,36 +884,34 @@ require([
              * which don't have a data component and therefore
              * generate a failed response.
              */
-            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl).done(function (response) {
-                var html;
-                if (response.success === true) {
-                    // Update the id parameter to reflect the new item's id.
-                    if (description.url.indexOf("id=") > -1) {
-                        var newUrl = description.url.substring(description.url.indexOf("/apps/"));
-                        newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
-                        var folder = response.folder || "";
-                        destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                            .done(function (status) {
-                                jquery("#" + id + "_clone").addClass("btn-success");
-                            });
-                    } else {
-                        jquery("#" + id + "_clone").addClass("btn-success");
+            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                .done(function (response) {
+                    var html;
+                    if (response.success === true) {
+                        // Update the id parameter to reflect the new item's id.
+                        if (description.url.indexOf("id=") > -1) {
+                            var newUrl = description.url.substring(description.url.indexOf("/apps/"));
+                            newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
+                            var folder = response.folder || "";
+                            destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
+                                .done(function (status) {
+                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                });
+                        } else {
+                            jquery("#" + id + "_clone").addClass("btn-success");
+                        }
+                    } else if (response.error) {
+                        jquery("#" + id + "_clone").addClass("btn-danger");
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: response.error.message
+                        });
+                        jquery("#" + id + "_clone").before(html);
                     }
-                } else if (response.error) {
-                    jquery("#" + id + "_clone").addClass("btn-danger");
-                    html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                        id: id,
-                        message: response.error.message
-                    });
-                    jquery("#" + id + "_clone").before(html);
-                }
-            }).fail(function (response) {
-                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                    id: id,
-                    message: "Something went wrong."
+                })
+                .fail(function (response) {
+                    showCopyError(id, "Something went wrong.");
                 });
-                jquery("#" + id + "_clone").before(html);
-            });
         });
     };
 
@@ -966,33 +972,48 @@ require([
                     });
                     destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
                         .then(function (response) {
-                            jquery.each(layers, function (i, v) {
-                                var layerId = v.id;
-                                portal.layerRecordCount(description.url, layerId)
-                                    .then(function (records) {
-                                        var offset = 0;
-                                        // Set the count manually in weird cases where maxRecordCount is negative.
-                                        var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
-                                        var added = 0;
-                                        var x = 1;
-                                        while (offset <= records.count) {
-                                            x++;
-                                            portal.harvestRecords(description.url, layerId, offset)
-                                                .then(function (serviceData) {
-                                                    destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
-                                                        .then(function () {
-                                                            added += count;
-                                                            if (added >= records.count) {
-                                                                jquery("#" + id + "_clone > img").remove();
-                                                                jquery("#" + id + "_clone").removeClass("btn-info");
-                                                                jquery("#" + id + "_clone").addClass("btn-success");
-                                                            }
-                                                        });
-                                                });
-                                            offset += count;
-                                        }
-                                    });
-                            });
+                            if (!("error" in response)) {
+                                jquery.each(layers, function (i, v) {
+                                    var layerId = v.id;
+                                    portal.layerRecordCount(description.url, layerId)
+                                        .then(function (records) {
+                                            var offset = 0;
+                                            // Set the count manually in weird cases where maxRecordCount is negative.
+                                            var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
+                                            var added = 0;
+                                            var x = 1;
+                                            while (offset <= records.count) {
+                                                x++;
+                                                portal.harvestRecords(description.url, layerId, offset)
+                                                    .then(function (serviceData) {
+                                                        destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
+                                                            .then(function () {
+                                                                added += count;
+                                                                if (added >= records.count) {
+                                                                    jquery("#" + id + "_clone > img").remove();
+                                                                    jquery("#" + id + "_clone").removeClass("btn-info");
+                                                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                                                }
+                                                            });
+                                                    });
+                                                offset += count;
+                                            }
+                                        });
+                                });
+                            } else {
+                                jquery("#" + id + "_clone > img").remove();
+                                jquery("#" + id + "_clone").removeClass("btn-info");
+                                jquery("#" + id + "_clone").addClass("btn-danger");
+                                var message = response.error.message;
+                                showCopyError(id, message);    
+                            }
+                        })
+                        .fail(function (response) {
+                            jquery("#" + id + "_clone > img").remove();
+                            jquery("#" + id + "_clone").removeClass("btn-info");
+                            jquery("#" + id + "_clone").addClass("btn-danger");
+                            var message = "Something went wrong.";
+                            showCopyError(id, message);
                         });
                 });
         });
