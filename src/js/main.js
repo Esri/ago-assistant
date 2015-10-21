@@ -255,261 +255,258 @@ require([
     };
 
     var inspectContent = function() {
-        require(["nprogress", "highlight"],
-            function(NProgress, hljs) {
 
-                var portal;
-                var jsonBackup;
-                var jsonValid;
+        var portal;
+        var jsonBackup;
+        var jsonValid;
 
-                var validateJson = function(jsonString) {
-                    try {
-                        var o = JSON.parse(jsonString);
-                        if (o && typeof o === "object" && o !== null) {
-                            return o;
-                        }
-                    } catch (e) {}
+        var validateJson = function(jsonString) {
+            try {
+                var o = JSON.parse(jsonString);
+                if (o && typeof o === "object" && o !== null) {
+                    return o;
+                }
+            } catch (e) {}
 
-                    return false;
-                };
+            return false;
+        };
 
-                var startEditing = function(e) {
+        var startEditing = function(e) {
 
-                    // Allow removing the button active state.
-                    e.stopImmediatePropagation();
+            // Allow removing the button active state.
+            e.stopImmediatePropagation();
 
-                    var codeBlock = jquery(e.currentTarget)
-                        .parent()
-                        .next();
-                    var editButton = jquery(e.currentTarget);
-                    var saveButton = jquery(e.currentTarget)
-                        .parent()
-                        .children("[data-action='saveEdits']");
+            var codeBlock = jquery(e.currentTarget)
+                .parent()
+                .next();
+            var editButton = jquery(e.currentTarget);
+            var saveButton = jquery(e.currentTarget)
+                .parent()
+                .children("[data-action='saveEdits']");
 
-                    // Reset the save button.
-                    saveButton
-                        .children("span")
-                        .attr("class", "fa fa-lg fa-save");
+            // Reset the save button.
+            saveButton
+                .children("span")
+                .attr("class", "fa fa-lg fa-save");
 
-                    if (codeBlock.attr("contentEditable") !== "true") {
-                        // Start editing.
-                        editButton
-                            .children("span")
-                            .attr("class", "fa fa-lg fa-undo");
-                        editButton.attr("data-toggle", "tooltip");
-                        editButton.attr("data-placement", "bottom");
-                        editButton.attr("title", "Discard your edits");
-                        editButton.tooltip();
-                        jsonBackup = codeBlock.text();
-                        codeBlock.attr("contentEditable", "true");
-                        codeBlock.bind("input", function() {
-                            // Validate the JSON as it is edited.
-                            jsonValid = validateJson(codeBlock.text());
-                            saveButton.tooltip("destroy");
-                            if (jsonValid) {
-                                // Valid. Allow saving.
-                                saveButton.removeClass("disabled");
-                                saveButton.css("color", "green");
-                                saveButton.attr("data-toggle", "tooltip");
-                                saveButton.attr("data-placement", "bottom");
-                                saveButton.attr("title",
-                                    "JSON is valid. Click to save."
-                                );
-                            } else {
-                                // Invalid. Prevent saving.
-                                saveButton.css("color", "red");
-                                saveButton.attr("data-toggle", "tooltip");
-                                saveButton.attr("data-placement", "bottom");
-                                saveButton.attr("title",
-                                    "JSON is invalid. Saving not allowed."
-                                );
-                            }
-
-                            saveButton.tooltip({
-                                container: "body"
-                            });
-                        });
-
-                        editButton.attr("class", "btn btn-default");
-                        saveButton.attr("class", "btn btn-default");
+            if (codeBlock.attr("contentEditable") !== "true") {
+                // Start editing.
+                editButton
+                    .children("span")
+                    .attr("class", "fa fa-lg fa-undo");
+                editButton.attr("data-toggle", "tooltip");
+                editButton.attr("data-placement", "bottom");
+                editButton.attr("title", "Discard your edits");
+                editButton.tooltip();
+                jsonBackup = codeBlock.text();
+                codeBlock.attr("contentEditable", "true");
+                codeBlock.bind("input", function() {
+                    // Validate the JSON as it is edited.
+                    jsonValid = validateJson(codeBlock.text());
+                    saveButton.tooltip("destroy");
+                    if (jsonValid) {
+                        // Valid. Allow saving.
+                        saveButton.removeClass("disabled");
+                        saveButton.css("color", "green");
+                        saveButton.attr("data-toggle", "tooltip");
+                        saveButton.attr("data-placement", "bottom");
+                        saveButton.attr("title",
+                            "JSON is valid. Click to save."
+                        );
                     } else {
-                        // Let the user back out of editing without saving.
-                        // End editing and restore the original json.
-                        codeBlock.attr("contentEditable", "false");
-                        codeBlock.text(jsonBackup);
-                        codeBlock.each(function(i, e) {
-                            hljs.highlightBlock(e);
-                        });
-
-                        editButton.attr("class", "btn btn-default");
-                        editButton.children("span")
-                            .attr("class", "fa fa-lg fa-pencil");
-                        editButton.tooltip("destroy");
-                        saveButton.attr("class", "btn btn-default disabled");
-                        saveButton.css("color", "black");
+                        // Invalid. Prevent saving.
+                        saveButton.css("color", "red");
+                        saveButton.attr("data-toggle", "tooltip");
+                        saveButton.attr("data-placement", "bottom");
+                        saveButton.attr("title",
+                            "JSON is invalid. Saving not allowed."
+                        );
                     }
 
-                    // Post the edited JSON.
-                    saveButton.click(function() {
-                        if (jsonValid) {
-                            // JSON is valid. Allow saving.
-                            var newJson = codeBlock.text();
-                            var itemInfo = JSON.parse(
-                                jquery("#descriptionJson").text()
-                            );
-                            editButton.attr("class", "btn btn-default");
-                            editButton.children("span")
-                                .attr("class", "fa fa-lg fa-pencil");
-                            saveButton.attr("class",
-                                "btn btn-default disabled"
-                            );
-                            saveButton.css("color", "black");
-                            codeBlock.attr("contentEditable", "false");
-
-                            // Post the changes.
-                            saveButton.children("span")
-                                .attr("class", "fa fa-lg fa-spinner fa-spin");
-                            var ownerFolder;
-                            if (itemInfo.ownerFolder) {
-                                ownerFolder = itemInfo.ownerFolder;
-                            } else {
-                                ownerFolder = "/";
-                            }
-
-                            if (editButton.attr("data-container") === "Description") {
-                                portal.updateDescription(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
-                                    if (response.success) {
-                                        saveButton.children("span").attr("class", "fa fa-lg fa-check");
-                                        saveButton.css("color", "green");
-                                    } else {
-                                        saveButton.children("span").attr("class", "fa fa-lg fa-times");
-                                        saveButton.css("color", "red");
-                                    }
-                                });
-                            } else if (editButton.attr("data-container") === "Data") {
-                                saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                                portal.updateData(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
-                                    if (response.success) {
-                                        saveButton.children("span").attr("class", "fa fa-lg fa-check");
-                                        saveButton.css("color", "green");
-                                    } else {
-                                        saveButton.children("span").attr("class", "fa fa-lg fa-times");
-                                        saveButton.css("color", "red");
-                                    }
-                                });
-                            }
-                        } else {
-                            saveButton.removeClass("active");
-                        }
+                    saveButton.tooltip({
+                        container: "body"
                     });
-                };
+                });
 
-                jquery(".content").addClass("data-toggle");
-                jquery(".content").removeAttr("disabled");
-                jquery(".content").attr("data-toggle", "button");
-                jquery(".content").addClass("btn-info");
+                editButton.attr("class", "btn btn-default");
+                saveButton.attr("class", "btn btn-default");
+            } else {
+                // Let the user back out of editing without saving.
+                // End editing and restore the original json.
+                codeBlock.attr("contentEditable", "false");
+                codeBlock.text(jsonBackup);
+                codeBlock.each(function(i, e) {
+                    hljs.highlightBlock(e);
+                });
 
-                jquery("#inspectModal").modal("hide");
-                jquery("#inspectBtn").button("reset");
+                editButton.attr("class", "btn btn-default");
+                editButton.children("span")
+                    .attr("class", "fa fa-lg fa-pencil");
+                editButton.tooltip("destroy");
+                saveButton.attr("class", "btn btn-default disabled");
+                saveButton.css("color", "black");
+            }
 
-                // Add a listener for clicking on content buttons.
-                jquery(".content").click(function() {
-                    var server = jquery(this).attr("data-portal");
-                    var id = jquery(this).attr("data-id");
-                    var title = jquery(this).text();
-                    var itemData;
+            // Post the edited JSON.
+            saveButton.click(function() {
+                if (jsonValid) {
+                    // JSON is valid. Allow saving.
+                    var newJson = codeBlock.text();
+                    var itemInfo = JSON.parse(
+                        jquery("#descriptionJson").text()
+                    );
+                    editButton.attr("class", "btn btn-default");
+                    editButton.children("span")
+                        .attr("class", "fa fa-lg fa-pencil");
+                    saveButton.attr("class",
+                        "btn btn-default disabled"
+                    );
+                    saveButton.css("color", "black");
+                    codeBlock.attr("contentEditable", "false");
 
-                    /**
-                     * Prevent trying to pass a portal token when
-                     * inspecting content from an ArcGIS Online search.
-                     */
-                    if (server === "https://www.arcgis.com/" &&
-                        server !== app.portals.sourcePortal.portalUrl) {
-                        portal = app.portals.arcgisOnline;
+                    // Post the changes.
+                    saveButton.children("span")
+                        .attr("class", "fa fa-lg fa-spinner fa-spin");
+                    var ownerFolder;
+                    if (itemInfo.ownerFolder) {
+                        ownerFolder = itemInfo.ownerFolder;
                     } else {
-                        portal = app.portals.sourcePortal;
+                        ownerFolder = "/";
                     }
 
-                    NProgress.start();
-                    jquery(".content").addClass("btn-info");
-                    jquery(".content").removeClass("active");
-                    jquery(".content").removeClass("btn-primary");
-                    jquery(this).addClass("btn-primary");
-                    jquery(this).removeClass("btn-info");
-                    portal.itemDescription(id)
-                        .done(function(description) {
-                            portal.itemData(id)
-                                .done(function(data) {
-                                    itemData = data;
-                                })
-                                .always(function() {
-                                    var templateData = {
-                                        title: title,
-                                        url: portal.portalUrl,
-                                        id: id,
-                                        description: JSON.stringify(
-                                            description, undefined, 2
-                                        ),
-                                        data: JSON.stringify(
-                                            itemData, undefined, 2
-                                        )
-                                    };
+                    if (editButton.attr("data-container") === "Description") {
+                        portal.updateDescription(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
+                            if (response.success) {
+                                saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                saveButton.css("color", "green");
+                            } else {
+                                saveButton.children("span").attr("class", "fa fa-lg fa-times");
+                                saveButton.css("color", "red");
+                            }
+                        });
+                    } else if (editButton.attr("data-container") === "Data") {
+                        saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
+                        portal.updateData(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
+                            if (response.success) {
+                                saveButton.children("span").attr("class", "fa fa-lg fa-check");
+                                saveButton.css("color", "green");
+                            } else {
+                                saveButton.children("span").attr("class", "fa fa-lg fa-times");
+                                saveButton.css("color", "red");
+                            }
+                        });
+                    }
+                } else {
+                    saveButton.removeClass("active");
+                }
+            });
+        };
 
-                                    // Add a download link for files.
-                                    if (templateData.data === undefined &&
-                                        description.typeKeywords
-                                        .indexOf("Service") === -1) {
-                                        templateData
-                                            .downloadLink = portal.portalUrl +
-                                            "sharing/rest/content/items/" +
-                                            id +
-                                            "/data?token=" + portal.token;
-                                    }
+        jquery(".content").addClass("data-toggle");
+        jquery(".content").removeAttr("disabled");
+        jquery(".content").attr("data-toggle", "button");
+        jquery(".content").addClass("btn-info");
 
-                                    var html = mustache.to_html(
-                                        jquery("#inspectTemplate").html(),
-                                        templateData
-                                    );
+        jquery("#inspectModal").modal("hide");
+        jquery("#inspectBtn").button("reset");
 
-                                    // Add the HTML container with the JSON.
-                                    jquery("#dropArea").html(html);
-                                    /**
-                                     * Color code the JSON to make it easier
-                                     * to read (uses highlight.js).
-                                     */
-                                    jquery("pre").each(function(i, e) {
-                                        hljs.highlightBlock(e);
-                                    });
+        // Add a listener for clicking on content buttons.
+        jquery(".content").click(function() {
+            var server = jquery(this).attr("data-portal");
+            var id = jquery(this).attr("data-id");
+            var title = jquery(this).text();
+            var itemData;
 
-                                    jquery(".btn-default[data-action='startEdits']").click(function(e) {
-                                        if (!localStorage.hasOwnProperty("editsAllowed")) {
-                                            // Show the caution modal.
-                                            var editJsonBtn = jquery("#editJsonBtn");
-                                            jquery("#editJsonModal").modal("show");
-                                            jquery(".acknowledgeRisk").click(function(e) {
-                                                if (jquery(e.currentTarget).prop("checked")) {
-                                                    editJsonBtn.removeClass("disabled");
-                                                } else {
-                                                    editJsonBtn.addClass("disabled");
-                                                }
-                                            });
+            /**
+             * Prevent trying to pass a portal token when
+             * inspecting content from an ArcGIS Online search.
+             */
+            if (server === "https://www.arcgis.com/" &&
+                server !== app.portals.sourcePortal.portalUrl) {
+                portal = app.portals.arcgisOnline;
+            } else {
+                portal = app.portals.sourcePortal;
+            }
+
+            NProgress.start();
+            jquery(".content").addClass("btn-info");
+            jquery(".content").removeClass("active");
+            jquery(".content").removeClass("btn-primary");
+            jquery(this).addClass("btn-primary");
+            jquery(this).removeClass("btn-info");
+            portal.itemDescription(id)
+                .done(function(description) {
+                    portal.itemData(id)
+                        .done(function(data) {
+                            itemData = data;
+                        })
+                        .always(function() {
+                            var templateData = {
+                                title: title,
+                                url: portal.portalUrl,
+                                id: id,
+                                description: JSON.stringify(
+                                    description, undefined, 2
+                                ),
+                                data: JSON.stringify(
+                                    itemData, undefined, 2
+                                )
+                            };
+
+                            // Add a download link for files.
+                            if (templateData.data === undefined &&
+                                description.typeKeywords
+                                .indexOf("Service") === -1) {
+                                templateData
+                                    .downloadLink = portal.portalUrl +
+                                    "sharing/rest/content/items/" +
+                                    id +
+                                    "/data?token=" + portal.token;
+                            }
+
+                            var html = mustache.to_html(
+                                jquery("#inspectTemplate").html(),
+                                templateData
+                            );
+
+                            // Add the HTML container with the JSON.
+                            jquery("#dropArea").html(html);
+                            /**
+                             * Color code the JSON to make it easier
+                             * to read (uses highlight.js).
+                             */
+                            jquery("pre").each(function(i, e) {
+                                hljs.highlightBlock(e);
+                            });
+
+                            jquery(".btn-default[data-action='startEdits']").click(function(e) {
+                                if (!localStorage.hasOwnProperty("editsAllowed")) {
+                                    // Show the caution modal.
+                                    var editJsonBtn = jquery("#editJsonBtn");
+                                    jquery("#editJsonModal").modal("show");
+                                    jquery(".acknowledgeRisk").click(function(e) {
+                                        if (jquery(e.currentTarget).prop("checked")) {
+                                            editJsonBtn.removeClass("disabled");
                                         } else {
-                                            startEditing(e);
+                                            editJsonBtn.addClass("disabled");
                                         }
-
-                                        jquery("#editJsonBtn").click(function() {
-                                            jquery("#editJsonModal").modal("hide");
-                                            localStorage.setItem("editsAllowed", true);
-                                            startEditing(e);
-                                        });
-
                                     });
+                                } else {
+                                    startEditing(e);
+                                }
 
-                                    NProgress.done();
+                                jquery("#editJsonBtn").click(function() {
+                                    jquery("#editJsonModal").modal("hide");
+                                    localStorage.setItem("editsAllowed", true);
+                                    startEditing(e);
                                 });
+
+                            });
+
+                            NProgress.done();
                         });
                 });
-            });
+        });
     };
 
     var updateWebmapServices = function() {
