@@ -1,11 +1,9 @@
-*.DS_Store
+# Dev files
 /node_modules
-/testing
-# Ignore production backup
-/backup
 
-# Ignore build files
+# Build files
 /build
+*.zip
+*.map
 src/js/*.min.js
 src/js/portal/*.min.js
-build.zip
