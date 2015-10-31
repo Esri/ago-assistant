@@ -1,6 +1,6 @@
-define(["jquery", "portal/util"], function (jquery, util) {
+define(["jquery", "portal/util"], function(jquery, util) {
     return {
-        Portal: function (config) {
+        Portal: function(config) {
             config = typeof config !== "undefined" ? config : {};
             this.portalUrl = config.portalUrl;
             this.username = config.username;
@@ -9,7 +9,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
             /**
              * Return the version of the portal.
              */
-            this.version = function () {
+            this.version = function() {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest?f=json",
@@ -23,7 +23,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
              * Return the view of the portal as seen by the current user,
              * anonymous or logged in.
              */
-            this.self = function () {
+            this.self = function() {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/portals/self?" + jquery.param({
@@ -40,7 +40,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
              * Generates an access token in exchange for user credentials that
              * can be used by clients when working with the ArcGIS Portal API.
              */
-            this.generateToken = function (username, password) {
+            this.generateToken = function(username, password) {
                 return jquery.ajax({
                     type: "POST",
                     url: this.portalUrl + "sharing/rest/generateToken?",
@@ -63,7 +63,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
              * (token) has permission to access.
              * Excluding a token will yield only public items.
              */
-            this.search = function (query, numResults, sortField, sortOrder) {
+            this.search = function(query, numResults, sortField, sortOrder) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/search?",
@@ -81,8 +81,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
-            this.userProfile = function (username) {
-                // 
+
+            this.userProfile = function(username) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/community/users/" + username + "?",
@@ -96,8 +96,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
-            this.userContent = function (username, folder) {
-                // 
+
+            this.userContent = function(username, folder) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "?",
@@ -111,8 +111,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
-            this.itemDescription = function (id) {
-                // 
+
+            this.itemDescription = function(id) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/content/items/" + id + "?",
@@ -126,8 +126,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
-            this.itemData = function (id) {
-                // 
+
+            this.itemData = function(id) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/content/items/" + id + "/data?",
@@ -141,15 +141,15 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
+
             /**
              * Create a new item on the specified portal.
              */
-            this.addItem = function (username, folder, description, data, thumbnailUrl) {
-
+            this.addItem = function(username, folder, description, data, thumbnailUrl) {
                 // Clean up description items for posting.
                 // This is necessary because some of the item descriptions (e.g. tags and extent)
                 // are returned as arrays, but the post operation expects comma separated strings.
-                jquery.each(description, function (item, value) {
+                jquery.each(description, function(item, value) {
                     if (value === null) {
                         description[item] = "";
                     } else if (value instanceof Array) {
@@ -179,7 +179,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
             /**
              * Update the content in a web map.
              */
-            this.updateWebmapData = function (username, folder, id, data) {
+            this.updateWebmapData = function(username, folder, id, data) {
                 return jquery.ajax({
                     type: "POST",
                     url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
@@ -197,7 +197,7 @@ define(["jquery", "portal/util"], function (jquery, util) {
             /**
              * Update the description for an item.
              */
-            this.updateDescription = function (username, id, folder, description) {
+            this.updateDescription = function(username, id, folder, description) {
                 var postData = JSON.parse(description);
                 /**
                  * Clean up description items for posting.
@@ -205,13 +205,14 @@ define(["jquery", "portal/util"], function (jquery, util) {
                  * (e.g. tags and extent) are returned as arrays, but the post
                  * operation expects comma separated strings.
                  */
-                jquery.each(postData, function (item, value) {
+                jquery.each(postData, function(item, value) {
                     if (value === null) {
                         postData[item] = "";
                     } else if (value instanceof Array) {
                         postData[item] = value.join(",");
                     }
                 });
+
                 postData.token = this.token;
                 postData.f = "json";
                 return jquery.ajax({
@@ -224,7 +225,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
                     }
                 });
             };
-            this.updateData = function (username, id, folder, data) {
+
+            this.updateData = function(username, id, folder, data) {
                 // Update the content in a web map.
                 return jquery.ajax({
                     type: "POST",
@@ -243,8 +245,8 @@ define(["jquery", "portal/util"], function (jquery, util) {
             /**
              * Update the URL of a registered service or web application.
              */
-            this.updateUrl = function (username, folder, id, url) {
-                return $.ajax({
+            this.updateUrl = function(username, folder, id, url) {
+                return jquery.ajax({
                     type: "POST",
                     url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
                     data: {

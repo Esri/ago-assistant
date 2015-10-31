@@ -1,4 +1,4 @@
-define([], function () {
+define([], function() {
     var types = [
         {
             type: "CityEngine Web Scene",
@@ -102,16 +102,18 @@ define([], function () {
         },
     ];
     return {
-        items: function (type) {
-            var info = types.filter(function (item) {
+        items: function(type) {
+            var info = types.filter(function(item) {
                 return item.type === type;
             })[0];
+
             if (!info) {
                 // Handle types not found in the above list.
                 return {
                     icon: "datafilesGray"
                 };
             }
+
             return info;
         }
     };

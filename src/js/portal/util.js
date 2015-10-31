@@ -1,19 +1,21 @@
-define(["jquery"], function (jquery) {
+define(["jquery"], function(jquery) {
     return {
         // Convert an array to a comma separated string.
-        arrayToString: function (array) {
+        arrayToString: function(array) {
             var arrayString;
-            jquery.each(array, function (index, arrayValue) {
+            jquery.each(array, function(index, arrayValue) {
                 if (index === 0) {
                     arrayString = arrayValue;
                 } else if (index > 0) {
                     arrayString = arrayString + "," + arrayValue;
                 }
             });
+
             return arrayString;
         },
+
         // Clean up common issues with user entered portal URLs.
-        fixUrl: function (portalUrl) {
+        fixUrl: function(portalUrl) {
             var deferred = jquery.Deferred();
             if (portalUrl === "") {
                 // Default to ArcGIS Online.
@@ -30,6 +32,7 @@ define(["jquery"], function (jquery) {
                 // Add the trailing slash.
                 portalUrl = portalUrl + "/";
             }
+
             deferred.resolve(portalUrl);
             return deferred.promise();
         }
