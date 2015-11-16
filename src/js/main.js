@@ -80,20 +80,20 @@ require([
                             // Now try enterprise auth with jsonp so crossdomain will follow redirects.
                             portal.jsonp = true;
                             portal.version().done(function(data) {
-								// It worked so keep enterprise auth but turn jsonp back off.
-								portal.jsonp = false;
-								console.log("API v" + data.currentVersion);
-								jquery(".alert-danger.alert-dismissable").remove();
-								jquery(el).next().addClass("glyphicon-ok");
-							}).fail(function(xhr, textStatus) {
-								// OK, it's really not working.
-								console.log(xhr, textStatus);
-								portal.withCredentials = false;
-								portal.jsonp = false;
-								jquery(".alert-danger.alert-dismissable").remove();
-								jquery(el).parent().parent().after(urlError);
-								jquery(el).parent().addClass("has-error");
-							});
+                                // It worked so keep enterprise auth but turn jsonp back off.
+                                portal.jsonp = false;
+                                console.log("API v" + data.currentVersion);
+                                jquery(".alert-danger.alert-dismissable").remove();
+                                jquery(el).next().addClass("glyphicon-ok");
+                            }).fail(function(xhr, textStatus) {
+                                // OK, it's really not working.
+                                console.log(xhr, textStatus);
+                                portal.withCredentials = false;
+                                portal.jsonp = false;
+                                jquery(".alert-danger.alert-dismissable").remove();
+                                jquery(el).parent().parent().after(urlError);
+                                jquery(el).parent().addClass("has-error");
+                            });
                         });
                 });
         });
