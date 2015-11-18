@@ -33,6 +33,10 @@ define(["jquery"], function(jquery) {
                 portalUrl = portalUrl + "/";
             }
 
+            if (portalUrl.indexOf("http://") === 0 && window.location.href.indexOf("https://") === 0) {
+                portalUrl = portalUrl.replace("http://", "https://");
+            }
+
             deferred.resolve(portalUrl);
             return deferred.promise();
         }

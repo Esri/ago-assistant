@@ -6,18 +6,31 @@ define(["jquery", "portal/util"], function(jquery, util) {
             this.username = config.username;
             this.token = config.token;
             this.withCredentials = false;
+            this.jsonp = false;
             /**
              * Return the version of the portal.
              */
             this.version = function() {
-                return jquery.ajax({
-                    type: "GET",
-                    url: this.portalUrl + "sharing/rest?f=json",
-                    dataType: "json",
-                    xhrFields: {
-                        withCredentials: this.withCredentials
-                    }
-                });
+                if (this.jsonp) {
+                    return jquery.ajax({
+                        type: 'GET',
+                        url: this.portalUrl + "sharing/rest?f=json",
+                        async: false,
+                        jsonpCallback: 'callback',
+                        crossdomain: true,
+                        contentType: "application/json",
+                        dataType: "jsonp"
+                    });
+                } else {
+                    return jquery.ajax({
+                        type: "GET",
+                        url: this.portalUrl + "sharing/rest?f=json",
+                        dataType: "json",
+                        xhrFields: {
+                            withCredentials: this.withCredentials
+                        }
+                    });
+                }
             };
             /**
              * Return the view of the portal as seen by the current user,
