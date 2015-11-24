@@ -265,6 +265,19 @@
                 </div>
                 <br>
                 <div class="form-group">
+                    <h4>Tables</h4>
+                    {{ #tables }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /tables }}
+                    {{ ^tables }}
+                        No tables in this web map.
+                    {{ /tables }}
+                </div>
+                <br>
+                <div class="form-group">
                     <h4>Basemap Layers <small>{{ basemapTitle }}</small></h4>
                     {{#basemapLayers}}
                     <div class="form-group">
