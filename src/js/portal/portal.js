@@ -15,10 +15,10 @@ define(["jquery", "portal/util"], function(jquery, util) {
             this.version = function() {
                 if (this.jsonp) {
                     return jquery.ajax({
-                        type: 'GET',
+                        type: "GET",
                         url: this.portalUrl + "sharing/rest?f=json",
                         async: false,
-                        jsonpCallback: 'callback',
+                        jsonpCallback: "callback",
                         crossdomain: true,
                         contentType: "application/json",
                         dataType: "jsonp"
@@ -278,7 +278,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
             /**
              * Get service details.
              */
-            this.serviceDescription = function (url) {
+            this.serviceDescription = function(url) {
                 return jquery.ajax({
                     type: "GET",
                     url: url + "?" + jquery.param({
@@ -294,7 +294,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
             /**
              * Get service details.
              */
-            this.serviceLayers = function (url) {
+            this.serviceLayers = function(url) {
                 return jquery.ajax({
                     type: "GET",
                     url: url + "/layers?" + jquery.param({
@@ -308,15 +308,14 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.createService = function (username, folder, serviceParameters) {
+            this.createService = function(username, folder, serviceParameters) {
                 return jquery.ajax({
                     type: "POST",
                     url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/createService",
                     data: {
                         createParameters: serviceParameters,
-//                        outputType: "featureService",
                         outputType: "featureService",
                         token: this.token,
                         f: "json"
@@ -328,9 +327,9 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.addToServiceDefinition = function (serviceUrl, definition) {
+            this.addToServiceDefinition = function(serviceUrl, definition) {
                 serviceUrl = serviceUrl.replace("/rest/services/", "/rest/admin/services/");
                 return jquery.ajax({
                     type: "POST",
@@ -347,9 +346,9 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.checkServiceName = function (portalId, name, type) {
+            this.checkServiceName = function(portalId, name, type) {
                 return jquery.ajax({
                     type: "GET",
                     url: this.portalUrl + "sharing/rest/portals/" + portalId + "/isServiceNameAvailable?" + jquery.param({
@@ -365,9 +364,9 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.layerRecordCount = function (serviceUrl, layerId) {
+            this.layerRecordCount = function(serviceUrl, layerId) {
                 return jquery.ajax({
                     type: "GET",
                     url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
@@ -383,9 +382,9 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.harvestRecords = function (serviceUrl, layerId, offset) {
+            this.harvestRecords = function(serviceUrl, layerId, offset) {
                 return jquery.ajax({
                     type: "GET",
                     url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
@@ -404,9 +403,9 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 });
             };
             /**
-             * 
+             *
              */
-            this.addFeatures = function (serviceUrl, layerId, features) {
+            this.addFeatures = function(serviceUrl, layerId, features) {
                 return jquery.ajax({
                     type: "POST",
                     url: serviceUrl + "/" + layerId + "/addFeatures",
@@ -425,7 +424,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
              * cacheItem() Stores an item with the portal object.
              * @description {Object} the item's description object
              */
-            this.cacheItem = function (description) {
+            this.cacheItem = function(description) {
                 this.items.push({
                     id: description.id,
                     description: description

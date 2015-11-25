@@ -76,7 +76,7 @@ require([
                             jquery(el).next().addClass("glyphicon-ok");
                             jquery(checkbox).trigger("click");
                         })
-                        .fail(function(xhr, textStatus) {
+                        .fail(function() {
                             // Now try enterprise auth with jsonp so crossdomain will follow redirects.
                             portal.jsonp = true;
                             portal.version().done(function(data) {
@@ -812,20 +812,21 @@ require([
     };
 
     // Check if the service name is available.
-    var checkServiceName = function (destinationPortal) {
+    var checkServiceName = function(destinationPortal) {
         var deferred = new jquery.Deferred();
         var nameInput = jquery("#serviceName");
         jquery("#serviceName").off("blur"); // Prevent duplicate listeners.
-        nameInput.blur(function (e) {
+        nameInput.blur(function() {
             var name = nameInput.val();
             destinationPortal.self()
-                .then(function (self) {
+                .then(function(self) {
                     destinationPortal.checkServiceName(self.user.orgId, name, "Feature Service")
-                        .then(function (available) {
+                        .then(function(available) {
                             if (available.available !== true) {
                                 var nameError = mustache.to_html(jquery("#serviceNameErrorTemplate").html(), {
                                     name: name
                                 });
+
                                 // Prevent appending duplicate error messages.
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 nameInput.parent().parent().after(nameError);
@@ -842,11 +843,12 @@ require([
                         });
                 });
         });
+
         return deferred.promise();
     };
-    
+
     var showCopyError = function(id, message) {
-        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+        var html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
             id: id,
             message: message
         });
@@ -858,8 +860,9 @@ require([
      * @id {String} id of the source item
      * @folder {String} id of the destination folder
      */
-    var simpleCopy = function (id, folder) {
+    var simpleCopy = function(id, folder) {
         var portalUrl = jquery("#" + id).attr("data-portal");
+        var portal;
         /**
          * Prevent trying to pass a portal token when
          * copying content from ArcGIS Online.
@@ -870,14 +873,16 @@ require([
         } else {
             portal = app.portals.sourcePortal;
         }
+
         var destinationPortal = app.portals.destinationPortal;
-        var item = jquery.grep(portal.items, function (item, i) {
+        var item = jquery.grep(portal.items, function(item) {
             return (item.id === id);
         });
+
         var description = item[0].description;
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
-        portal.itemData(id).always(function (data) {
+        portal.itemData(id).always(function(data) {
             /**
              * Post it to the destination using always
              * to ensure that it copies Web Mapping Applications
@@ -885,7 +890,7 @@ require([
              * generate a failed response.
              */
             destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
-                .done(function (response) {
+                .done(function(response) {
                     var html;
                     if (response.success === true) {
                         // Update the id parameter to reflect the new item's id.
@@ -894,7 +899,7 @@ require([
                             newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
                             var folder = response.folder || "";
                             destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                                .done(function (status) {
+                                .done(function() {
                                     jquery("#" + id + "_clone").addClass("btn-success");
                                 });
                         } else {
@@ -909,14 +914,15 @@ require([
                         jquery("#" + id + "_clone").before(html);
                     }
                 })
-                .fail(function (response) {
+                .fail(function() {
                     showCopyError(id, "Something went wrong.");
                 });
         });
     };
 
-    var deepCopyFeatureService = function (id, folder) {
+    var deepCopyFeatureService = function(id, folder) {
         var portalUrl = jquery("#" + id).attr("data-portal");
+        var portal;
         /**
          * Prevent trying to pass a portal token when
          * copying content from ArcGIS Online.
@@ -927,14 +933,17 @@ require([
         } else {
             portal = app.portals.sourcePortal;
         }
+
         var destinationPortal = app.portals.destinationPortal;
         var name = jquery("#serviceName").val();
-        var item = jquery.grep(portal.items, function (item, i) {
+        var item = jquery.grep(portal.items, function(item) {
             return (item.id === id);
         });
+
         var description = item[0].description;
         var serviceDescription = item[0].serviceDescription;
         var layers = serviceDescription.layers;
+
         // Preserve the icon on the cloned button.
         var span = jquery("#" + id + "_clone > span");
         jquery("#" + id + "_clone").text(name);
@@ -942,27 +951,28 @@ require([
         serviceDescription.name = name;
         var serviceDefinition = serviceDescription;
         delete serviceDefinition.layers;
-        destinationPortal.createService(destinationPortal.username, folder, JSON.stringify(serviceDefinition)).then(function (service) {
+        destinationPortal.createService(destinationPortal.username, folder, JSON.stringify(serviceDefinition)).then(function(service) {
             var clone = jquery("#" + id + "_clone");
             clone.addClass("btn-info");
             clone.append("<img src='css/grid.svg' class='harvester'/>");
             clone.attr("data-id", service.itemId);
             clone.attr("data-portal", destinationPortal.portalUrl);
+
             // Update the new item's tags to make it easier to trace its origins.
-            newTags = description.tags;
+            var newTags = description.tags;
             newTags.push("source-" + description.id);
             destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({
                 tags: newTags
             }));
             portal.serviceLayers(description.url)
-                .then(function (definition) {
+                .then(function(definition) {
                     /*
                      * Force in the spatial reference.
                      * Don't know why this is necessary, but if you
                      * don't then any geometries not in 102100 end up
                      * on Null Island.
                      */
-                    jquery.each(definition.layers, function (i, layer) {
+                    jquery.each(definition.layers, function(i, layer) {
                         layer.adminLayerInfo = {
                             geometryField: {
                                 name: "Shape",
@@ -970,14 +980,16 @@ require([
                             }
                         };
                     });
+
                     destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
-                        .then(function (response) {
+                        .then(function(response) {
                             if (!("error" in response)) {
-                                jquery.each(layers, function (i, v) {
+                                jquery.each(layers, function(i, v) {
                                     var layerId = v.id;
                                     portal.layerRecordCount(description.url, layerId)
-                                        .then(function (records) {
+                                        .then(function(records) {
                                             var offset = 0;
+
                                             // Set the count manually in weird cases where maxRecordCount is negative.
                                             var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
                                             var added = 0;
@@ -985,9 +997,9 @@ require([
                                             while (offset <= records.count) {
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset)
-                                                    .then(function (serviceData) {
+                                                    .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
-                                                            .then(function () {
+                                                            .then(function() {
                                                                 added += count;
                                                                 if (added >= records.count) {
                                                                     jquery("#" + id + "_clone > img").remove();
@@ -996,6 +1008,7 @@ require([
                                                                 }
                                                             });
                                                     });
+
                                                 offset += count;
                                             }
                                         });
@@ -1005,10 +1018,10 @@ require([
                                 jquery("#" + id + "_clone").removeClass("btn-info");
                                 jquery("#" + id + "_clone").addClass("btn-danger");
                                 var message = response.error.message;
-                                showCopyError(id, message);    
+                                showCopyError(id, message);
                             }
                         })
-                        .fail(function (response) {
+                        .fail(function() {
                             jquery("#" + id + "_clone > img").remove();
                             jquery("#" + id + "_clone").removeClass("btn-info");
                             jquery("#" + id + "_clone").addClass("btn-danger");
@@ -1047,30 +1060,34 @@ require([
             // Ensure the content type is supported before trying to copy it.
             if (isSupported(type)) {
                 // Get the full item description and data from the source.
-                portal.itemDescription(id).done(function (description) {
-                    var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id +
-                        "/info/" + description.thumbnail + "?token=" + portal.token;
+                portal.itemDescription(id).done(function(description) {
+//                    var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id +
+//                        "/info/" + description.thumbnail + "?token=" + portal.token;
                     portal.cacheItem(description);
                     switch (type) {
                     case "Feature Service":
-                        portal.serviceDescription(description.url).done(function (serviceDescription) {
-                            var layers = serviceDescription.layers;
-                            var item = jquery.grep(portal.items, function (item, i) {
+                        portal.serviceDescription(description.url).done(function(serviceDescription) {
+//                            var layers = serviceDescription.layers;
+                            var item = jquery.grep(portal.items, function(item) {
                                 return (item.id === id);
                             });
+
                             var name = description.name;
                             if (name === null) {
                                 name = description.title;
                             }
+
                             jquery("#serviceName").val(name);
                             item[0].serviceDescription = serviceDescription;
                             jquery("#btnCancelCopy").attr("data-id", description.id);
                             jquery("#btnCopyService").attr("data-id", description.id);
                             jquery("#deepCopyModal").modal("show");
                             jquery("#btnCopyService").removeClass("disabled");
+
                             // Add a listener for the service name form.
                             checkServiceName(destinationPortal);
                         });
+
                         break;
                     default:
                         simpleCopy(id, folder);
@@ -1738,7 +1755,7 @@ require([
             }
         });
 
-        jquery(document).on("click", "#btnSimpleCopy", function () {
+        jquery(document).on("click", "#btnSimpleCopy", function() {
             jquery("#serviceNameForm").hide();
             jquery(".alert-danger.alert-dismissable").remove();
             jquery("#btnCopyService").removeClass("disabled");
@@ -1747,7 +1764,7 @@ require([
             jquery("#btnFullCopy").addClass("btn-default");
         });
 
-        jquery(document).on("click", "#btnFullCopy", function () {
+        jquery(document).on("click", "#btnFullCopy", function() {
             jquery("#serviceNameForm").show();
             jquery("#btnCopyService").addClass("disabled");
             jquery("#btnFullCopy").addClass("btn-primary active");
@@ -1757,7 +1774,7 @@ require([
         });
 
         // Add a listener for the future cancel copy button.
-        jquery(document).on("click", "#btnCancelCopy", function (e) {
+        jquery(document).on("click", "#btnCancelCopy", function(e) {
             var id = jquery(e.currentTarget).attr("data-id");
             jquery(".clone[data-id='" + id + "']").remove();
             jquery("#btnCancelCopy").attr("data-id", "");
@@ -1767,7 +1784,7 @@ require([
         });
 
         // Add a listener for the future copy button.
-        jquery(document).on("click", "#btnCopyService", function (e) {
+        jquery(document).on("click", "#btnCopyService", function(e) {
             var id = jquery(e.currentTarget).attr("data-id");
             var folder = jquery(".clone[data-id='" + id + "']").parent().attr("data-folder");
             var copyType = jquery("#copySelector > .btn-primary").text();
@@ -1785,7 +1802,7 @@ require([
             jquery("#deepCopyModal").modal("hide");
         });
 
-        jquery(document).on("click", "li [data-action]", function (e) {
+        jquery(document).on("click", "li [data-action]", function(e) {
             // Highlight the selected action except for "View My Stats."
             var selectedAction = jquery(e.target).parent().attr("data-action");
             if (selectedAction !== "stats") {
