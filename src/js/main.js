@@ -567,11 +567,13 @@ require([
                     });
 
                     var tables = [];
-                    jquery.each(data.tables, function(table) {
-                        if (data.tables[table].hasOwnProperty("url")) {
-                            tables.push(data.tables[table]);
-                        }
-                    });
+                    if (data.tables) {
+                        jquery.each(data.tables, function(table) {
+                            if (data.tables[table].hasOwnProperty("url")) {
+                                tables.push(data.tables[table]);
+                            }
+                        });
+                    }
 
                     var basemapTitle = data.baseMap.title;
                     var basemapLayers = [];
