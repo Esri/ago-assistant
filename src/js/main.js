@@ -76,7 +76,7 @@ require([
                             jquery(el).next().addClass("glyphicon-ok");
                             jquery(checkbox).trigger("click");
                         })
-                        .fail(function(xhr, textStatus) {
+                        .fail(function() {
                             // Now try enterprise auth with jsonp so crossdomain will follow redirects.
                             portal.jsonp = true;
                             portal.version().done(function(data) {
@@ -567,11 +567,13 @@ require([
                     });
 
                     var tables = [];
-                    jquery.each(data.tables, function(table) {
-                        if (data.tables[table].hasOwnProperty("url")) {
-                            tables.push(data.tables[table]);
-                        }
-                    });
+                    if (data.tables) {
+                        jquery.each(data.tables, function(table) {
+                            if (data.tables[table].hasOwnProperty("url")) {
+                                tables.push(data.tables[table]);
+                            }
+                        });
+                    }
 
                     var basemapTitle = data.baseMap.title;
                     var basemapLayers = [];
@@ -811,6 +813,227 @@ require([
             });
     };
 
+    // Check if the service name is available.
+    var checkServiceName = function(destinationPortal) {
+        var deferred = new jquery.Deferred();
+        var nameInput = jquery("#serviceName");
+        jquery("#serviceName").off("blur"); // Prevent duplicate listeners.
+        nameInput.blur(function() {
+            var name = nameInput.val();
+            destinationPortal.self()
+                .then(function(self) {
+                    destinationPortal.checkServiceName(self.user.orgId, name, "Feature Service")
+                        .then(function(available) {
+                            if (available.available !== true) {
+                                var nameError = mustache.to_html(jquery("#serviceNameErrorTemplate").html(), {
+                                    name: name
+                                });
+
+                                // Prevent appending duplicate error messages.
+                                jquery(".alert-danger.alert-dismissable").remove();
+                                nameInput.parent().parent().after(nameError);
+                                nameInput.parent().addClass("has-error");
+                                nameInput.next().removeClass("glyphicon-ok");
+                            } else {
+                                name = nameInput.val();
+                                jquery(".alert-danger.alert-dismissable").remove();
+                                nameInput.parent().removeClass("has-error");
+                                nameInput.next().addClass("glyphicon-ok");
+                                jquery("#btnCopyService").removeClass("disabled");
+                                deferred.resolve(name);
+                            }
+                        });
+                });
+        });
+
+        return deferred.promise();
+    };
+
+    var showCopyError = function(id, message) {
+        var html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+            id: id,
+            message: message
+        });
+        jquery("#" + id + "_clone").before(html);
+    };
+
+    /**
+     * simpleCopy() Copies a given item ID.
+     * @id {String} id of the source item
+     * @folder {String} id of the destination folder
+     */
+    var simpleCopy = function(id, folder) {
+        var portalUrl = jquery("#" + id).attr("data-portal");
+        var portal;
+        /**
+         * Prevent trying to pass a portal token when
+         * copying content from ArcGIS Online.
+         */
+        if (portalUrl === "https://www.arcgis.com/" &&
+            portalUrl !== app.portals.sourcePortal.portalUrl) {
+            portal = app.portals.arcgisOnline;
+        } else {
+            portal = app.portals.sourcePortal;
+        }
+
+        var destinationPortal = app.portals.destinationPortal;
+        var item = jquery.grep(portal.items, function(item) {
+            return (item.id === id);
+        });
+
+        var description = item[0].description;
+        var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
+            description.thumbnail + "?token=" + portal.token;
+        portal.itemData(id).always(function(data) {
+            /**
+             * Post it to the destination using always
+             * to ensure that it copies Web Mapping Applications
+             * which don't have a data component and therefore
+             * generate a failed response.
+             */
+            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                .done(function(response) {
+                    var html;
+                    if (response.success === true) {
+                        // Update the id parameter to reflect the new item's id.
+                        if (description.url.indexOf("id=") > -1) {
+                            var newUrl = description.url.substring(description.url.indexOf("/apps/"));
+                            newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
+                            var folder = response.folder || "";
+                            destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
+                                .done(function() {
+                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                });
+                        } else {
+                            jquery("#" + id + "_clone").addClass("btn-success");
+                        }
+                    } else if (response.error) {
+                        jquery("#" + id + "_clone").addClass("btn-danger");
+                        html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
+                            id: id,
+                            message: response.error.message
+                        });
+                        jquery("#" + id + "_clone").before(html);
+                    }
+                })
+                .fail(function() {
+                    showCopyError(id, "Something went wrong.");
+                });
+        });
+    };
+
+    var deepCopyFeatureService = function(id, folder) {
+        var portalUrl = jquery("#" + id).attr("data-portal");
+        var portal;
+        /**
+         * Prevent trying to pass a portal token when
+         * copying content from ArcGIS Online.
+         */
+        if (portalUrl === "https://www.arcgis.com/" &&
+            portalUrl !== app.portals.sourcePortal.portalUrl) {
+            portal = app.portals.arcgisOnline;
+        } else {
+            portal = app.portals.sourcePortal;
+        }
+
+        var destinationPortal = app.portals.destinationPortal;
+        var name = jquery("#serviceName").val();
+        var item = jquery.grep(portal.items, function(item) {
+            return (item.id === id);
+        });
+
+        var description = item[0].description;
+        var serviceDescription = item[0].serviceDescription;
+        var layers = serviceDescription.layers;
+
+        // Preserve the icon on the cloned button.
+        var span = jquery("#" + id + "_clone > span");
+        jquery("#" + id + "_clone").text(name);
+        jquery("#" + id + "_clone").prepend(span);
+        serviceDescription.name = name;
+        var serviceDefinition = serviceDescription;
+        delete serviceDefinition.layers;
+        destinationPortal.createService(destinationPortal.username, folder, JSON.stringify(serviceDefinition)).then(function(service) {
+            var clone = jquery("#" + id + "_clone");
+            clone.addClass("btn-info");
+            clone.append("<img src='css/grid.svg' class='harvester'/>");
+            clone.attr("data-id", service.itemId);
+            clone.attr("data-portal", destinationPortal.portalUrl);
+
+            // Update the new item's tags to make it easier to trace its origins.
+            var newTags = description.tags;
+            newTags.push("source-" + description.id);
+            destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({
+                tags: newTags
+            }));
+            portal.serviceLayers(description.url)
+                .then(function(definition) {
+                    /*
+                     * Force in the spatial reference.
+                     * Don't know why this is necessary, but if you
+                     * don't then any geometries not in 102100 end up
+                     * on Null Island.
+                     */
+                    jquery.each(definition.layers, function(i, layer) {
+                        layer.adminLayerInfo = {
+                            geometryField: {
+                                name: "Shape",
+                                srid: 102100
+                            }
+                        };
+                    });
+
+                    destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
+                        .then(function(response) {
+                            if (!("error" in response)) {
+                                jquery.each(layers, function(i, v) {
+                                    var layerId = v.id;
+                                    portal.layerRecordCount(description.url, layerId)
+                                        .then(function(records) {
+                                            var offset = 0;
+
+                                            // Set the count manually in weird cases where maxRecordCount is negative.
+                                            var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
+                                            var added = 0;
+                                            var x = 1;
+                                            while (offset <= records.count) {
+                                                x++;
+                                                portal.harvestRecords(description.url, layerId, offset)
+                                                    .then(function(serviceData) {
+                                                        destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
+                                                            .then(function() {
+                                                                added += count;
+                                                                if (added >= records.count) {
+                                                                    jquery("#" + id + "_clone > img").remove();
+                                                                    jquery("#" + id + "_clone").removeClass("btn-info");
+                                                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                                                }
+                                                            });
+                                                    });
+
+                                                offset += count;
+                                            }
+                                        });
+                                });
+                            } else {
+                                jquery("#" + id + "_clone > img").remove();
+                                jquery("#" + id + "_clone").removeClass("btn-info");
+                                jquery("#" + id + "_clone").addClass("btn-danger");
+                                var message = response.error.message;
+                                showCopyError(id, message);
+                            }
+                        })
+                        .fail(function() {
+                            jquery("#" + id + "_clone > img").remove();
+                            jquery("#" + id + "_clone").removeClass("btn-info");
+                            jquery("#" + id + "_clone").addClass("btn-danger");
+                            var message = "Something went wrong.";
+                            showCopyError(id, message);
+                        });
+                });
+        });
+    };
+
     // Make the drop area accept content items.
     var makeDroppable = function(id) {
 
@@ -840,48 +1063,37 @@ require([
             if (isSupported(type)) {
                 // Get the full item description and data from the source.
                 portal.itemDescription(id).done(function(description) {
-                    var thumbnailUrl = portal.portalUrl +
-                        "sharing/rest/content/items/" + id + "/info/" +
-                        description.thumbnail + "?token=" +
-                        portal.token;
-                    portal.itemData(id).always(function(data) {
-                        /**
-                         * Post it to the destination using always
-                         * to ensure that it copies Web Mapping Applications
-                         * which don't have a data component and therefore
-                         * generate a failed response.
-                         */
-                        destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl).done(function(response) {
-                            var html;
-                            if (response.success === true) {
-                                // Update the id parameter to reflect the new item's id.
-                                if (description.url.indexOf("id=") > -1) {
-                                    var newUrl = description.url.substring(description.url.indexOf("/apps/"));
-                                    newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
-                                    var folder = response.folder || "";
-                                    destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                                        .done(function() {
-                                            jquery("#" + id + "_clone").addClass("btn-success");
-                                        });
-                                } else {
-                                    jquery("#" + id + "_clone").addClass("btn-success");
-                                }
-                            } else if (response.error) {
-                                jquery("#" + id + "_clone").addClass("btn-danger");
-                                html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                    id: id,
-                                    message: response.error.message
-                                });
-                                jquery("#" + id + "_clone").before(html);
-                            }
-                        }).fail(function() {
-                            html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
-                                id: id,
-                                message: "Something went wrong."
+//                    var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id +
+//                        "/info/" + description.thumbnail + "?token=" + portal.token;
+                    portal.cacheItem(description);
+                    switch (type) {
+                    case "Feature Service":
+                        portal.serviceDescription(description.url).done(function(serviceDescription) {
+//                            var layers = serviceDescription.layers;
+                            var item = jquery.grep(portal.items, function(item) {
+                                return (item.id === id);
                             });
-                            jquery("#" + id + "_clone").before(html);
+
+                            var name = description.name;
+                            if (name === null) {
+                                name = description.title;
+                            }
+
+                            jquery("#serviceName").val(name);
+                            item[0].serviceDescription = serviceDescription;
+                            jquery("#btnCancelCopy").attr("data-id", description.id);
+                            jquery("#btnCopyService").attr("data-id", description.id);
+                            jquery("#deepCopyModal").modal("show");
+                            jquery("#btnCopyService").removeClass("disabled");
+
+                            // Add a listener for the service name form.
+                            checkServiceName(destinationPortal);
                         });
-                    });
+
+                        break;
+                    default:
+                        simpleCopy(id, folder);
+                    }
                 });
             } else {
                 // Not supported.
@@ -907,6 +1119,7 @@ require([
 
             // Differentiate this object from the original.
             clone.attr("id", itemId + "_clone");
+            clone.addClass("clone");
 
             // Remove the max-width property so it fills the folder.
             clone.css("max-width", "");
@@ -1542,6 +1755,53 @@ require([
                 listUserItems();
                 NProgress.done();
             }
+        });
+
+        jquery(document).on("click", "#btnSimpleCopy", function() {
+            jquery("#serviceNameForm").hide();
+            jquery(".alert-danger.alert-dismissable").remove();
+            jquery("#btnCopyService").removeClass("disabled");
+            jquery("#btnSimpleCopy").addClass("btn-primary active");
+            jquery("#btnFullCopy").removeClass("btn-primary active");
+            jquery("#btnFullCopy").addClass("btn-default");
+        });
+
+        jquery(document).on("click", "#btnFullCopy", function() {
+            jquery("#serviceNameForm").show();
+            jquery("#btnCopyService").addClass("disabled");
+            jquery("#btnFullCopy").addClass("btn-primary active");
+            jquery("#btnSimpleCopy").removeClass("btn-primary active");
+            jquery("#btnSimpleCopy").addClass("btn-default");
+            jquery("#serviceName").blur();
+        });
+
+        // Add a listener for the future cancel copy button.
+        jquery(document).on("click", "#btnCancelCopy", function(e) {
+            var id = jquery(e.currentTarget).attr("data-id");
+            jquery(".clone[data-id='" + id + "']").remove();
+            jquery("#btnCancelCopy").attr("data-id", "");
+            jquery("#serviceName").attr("value", "");
+            jquery("#btnSimpleCopy").click(); // Reset everything.
+            jquery("#deepCopyModal").modal("hide");
+        });
+
+        // Add a listener for the future copy button.
+        jquery(document).on("click", "#btnCopyService", function(e) {
+            var id = jquery(e.currentTarget).attr("data-id");
+            var folder = jquery(".clone[data-id='" + id + "']").parent().attr("data-folder");
+            var copyType = jquery("#copySelector > .btn-primary").text();
+            switch (copyType) {
+            case "Simple":
+                simpleCopy(id, folder);
+                break;
+            case "Full":
+                deepCopyFeatureService(id, folder);
+                break;
+            }
+            jquery("#btnCancelCopy").attr("data-id", "");
+            jquery("#serviceName").attr("value", "");
+            jquery("#btnSimpleCopy").click(); // Reset everything.
+            jquery("#deepCopyModal").modal("hide");
         });
 
         jquery(document).on("click", "li [data-action]", function(e) {
