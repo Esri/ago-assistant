@@ -960,6 +960,9 @@ require([
             clone.attr("data-id", service.itemId);
             clone.attr("data-portal", destinationPortal.portalUrl);
 
+            // Upgrade the service url to https to prevent mixed content errors.
+            service.serviceurl = portalUtil.upgradeUrl(service.serviceurl);
+
             // Update the new item's tags to make it easier to trace its origins.
             var newTags = description.tags;
             newTags.push("source-" + description.id);
@@ -1063,13 +1066,14 @@ require([
             if (isSupported(type)) {
                 // Get the full item description and data from the source.
                 portal.itemDescription(id).done(function(description) {
-//                    var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id +
-//                        "/info/" + description.thumbnail + "?token=" + portal.token;
-                    portal.cacheItem(description);
                     switch (type) {
                     case "Feature Service":
+
+                        // Upgrade the service url to https to prevent mixed content errors.
+                        description.url = portalUtil.upgradeUrl(description.url);
+
+                        portal.cacheItem(description);
                         portal.serviceDescription(description.url).done(function(serviceDescription) {
-//                            var layers = serviceDescription.layers;
                             var item = jquery.grep(portal.items, function(item) {
                                 return (item.id === id);
                             });
