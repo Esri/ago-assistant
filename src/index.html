@@ -112,7 +112,6 @@
                                     Copy content between accounts (even on different organizations or Portals)
                                     <ul>
                                         <li><em>Files cannot be copied at this time.</em></li>
-                                        <li><em>Copying hosted feature services adds a reference to the original service in the destination portal. Deep copying is planned for a future release.</em></li>
                                     </ul>
                                 </li>
                                 <li>Inspect content</li>
@@ -226,7 +225,6 @@
                                         </div>
                                     </div>
                                     <br>
-                                    <p><a id="destinationEnterpriseButton" class="btn btn-lg btn-success" role="button" data-action="logindestination" disabled="disabled">Log in</a></p>
                                     <div id="destinationLoginForm" class="form-inline">
                                         <p>Enter your credentials:</p>
                                         <div class="form-group">
@@ -241,7 +239,8 @@
                         </div>
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in..." style="display: none">Log in</button>
+                            <button id="destinationEnterpriseBtn" class="btn btn-primary" role="button" data-action="logindestination">Log in</button>
                         </div>
                     </div>
                 </div>
@@ -274,6 +273,50 @@
                     </div>
                 </div>
             </div>
+            <!-- Deep Copy modal -->
+            <div id="deepCopyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deepCopyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="deepCopyModalLabel">Copy information</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <label>Copy Type</label>
+                                            <div id="copySelector" class="btn-group" data-toggle="buttons-radio">
+                                                <button type="button" id="btnSimpleCopy" class="btn btn-primary active" data-toggle="button">Simple</button>
+                                                <button type="button" id="btnFullCopy" class="btn btn-default" data-toggle="button">Full</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group has-feedback" style="display:none" id="serviceNameForm">
+                                        <div class="col-md-6">
+                                            <label>Service Name</label>
+                                            <input class="form-control" type="text" value="" id="serviceName">
+                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="alert alert-info">
+                                <p><strong>Simple copy</strong> creates a reference to the original service 
+                                    in the destination account.</p>
+                                <p><strong>Full copy (EXPERIMENTAL)</strong> replicates the original service in the
+                                    destination account and harvests all of its associated data.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-default" data-dismiss="modal" id="btnCancelCopy">Cancel</button>
+                            <button type="submit" class="btn btn-primary disabled" id="btnCopyService">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Item containers -->
             <div id="itemsContainer" class="row">
                 <div id="itemsArea" class="col-md-5 itemArea">

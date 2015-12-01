@@ -104,6 +104,13 @@ body {
     font-size: .8em;
 }
 
+.harvester {
+    display: block;
+    float: right;
+    height: 20px;
+    width: 20px;
+}
+
 .apps {
     background:url(../assets/images/apps16.png);
 }

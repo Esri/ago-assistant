@@ -43,6 +43,15 @@
 
 </script>
 
+<script type="text/template" id="serviceNameErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <p><strong>{{ name }} is already in use.</strong> Try a different name.</p>
+    </div>
+
+</script>
+
 <script type="text/template" id="searchTemplate">
 
     <form id="searchForm" class="navbar-form navbar-left" role="search">
@@ -262,6 +271,19 @@
                     {{ ^operationalLayers }}
                         No operational layers in this web map.
                     {{ /operationalLayers }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Tables</h4>
+                    {{ #tables }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /tables }}
+                    {{ ^tables }}
+                        No tables in this web map.
+                    {{ /tables }}
                 </div>
                 <br>
                 <div class="form-group">

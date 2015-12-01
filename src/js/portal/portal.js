@@ -7,16 +7,18 @@ define(["jquery", "portal/util"], function(jquery, util) {
             this.token = config.token;
             this.withCredentials = false;
             this.jsonp = false;
+            this.items = [];
+            this.services = [];
             /**
              * Return the version of the portal.
              */
             this.version = function() {
                 if (this.jsonp) {
                     return jquery.ajax({
-                        type: 'GET',
+                        type: "GET",
                         url: this.portalUrl + "sharing/rest?f=json",
                         async: false,
-                        jsonpCallback: 'callback',
+                        jsonpCallback: "callback",
                         crossdomain: true,
                         contentType: "application/json",
                         dataType: "jsonp"
@@ -230,7 +232,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 postData.f = "json";
                 return jquery.ajax({
                     type: "POST",
-                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
                     data: postData,
                     dataType: "json",
                     xhrFields: {
@@ -243,7 +245,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
                 // Update the content in a web map.
                 return jquery.ajax({
                     type: "POST",
-                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
                     data: {
                         text: data, // Stringify the Javascript object so it can be properly sent.
                         token: this.token,
@@ -261,7 +263,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
             this.updateUrl = function(username, folder, id, url) {
                 return jquery.ajax({
                     type: "POST",
-                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
                     data: {
                         url: url,
                         token: this.token,
@@ -271,6 +273,161 @@ define(["jquery", "portal/util"], function(jquery, util) {
                     xhrFields: {
                         withCredentials: this.withCredentials
                     }
+                });
+            };
+            /**
+             * Get service details.
+             */
+            this.serviceDescription = function(url) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: url + "?" + jquery.param({
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             * Get service details.
+             */
+            this.serviceLayers = function(url) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: url + "/layers?" + jquery.param({
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.createService = function(username, folder, serviceParameters) {
+                return jquery.ajax({
+                    type: "POST",
+                    url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/createService",
+                    data: {
+                        createParameters: serviceParameters,
+                        outputType: "featureService",
+                        token: this.token,
+                        f: "json"
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.addToServiceDefinition = function(serviceUrl, definition) {
+                serviceUrl = serviceUrl.replace("/rest/services/", "/rest/admin/services/");
+                return jquery.ajax({
+                    type: "POST",
+                    url: serviceUrl + "/addToDefinition",
+                    data: {
+                        addToDefinition: definition,
+                        token: this.token,
+                        f: "json"
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.checkServiceName = function(portalId, name, type) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: this.portalUrl + "sharing/rest/portals/" + portalId + "/isServiceNameAvailable?" + jquery.param({
+                        name: name,
+                        type: type,
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.layerRecordCount = function(serviceUrl, layerId) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
+                        where: "1=1",
+                        returnCountOnly: true,
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.harvestRecords = function(serviceUrl, layerId, offset) {
+                return jquery.ajax({
+                    type: "GET",
+                    url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
+                        where: "1=1",
+                        outFields: "*",
+                        returnGeometry: true,
+                        resultOffset: offset,
+                        resultRecordCount: 1000,
+                        token: this.token,
+                        f: "json"
+                    }),
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             *
+             */
+            this.addFeatures = function(serviceUrl, layerId, features) {
+                return jquery.ajax({
+                    type: "POST",
+                    url: serviceUrl + "/" + layerId + "/addFeatures",
+                    data: {
+                        features: features,
+                        token: this.token,
+                        f: "json"
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: this.withCredentials
+                    }
+                });
+            };
+            /**
+             * cacheItem() Stores an item with the portal object.
+             * @description {Object} the item's description object
+             */
+            this.cacheItem = function(description) {
+                this.items.push({
+                    id: description.id,
+                    description: description
                 });
             };
         }
