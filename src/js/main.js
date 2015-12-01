@@ -1603,8 +1603,11 @@ require([
             jquery("#destinationLoginForm").css({
                 display: "none"
             });
-            jquery("#destinationEnterpriseButton").css({
-                display: "inline-block"
+            jquery("#destinationLoginBtn").css({
+                display: "none"
+            });
+            jquery("#destinationEnterpriseBtn").css({
+                display: "inline"
             });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
@@ -1628,7 +1631,10 @@ require([
             jquery("#destinationLoginForm").css({
                 display: "block"
             });
-            jquery("#destinationEnterpriseButton").css({
+            jquery("#destinationLoginBtn").css({
+                display: "inline"
+            });
+            jquery("#destinationEnterpriseBtn").css({
                 display: "none"
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
@@ -1783,7 +1789,6 @@ require([
          * is selected as the copy target.
          */
         jquery("[data-action='copyOtherAccount']").click(function() {
-            jquery("#destinationForm > form > p > [data-action='logindestination']").removeAttr("disabled");
             jquery("#destinationChoice").css("display", "none");
             jquery("#destinationForm").css("display", "block");
         });
