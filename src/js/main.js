@@ -1066,13 +1066,16 @@ require([
             if (isSupported(type)) {
                 // Get the full item description and data from the source.
                 portal.itemDescription(id).done(function(description) {
+                    portal.cacheItem(description);
                     switch (type) {
                     case "Feature Service":
 
                         // Upgrade the service url to https to prevent mixed content errors.
                         description.url = portalUtil.upgradeUrl(description.url);
 
-                        portal.cacheItem(description);
+                        // Also update the cached url.
+                        portal.items[portal.items.length - 1].description.url = description.url;
+
                         portal.serviceDescription(description.url).done(function(serviceDescription) {
                             var item = jquery.grep(portal.items, function(item) {
                                 return (item.id === id);
