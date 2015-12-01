@@ -1526,7 +1526,7 @@ require([
                 esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
                 sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
             }
-            
+
             // Check for previously authenticated sessions.
             esriId.registerOAuthInfos([appInfo]);
             esriId.checkSignInStatus(appInfo.portalUrl)
@@ -1736,18 +1736,18 @@ require([
 
             // Destroy credentials and remove esriJSAPIOAuth sessions storage
             esriId.destroyCredentials();
-            sessionStorage.removeItem("esriJSAPIOAuth"); 
+            sessionStorage.removeItem("esriJSAPIOAuth");
 
             esriId.getCredential(appInfo.portalUrl, {
-                    oAuthPopupConfirmation: false
+                oAuthPopupConfirmation: false
             }).then(function(user) {
                 // If there is no destination or the destination is not the same as ArcGIS Online
                 if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUr)) {
-                        app.portals.destinationPortal = new portalSelf.Portal({
-                            portalUrl: user.server + "/",
-                            username: user.userId,
-                            token: user.token
-                        });
+                    app.portals.destinationPortal = new portalSelf.Portal({
+                        portalUrl: user.server + "/",
+                        username: user.userId,
+                        token: user.token
+                    });
                 }
 
                 // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
@@ -1762,7 +1762,8 @@ require([
                     NProgress.done();
                 });
             }, function error(err) {
-                console.error ("There was an error retrieving credentials:", err);
+
+                console.error("There was an error retrieving credentials:", err);
             });
         });
 
