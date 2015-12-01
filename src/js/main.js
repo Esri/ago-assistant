@@ -1291,6 +1291,14 @@ require([
                 .removeAttr("disabled");
             jquery("a.portal-signin").attr("href", "#portalLoginModal");
 
+            // Restore previous ArcGIS Online login if it was deleted
+            // during interrupted destination login.
+            if (sessionStorage.esriJSAPIOAuthBackup && sessionStorage.esriIdBackup) {
+                esriId.destroyCredentials();
+                esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
+                sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
+            }
+            
             // Check for previously authenticated sessions.
             esriId.registerOAuthInfos([appInfo]);
             esriId.checkSignInStatus(appInfo.portalUrl)
@@ -1344,6 +1352,9 @@ require([
         jquery("#destinationWebTierAuth").css({
             display: "none"
         });
+        jquery("#destinationLoginForm").css({
+            display: "none"
+        });
 
         // *** Global Listeners ***
         jquery("#destinationAgolBtn").click(function() {
@@ -1360,6 +1371,12 @@ require([
             });
             jquery("#destinationWebTierAuth").css({
                 display: "none"
+            });
+            jquery("#destinationLoginForm").css({
+                display: "none"
+            });
+            jquery("#destinationEnterpriseButton").css({
+                display: "inline-block"
             });
             jquery("#destinationAgolBtn").addClass("btn-primary active");
             jquery("#destinationPortalBtn").removeClass("btn-primary active");
@@ -1379,6 +1396,12 @@ require([
             });
             jquery("#destinationWebTierAuth").css({
                 display: "block"
+            });
+            jquery("#destinationLoginForm").css({
+                display: "block"
+            });
+            jquery("#destinationEnterpriseButton").css({
+                display: "none"
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
             jquery("#destinationAgolBtn").removeClass("btn-primary active");
@@ -1466,6 +1489,49 @@ require([
                 });
         });
 
+        // Destination ArcGIS Online login.
+        jquery("[data-action='logindestination']").click(function() {
+
+            // Save esriId and esriJSAPIOAuth to restore after logging in
+            var appIdJson = esriId.toJson();
+            var esriJSAPIOAuth = sessionStorage.esriJSAPIOAuth;
+
+            // Store backup in case page is refreshed in the middle of logging in
+            sessionStorage.setItem("esriJSAPIOAuthBackup", esriJSAPIOAuth);
+            sessionStorage.setItem("esriIdBackup", JSON.stringify(appIdJson));
+
+            // Destroy credentials and remove esriJSAPIOAuth sessions storage
+            esriId.destroyCredentials();
+            sessionStorage.removeItem("esriJSAPIOAuth"); 
+
+            esriId.getCredential(appInfo.portalUrl, {
+                    oAuthPopupConfirmation: false
+            }).then(function(user) {
+                // If there is no destination or the destination is not the same as ArcGIS Online
+                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUr)) {
+                        app.portals.destinationPortal = new portalSelf.Portal({
+                            portalUrl: user.server + "/",
+                            username: user.userId,
+                            token: user.token
+                        });
+                }
+
+                // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
+                esriId.initialize(appIdJson);
+                sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
+
+                app.portals.destinationPortal.self().done(function(data) {
+                    jquery("#copyModal").modal("hide");
+                    highlightCopyableContent();
+                    NProgress.start();
+                    showDestinationFolders();
+                    NProgress.done();
+                });
+            }, function error(err) {
+                console.error ("There was an error retrieving credentials:", err);
+            });
+        });
+
         // Log into a Portal.
         jquery("#portalLoginBtn").click(function() {
             loginPortal();
@@ -1489,6 +1555,7 @@ require([
          * is selected as the copy target.
          */
         jquery("[data-action='copyOtherAccount']").click(function() {
+            jquery("#destinationForm > form > p > [data-action='logindestination']").removeAttr("disabled");
             jquery("#destinationChoice").css("display", "none");
             jquery("#destinationForm").css("display", "block");
         });
