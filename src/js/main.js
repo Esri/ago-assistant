@@ -1572,8 +1572,6 @@ require([
         disableEnterKey();
 
         // Preformat the copy login screen.
-        jquery("#destinationAgolBtn").button("toggle");
-        jquery("#destinationAgolBtn").addClass("btn-primary");
         jquery("#destinationUrl").css({
             display: "none"
         });
