@@ -596,6 +596,70 @@ require([
                     // Add the HTML container with the item JSON.
                     jquery("#dropArea").html(html);
 
+                    // Set up Quick Find/Replace
+                    var webmapServices = jquery("[data-original]");
+                    var currentUniqueRootUrlVals = [];
+                    jquery("#origServiceUrlList").empty();
+                    jquery.each(webmapServices, function(service) {
+                        var currentUrl = jquery(webmapServices[service]).val();
+                        var rootOfCurrentUrl = getHostFromURL(currentUrl);
+                        //create unique list of Root URLs for the UI auto-complete dropdown list
+                        //User input also allows freehand strings as well
+                        if (jquery.inArray(rootOfCurrentUrl, currentUniqueRootUrlVals) === -1) {
+                            currentUniqueRootUrlVals.push(rootOfCurrentUrl);
+                            jquery("#origServiceUrlList").append("<option value=" + rootOfCurrentUrl + ">" + rootOfCurrentUrl + "</option>");
+                        }
+                    });
+
+                    //this can be updated later if users want to be able to replace more than
+                    //just the hostname with port section of map service URLs (e.g. the web adaptor name)
+                    function getHostFromURL(href) {
+                        var parsedUrl = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)(\/[^?#]*)(\?[^#]*|)(#.*|)$/);
+                        var protocol = parsedUrl[1];
+                        var hostWithPort = parsedUrl[2];
+                        return protocol + "//" + hostWithPort;
+                    }
+
+                    // Listener for checking user input string for matches in their webmap map service URLs in realtime
+                    jquery("#originalTextUserInput").bind("input", function() {
+                        var origTextUserInput = jquery("#originalTextUserInput").val();
+                        var numFoundStringMatches = 0;
+                        if (origTextUserInput.length > 0) {
+                            var webmapServices = jquery("[data-original]");
+                            jquery.each(webmapServices, function(service) {
+                                var originalUrl = jquery(webmapServices[service]).val();
+                                if (originalUrl.indexOf(origTextUserInput) > -1) {
+                                    numFoundStringMatches += 1;
+                                }
+                            });
+                        }
+                        //check for the case of 1 text match so our English grammar is correct (match vs. matches)
+                        var matchText = (numFoundStringMatches === 1 ? "match" : "matches");
+                        jquery("#stringMatchesFoundText").text("Found " + numFoundStringMatches.toString() + " text " + matchText + " within this webmap's map service URLs (case sensitive).");
+                    });
+
+                    jquery("#bulkUpdateWebmapServiceUrlsBtn").click(function(e) {
+                        var origTextUserInput = jquery("#originalTextUserInput").val();
+                        var newTextUserInput = jquery("#newTextUserInput").val();
+                        //allow a zero length string for the new URL input for the use case of removing
+                        //port designators (e.g. switching from 6080 endpoints to the web adaptor)
+                        if (origTextUserInput.length > 0) {
+                            var webmapServices = jquery("[data-original]");
+                            var foundMatches = 0;
+                            jquery.each(webmapServices, function(service) {
+                                var originalUrl = jquery(webmapServices[service]).val();
+                                if (originalUrl.indexOf(origTextUserInput) > -1) {
+                                    var newCalculatedUrl = originalUrl.replace(origTextUserInput, newTextUserInput);
+                                    jquery(webmapServices[service]).val(newCalculatedUrl);
+                                    foundMatches += 1;
+                                }
+                            });
+                        }
+                        jquery("#originalTextUserInput").val("");
+                        jquery("#newTextUserInput").val("");
+                        jquery("#stringMatchesFoundText").text("");
+                    });
+
                     // Event listener for update button.
                     jquery("#btnUpdateWebmapServices").click(function() {
                         var webmapServices = jquery("[data-original]");
