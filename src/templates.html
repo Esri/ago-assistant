@@ -260,24 +260,27 @@
         </div>
         <div class="panel-body" id="itemDescription>
             <form role="form">
-                Quick Text Find/Replace:
-                <div class="row">
-                    <div class="col-xs-4">
-                        <input type="text" id="originalTextUserInput" list="origServiceUrlList" class="form-control" placeholder="Find">
-                        <datalist id="origServiceUrlList">
-                            <!--items are added dynamically based on a calculated unique root URL list-->
-                        </datalist>
+                <h5>Quick Text Find/Replace</h5>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="originalTextUserInput" list="origServiceUrlList" class="form-control" placeholder="Find">
+                            <datalist id="origServiceUrlList">
+                                <!--items are added dynamically based on a calculated unique root URL list-->
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="newTextUserInput" placeholder="Replace">
+                        </div>
+                        <div class="form-group">
+                            <button id="bulkUpdateWebmapServiceUrlsBtn" class="btn btn-primary" style="float: right">Replace</button>
+                        </div>
                     </div>
-                    <div class="col-xs-4">
-                        <input type="text" class="form-control" id="newTextUserInput" placeholder="Replace">
+                    <div>
+                        <span id="stringMatchesFoundText" class="text-muted"></span>
                     </div>
-                    <div class="col-xs-4">
-                        <button id="bulkUpdateWebmapServiceUrlsBtn" class="btn btn-primary btn-replace-urls">Replace Text in URLs Below</button>
-                    </div>
-                    <div class="col-xs-12">
-                        <span id="stringMatchesFoundText" class="small"></span>
-                    </div>
-                </div>
+                </form>
+                </br>
                 <div class="form-group">
                     <h4>Operational Layers</h4>
                     {{ #operationalLayers }}
