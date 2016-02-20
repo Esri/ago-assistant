@@ -1,6 +1,5 @@
 # Dev files
 /node_modules
-/.idea
 
 # Build files
 /build
