@@ -635,10 +635,11 @@ require([
                         }
                         //check for the case of 1 text match so our English grammar is correct (match vs. matches)
                         var matchText = (numFoundStringMatches === 1 ? "match" : "matches");
-                        jquery("#stringMatchesFoundText").text("Found " + numFoundStringMatches.toString() + " text " + matchText + " within this webmap's map service URLs (case sensitive).");
+                        jquery("#stringMatchesFoundText").text("Found " + numFoundStringMatches.toString() + " text " + matchText + " in this web map's service URLs (case sensitive).");
                     });
 
                     jquery("#bulkUpdateWebmapServiceUrlsBtn").click(function(e) {
+                        e.preventDefault();
                         var origTextUserInput = jquery("#originalTextUserInput").val();
                         var newTextUserInput = jquery("#newTextUserInput").val();
                         //allow a zero length string for the new URL input for the use case of removing

@@ -170,15 +170,3 @@ body {
 .webScene {
     background:url(../assets/images/webscene16.png);
 }
-
-.form-group-findreplace {
-    margin-bottom: 0px;
-}
-
-.btn-replace-urls {
-    white-space: normal !important;
-    word-wrap: break-word;
-    font-size: 11px;
-    padding-top: 2px;
-    height: 34px;
-}
