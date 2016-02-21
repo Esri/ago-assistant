@@ -260,6 +260,27 @@
         </div>
         <div class="panel-body" id="itemDescription>
             <form role="form">
+                <h5>Quick Text Find/Replace</h5>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="originalTextUserInput" list="origServiceUrlList" class="form-control" placeholder="Find">
+                            <datalist id="origServiceUrlList">
+                                <!--items are added dynamically based on a calculated unique root URL list-->
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="newTextUserInput" placeholder="Replace">
+                        </div>
+                        <div class="form-group">
+                            <button id="bulkUpdateWebmapServiceUrlsBtn" class="btn btn-primary" style="float: right">Replace</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="stringMatchesFoundText" class="text-muted"></span>
+                    </div>
+                </form>
+                </br>
                 <div class="form-group">
                     <h4>Operational Layers</h4>
                     {{ #operationalLayers }}
