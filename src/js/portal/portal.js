@@ -384,7 +384,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
             /**
              *
              */
-            this.harvestRecords = function(serviceUrl, layerId, offset) {
+            this.harvestRecords = function(serviceUrl, layerId, offset, numresults) {
                 return jquery.ajax({
                     type: "GET",
                     url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
@@ -392,7 +392,7 @@ define(["jquery", "portal/util"], function(jquery, util) {
                         outFields: "*",
                         returnGeometry: true,
                         resultOffset: offset,
-                        resultRecordCount: 1000,
+                        resultRecordCount: numresults,
                         token: this.token,
                         f: "json"
                     }),
