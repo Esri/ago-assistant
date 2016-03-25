@@ -1528,7 +1528,7 @@ require([
                 var group = this;
                 var query = "group:" + this.id;
 
-                portal.search(query)
+                portal.search(query, 100)
                     .done(function(search) {
                         var folderData = {
                             title: group.title,
