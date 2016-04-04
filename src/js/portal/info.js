@@ -22,7 +22,7 @@ define([], function() {
         },
         {
             type: "Feature Collection Template",
-            icon: "file"
+            icon: "maps"
         },
         {
             type: "Feature Layer",
