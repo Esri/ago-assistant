@@ -1063,14 +1063,12 @@ require([
                                     portal.layerRecordCount(description.url, layerId)
                                         .then(function(records) {
                                             var offset = 0;
-                                            console.log("record count >> " + records.count);
+
                                             // Set the count manually in weird cases where maxRecordCount is negative.
                                             var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
-                                            console.log("count >> " + count);
                                             var added = 0;
                                             var x = 1;
                                             while (offset <= records.count) {
-                                                console.log("current offset >> " + offset);
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
                                                     .then(function(serviceData) {
