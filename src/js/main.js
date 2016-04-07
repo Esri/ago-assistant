@@ -1491,6 +1491,80 @@ require([
         });
     };
 
+    var listUserGroups = function() {
+        "use strict";
+        var portal = app.portals.sourcePortal;
+
+        cleanUp();
+        clearResults();
+
+        function sortFoldersAlpha(container) {
+            var folders = container.children(".panel").get();
+            folders.sort(function(a, b) {
+                return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
+            });
+
+            jquery.each(folders, function(idx, folder) {
+                container.append(folder);
+            });
+
+            container.prepend(jquery("[data-title='Root']").parent());
+        }
+
+        function sortItemsAlpha(folder) {
+            var folderItems = folder.children("button").get();
+            folderItems.sort(function(a, b) {
+                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
+            });
+
+            jquery.each(folderItems, function(idx, item) {
+                folder.append(item);
+            });
+        }
+
+        portal.userProfile(portal.username).done(function(user) {
+            jquery.each(user.groups, function() {
+                sortFoldersAlpha(jquery("#itemsArea"));
+                var group = this;
+                var query = "group:" + this.id;
+
+                portal.search(query, 100)
+                    .done(function(search) {
+                        var folderData = {
+                            title: group.title,
+                            id: group.id,
+                            count: search.results.length
+                        };
+
+                        // Append an accordion for the folder.
+                        var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                        jquery("#itemsArea").append(html);
+
+                        // Append the items to the folder.
+                        jquery.each(search.results, function() {
+                            var templateData = {
+                                id: this.id,
+                                title: this.title,
+                                type: this.type,
+                                icon: portalInfo.items(this.type).icon,
+                                portal: portal.portalUrl
+                            };
+                            var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                            jquery("#collapse_" + group.id).append(html);
+                        });
+
+                        sortItemsAlpha(jquery("#collapse_" + group.id));
+                    });
+            });
+
+            setTimeout(function() {
+                // Wait a second to let all of the items populate before sorting and highlighting them.
+                sortFoldersAlpha(jquery("#itemsArea"));
+                highlightSupportedContent();
+            }, 1000);
+        });
+    };
+
     var showDestinationFolders = function() {
         "use strict";
         var portal = app.portals.destinationPortal;
@@ -1888,7 +1962,7 @@ require([
         // Add a listener for the future search bar picker.
         jquery(document).on("click", "#searchMenu li", function(e) {
             var selectedAction = jquery(e.target).parent().attr("data-action");
-            if (selectedAction !== "viewMyContent") {
+            if (selectedAction !== "viewMyContent" && selectedAction !== "viewMyGroups") {
                 jquery("#searchMenu li").removeClass("active");
                 jquery(e.target).parent().addClass("active");
                 if (jquery("#searchText").val()) {
@@ -1899,7 +1973,13 @@ require([
                     jquery("#searchText").attr("placeholder",
                         jquery(e.currentTarget).text());
                 }
+            } else if (selectedAction == "viewMyGroups") {
+                // View My Groups.
+                NProgress.start();
+                listUserGroups();
+                NProgress.done();
             } else {
+                // View My Content.
                 NProgress.start();
                 listUserItems();
                 NProgress.done();
