@@ -106,7 +106,13 @@ require([
             var template = jquery("#sessionTemplate").html();
             var html = mustache.to_html(template, data);
             app.portals.sourcePortal.username = data.user.username;
-            app.portals.sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
+            if (data.isPortal === true) {
+                app.portals.sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
+            } else {
+                // Set it to the org's custom URL instead of www.arcgis.com.
+                app.portals.sourcePortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+            }
+
             jquery(".nav.navbar-nav").after(html);
             jquery("#logout").show();
             jquery("#actionDropdown").css({
@@ -186,8 +192,13 @@ require([
                     app.portals.destinationPortal.token = response.token;
                     app.portals.destinationPortal.self().done(function(data) {
                         app.portals.destinationPortal.username = data.user.username;
-                        app.portals.destinationPortal.portalUrl = "https://" +
-                            data.portalHostname + "/";
+                        if (data.isPortal === true) {
+                            app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                        } else {
+                            // Set it to the org's custom URL instead of www.arcgis.com.
+                            app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+                        }
+
                         jquery("#copyModal").modal("hide");
                         highlightCopyableContent();
                         NProgress.start();
@@ -964,9 +975,9 @@ require([
                 .done(function(response) {
                     var html;
                     if (response.success === true) {
-                        // Update the id parameter to reflect the new item's id.
+                        // Swizzle the portal url and id parameter to reflect the url of new item.
                         if (description.url.indexOf("id=") > -1) {
-                            var newUrl = description.url.substring(description.url.indexOf("/apps/"));
+                            var newUrl = destinationPortal.portalUrl + description.url.substring(description.url.indexOf("apps/"));
                             newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
                             var folder = response.folder || "";
                             destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
