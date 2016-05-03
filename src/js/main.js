@@ -107,10 +107,15 @@ require([
             var html = mustache.to_html(template, data);
             app.portals.sourcePortal.username = data.user.username;
             if (data.isPortal === true) {
+                // Portal.
                 app.portals.sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
-            } else {
+            } else if (data.isPortal === false && data.id) {
+                // ArcGIS Online Org.
                 // Set it to the org's custom URL instead of www.arcgis.com.
                 app.portals.sourcePortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+            } else {
+                // ArcGIS Online personal account.
+                app.portals.sourcePortal.portalUrl = "https://www.arcgis.com/";
             }
 
             jquery(".nav.navbar-nav").after(html);
@@ -193,10 +198,15 @@ require([
                     app.portals.destinationPortal.self().done(function(data) {
                         app.portals.destinationPortal.username = data.user.username;
                         if (data.isPortal === true) {
+                            // Portal.
                             app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
-                        } else {
+                        } else if (data.isPortal === false && data.id) {
+                            // ArcGIS Online Org.
                             // Set it to the org's custom URL instead of www.arcgis.com.
                             app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+                        } else {
+                            // ArcGIS Online personal account.
+                            app.portals.destinationPortal.portalUrl = "https://www.arcgis.com/";
                         }
 
                         jquery("#copyModal").modal("hide");
