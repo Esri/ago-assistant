@@ -8,7 +8,6 @@ require([
     "esri/arcgis/Portal",
     "esri/arcgis/OAuthInfo",
     "esri/IdentityManager",
-    "dojo/promise/all",
     "highlight",
     "jquery.ui",
     "bootstrap-shim"
@@ -22,7 +21,6 @@ require([
     arcgisPortal,
     arcgisOAuthInfo,
     esriId,
-    all,
     hljs
 ) {
 
@@ -1091,28 +1089,25 @@ require([
                                             var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
                                             var added = 0;
                                             var x = 1;
-
-                                            var allQueries = [];
-
                                             while (offset <= records.count) {
                                                 x++;
-                                                allQueries.push( portal.harvestRecords(description.url, layerId, offset, count) );
+                                                portal.harvestRecords(description.url, layerId, offset, count)
+                                                    // the linter doesn't like anonymous callback functions within loops
+                                                    /*jshint -W083  */
+                                                    .then(function(serviceData) {
+                                                        destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
+                                                            .then(function() {
+                                                                added += count;
+                                                                if (added >= records.count) {
+                                                                    jquery("#" + id + "_clone > img").remove();
+                                                                    jquery("#" + id + "_clone").removeClass("btn-info");
+                                                                    jquery("#" + id + "_clone").addClass("btn-success");
+                                                                }
+                                                            });
+                                                    });
+                                                    /*jshint +W083 */
                                                 offset += count;
                                             }
-
-                                            all(allQueries).then(function(serviceData) {
-                                                var allFeatureAdds = [];
-
-                                                for (var i = 0; i < serviceData.length; i++) {
-                                                  allFeatureAdds.push( destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData[i].features) ) );
-                                                }
-
-                                                all(allFeatureAdds).then(function() {
-                                                    jquery("#" + id + "_clone > img").remove();
-                                                    jquery("#" + id + "_clone").removeClass("btn-info");
-                                                    jquery("#" + id + "_clone").addClass("btn-success");
-                                                });
-                                            });  
                                         });
                                 });
                             } else {
