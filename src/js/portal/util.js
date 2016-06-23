@@ -16,7 +16,7 @@ define(["jquery"], function(jquery) {
 
         // Clean up common issues with user entered portal URLs.
         fixUrl: function(portalUrl) {
-            var deferred = jquery.Deferred();
+            var deferred = new jquery.Deferred();
             if (portalUrl === "") {
                 // Default to ArcGIS Online.
                 portalUrl = "https://www.arcgis.com/";

@@ -1093,7 +1093,8 @@ require([
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
                                                     // the linter doesn't like anonymous callback functions within loops
-                                                    /*jshint -W083  */
+                                                    /* jshint -W083  */
+                                                    /* eslint no-loop-func: "off" */
                                                     .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
                                                             .then(function() {
@@ -1105,7 +1106,7 @@ require([
                                                                 }
                                                             });
                                                     });
-                                                    /*jshint +W083 */
+                                                    /* jshint +W083 */
                                                 offset += count;
                                             }
                                         });
@@ -1246,7 +1247,7 @@ require([
     };
 
     var cleanUp = function() {
-        jquery("#dropArea").empty(); //Clear any old items.
+        jquery("#dropArea").empty(); // Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
         jquery(".content").attr("disabled", "disabled");
@@ -1282,7 +1283,7 @@ require([
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
                 setMaxWidth(this);
-                makeDraggable(jquery(this)); //Make the content draggable.
+                makeDraggable(jquery(this)); // Make the content draggable.
             }
         });
     };
@@ -1873,18 +1874,18 @@ require([
         // Login.
         jquery("[data-action='login']").click(function() {
             esriId.getCredential(appInfo.portalUrl, {
-                    oAuthPopupConfirmation: false
-                })
-                .then(function(user) {
-                    jquery("#splashContainer").css("display", "none");
-                    jquery("#itemsContainer").css("display", "block");
-                    app.portals.sourcePortal = new portalSelf.Portal({
-                        portalUrl: user.server + "/",
-                        username: user.userId,
-                        token: user.token
-                    });
-                    startSession();
+                oAuthPopupConfirmation: false
+            })
+            .then(function(user) {
+                jquery("#splashContainer").css("display", "none");
+                jquery("#itemsContainer").css("display", "block");
+                app.portals.sourcePortal = new portalSelf.Portal({
+                    portalUrl: user.server + "/",
+                    username: user.userId,
+                    token: user.token
                 });
+                startSession();
+            });
         });
 
         // Destination ArcGIS Online login.
@@ -1918,7 +1919,7 @@ require([
                 esriId.initialize(appIdJson);
                 sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
 
-                app.portals.destinationPortal.self().done(function(data) {
+                app.portals.destinationPortal.self().done(function() {
                     jquery("#copyModal").modal("hide");
                     highlightCopyableContent();
                     NProgress.start();

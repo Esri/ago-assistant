@@ -99,7 +99,7 @@ define([], function() {
         {
             type: "WMS",
             icon: "layers"
-        },
+        }
     ];
     return {
         items: function(type) {
