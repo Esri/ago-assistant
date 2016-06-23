@@ -2,13 +2,14 @@
   "name": "ago-assistant",
   "title": "ArcGIS Online Assistant",
   "description": "A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "author": "Evan Caldwell",
   "contributors": [
     {"name": "Gary Sheppard"},
     {"name": "Nathan Heminger"},
     {"name": "GISDev01"},
-    {"name": "Bill Major"}
+    {"name": "Bill Major"},
+    {"name": "John Gravois"}
   ],
   "homepage": "https://github.com/Esri/ago-assistant",
   "repository": {
