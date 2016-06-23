@@ -1092,6 +1092,8 @@ require([
                                             while (offset <= records.count) {
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
+                                                    // the linter doesn't like anonymous callback functions within loops
+                                                    /*jshint -W083  */
                                                     .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
                                                             .then(function() {
@@ -1103,7 +1105,7 @@ require([
                                                                 }
                                                             });
                                                     });
-
+                                                    /*jshint +W083 */
                                                 offset += count;
                                             }
                                         });
