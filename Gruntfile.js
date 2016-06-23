@@ -11,9 +11,9 @@ module.exports = function (grunt) {
             src: ['src/js/portal/*.min.js', 'src/js/main.min.js'],
             build: ['build/**']
         },
-        jshint: {
+        eslint: {
             // Validate the javascripts.
-            all: ['Gruntfile.js', 'src/js/*.js', 'src/js/portal/*.js']
+            all: ['src/js/*.js', 'src/js/portal/*.js']
         },
         concat: {
             // Combine files where it makes sense.
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
                 src: ['src/index.html', 'src/templates.html'],
                 dest: 'build/index.html'
             }
-        },  
+        },
         uglify: {
             // Minify the javascript files.
             options: {
@@ -66,7 +66,7 @@ module.exports = function (grunt) {
                 region: 'us-east-1',
                 sslEnabled: true,
                 // Omit the following options by setting equivalent environment variables.
-                //AWS_ACCESS_KEY_ID: <YOUR_KEY>, 
+                //AWS_ACCESS_KEY_ID: <YOUR_KEY>,
                 //AWS_SECRET_ACCESS_KEY: <YOUR_KEY>
             },
             backup: {
@@ -110,14 +110,14 @@ module.exports = function (grunt) {
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-aws-s3');
 
     // Default task.
-    grunt.registerTask('default', ['clean', 'jshint', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('default', ['clean', 'eslint', 'concat', 'uglify', 'copy']);
     grunt.registerTask('cleanup', ['clean']);
     grunt.registerTask('s3_backup', ['aws_s3:backup']);
     grunt.registerTask('s3_simulate', ['aws_s3:simulate']);

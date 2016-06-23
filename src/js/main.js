@@ -1093,7 +1093,6 @@ require([
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
                                                     // the linter doesn't like anonymous callback functions within loops
-                                                    /* jshint -W083  */
                                                     /* eslint no-loop-func: "off" */
                                                     .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
@@ -1106,7 +1105,6 @@ require([
                                                                 }
                                                             });
                                                     });
-                                                    /* jshint +W083 */
                                                 offset += count;
                                             }
                                         });
