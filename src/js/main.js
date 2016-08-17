@@ -1,8 +1,8 @@
 require([
     "jquery",
     "portal/portal",
-    "portal/info",
-    "portal/util",
+    // "portal/info",
+    // "portal/util",
     "mustache",
     "nprogress",
     "esri/arcgis/Portal",
@@ -14,8 +14,8 @@ require([
 ], function(
     jquery,
     portalSelf,
-    portalInfo,
-    portalUtil,
+    // portalInfo,
+    // portalUtil,
     mustache,
     NProgress,
     arcgisPortal,
@@ -154,7 +154,7 @@ require([
         var password = jquery("#portalPassword").val();
         jquery("#portalLoginBtn").button("loading");
         app.portals.sourcePortal.generateToken(username, password)
-            .done(function(response) {
+            .then(function(response) {
                 if (response.token) {
                     app.portals.sourcePortal.token = response.token;
                     jquery("#portalLoginModal").modal("hide");
@@ -166,16 +166,19 @@ require([
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery("#portalLoginForm").before(html);
                 }
+                jquery("#portalLoginBtn").button("reset");
             })
-            .fail(function(response) {
+            .catch(function(response) {
+                console.log("catch");
+                jquery("#portalLoginBtn").button("reset");
                 console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
-            })
-            .always(function() {
-                jquery("#portalLoginBtn").button("reset");
             });
+            // .always(function() {
+            //     jquery("#portalLoginBtn").button("reset");
+            // });
     };
 
     var loginDestination = function() {

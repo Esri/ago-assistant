@@ -2,6 +2,8 @@
 
 module.exports = function(grunt) {
 
+    var babel = require("rollup-plugin-babel");
+
     // Project configuration.
     grunt.initConfig({
         // Metadata.
@@ -67,8 +69,8 @@ module.exports = function(grunt) {
                 region: "us-east-1",
                 sslEnabled: true
                 // Omit the following options by setting equivalent environment variables.
-                //AWS_ACCESS_KEY_ID: <YOUR_KEY>,
-                //AWS_SECRET_ACCESS_KEY: <YOUR_KEY>
+                // AWS_ACCESS_KEY_ID: <YOUR_KEY>,
+                // AWS_SECRET_ACCESS_KEY: <YOUR_KEY>
             },
             backup: {
                 options: {
@@ -106,6 +108,21 @@ module.exports = function(grunt) {
                     {expand: true, cwd: "build/", src: ["**"], dest: ""}
                 ]
             }
+        },
+        rollup: {
+            options: {
+                format: "amd"
+            },
+            // plugins: function() {
+            //     return [
+            //         babel({
+            //             exclude: "./node_modules/**"
+            //         })
+            //     ];
+            // },
+            files: {
+                "build/js/portal.js": "src/js/portal/portal.js"
+            }
         }
     });
 
@@ -116,10 +133,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-aws-s3");
+    grunt.loadNpmTasks("grunt-rollup");
 
     // Default task.
     grunt.registerTask("default", ["clean", "eslint", "concat", "uglify", "copy"]);
     grunt.registerTask("cleanup", ["clean"]);
+    grunt.registerTask("rollup", ["concat", "copy"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
     grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
     grunt.registerTask("s3_staging", ["aws_s3:staging"]);
