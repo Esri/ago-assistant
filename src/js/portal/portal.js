@@ -1,6 +1,7 @@
 // define(["jquery", "portal/util"], function(jquery, util) {
 import request from "./request";
-var Portal = function(config) {
+
+export function Portal (config) {
     config = typeof config !== "undefined" ? config : {};
     this.portalUrl = config.portalUrl;
     this.username = config.username;
@@ -30,8 +31,16 @@ var Portal = function(config) {
         };
         return request.post(url, data);
     }
-};
-export { Portal as default};
+
+    return this;
+}
+
+export function portal (options) {
+    return new Portal (options);
+}
+
+export default portal;
+
 // var serialize = function(obj, prefix) {
 //     var str = [];
 //     for (var p in obj) {
