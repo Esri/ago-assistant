@@ -1,7 +1,6 @@
 {
   "name": "ago-assistant",
-  "title": "ArcGIS Online Assistant",
-  "description": "A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.",
+  "description": "ArcGIS Online Assistant: A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.",
   "version": "2.5.6",
   "author": "Evan Caldwell",
   "contributors": [
@@ -11,19 +10,6 @@
     {"name": "Bill Major"},
     {"name": "John Gravois"}
   ],
-  "homepage": "https://github.com/Esri/ago-assistant",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Esri/ago-assistant.git"
-  },
-  "keywords": [
-    "ArcGIS Online",
-    "Portal for ArcGIS",
-    "javascript"
-  ],
-  "engines": {
-    "node": ">= 0.10.0"
-  },
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-aws-s3": "^0.9.4",
@@ -32,6 +18,20 @@
     "grunt-contrib-copy": "^0.5.0",
     "grunt-contrib-jshint": "^0.9.2",
     "grunt-contrib-uglify": "^0.9.1"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "homepage": "https://github.com/Esri/ago-assistant",
+  "keywords": [
+    "ArcGIS Online",
+    "Portal for ArcGIS",
+    "javascript"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Esri/ago-assistant.git"
   },
   "scripts": {
     "build": "grunt"
