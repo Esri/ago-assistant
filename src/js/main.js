@@ -1,8 +1,6 @@
 require([
     "jquery",
-    "portal/portal",
-    // "portal/info",
-    // "portal/util",
+    "portal",
     "mustache",
     "nprogress",
     "esri/arcgis/Portal",
@@ -14,8 +12,6 @@ require([
 ], function(
     jquery,
     portalSelf,
-    // portalInfo,
-    // portalUtil,
     mustache,
     NProgress,
     arcgisPortal,
@@ -51,7 +47,7 @@ require([
         "use strict";
         var inputUrl = jquery.trim(jquery(el).val());
 
-        portalUtil.fixUrl(inputUrl).done(function(portalUrl) {
+        portalSelf.url.fix(inputUrl).done(function(portalUrl) {
             jquery(el).val(portalUrl);
             var urlError = jquery("#urlErrorTemplate").html();
             var checkbox = jquery(el).parent().parent()
@@ -1054,7 +1050,7 @@ require([
             clone.attr("data-portal", destinationPortal.portalUrl);
 
             // Upgrade the service url to https to prevent mixed content errors.
-            service.serviceurl = portalUtil.upgradeUrl(service.serviceurl);
+            service.serviceurl = portalSelf.url.upgrade(service.serviceurl);
 
             // Update the new item's tags to make it easier to trace its origins.
             var newTags = description.tags;
@@ -1165,7 +1161,7 @@ require([
                     case "Feature Service":
 
                         // Upgrade the service url to https to prevent mixed content errors.
-                        description.url = portalUtil.upgradeUrl(description.url);
+                        description.url = portalSelf.url.upgrade(description.url);
 
                         // Also update the cached url.
                         portal.items[portal.items.length - 1].description.url = description.url;
@@ -1401,7 +1397,7 @@ require([
                 id: this.id,
                 title: this.title,
                 type: this.type,
-                icon: portalInfo.items(this.type).icon,
+                icon: portalSelf.itemInfo(this.type).icon,
                 portal: portalUrl
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1465,7 +1461,7 @@ require([
                     id: this.id,
                     title: this.title,
                     type: this.type,
-                    icon: portalInfo.items(this.type).icon,
+                    icon: portal.itemInfo(this.type).icon,
                     portal: portal.portalUrl
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1494,7 +1490,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portal.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1569,7 +1565,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portal.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1622,7 +1618,7 @@ require([
                     id: this.id,
                     title: this.title,
                     type: this.type,
-                    icon: portalInfo.items(this.type).icon,
+                    icon: portal.itemInfo(this.type).icon,
                     portal: portal.portalUrl
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1655,7 +1651,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portal.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);

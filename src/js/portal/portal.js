@@ -1,7 +1,8 @@
-// define(["jquery", "portal/util"], function(jquery, util) {
 import request from "./request";
+import {items} from "./info";
+import {fixUrl, upgradeUrl} from "./util";
 
-export function Portal (config) {
+export function Portal(config) {
     config = typeof config !== "undefined" ? config : {};
     this.portalUrl = config.portalUrl;
     this.username = config.username;
@@ -10,14 +11,24 @@ export function Portal (config) {
     this.jsonp = false;
     this.items = [];
     this.services = [];
+    /*
+     * Return the version of the portal.
+     */
     this.version = function() {
         var portal = this;
         var url = portal.portalUrl + "sharing/rest";
         var parameters = {
             f: "json"
         };
-        return request.get(url, parameters);
+        var options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
     },
+    /**
+     * Generates an access token in exchange for user credentials that
+     * can be used by clients when working with the ArcGIS Portal API.
+     */
     this.generateToken = function(username, password) {
         var portal = this;
         var url = portal.portalUrl + "sharing/rest/generateToken";
@@ -29,158 +40,48 @@ export function Portal (config) {
             password: password,
             f: "json"
         };
-        return request.post(url, data);
+        var options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, data, options);
+    },
+    /* Return the view of the portal as seen by the current user,
+     * anonymous or logged in.
+     */
+    this.self = function() {
+        var portal = this;
+        var url = portal.portalUrl + "sharing/rest/portals/self";
+        var parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        var options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    };
+}
+
+export function portal(options) {
+    return new Portal(options);
+}
+
+export function itemInfo(type) {
+    return items(type);
+}
+
+export var url = {
+    fix: function fix(url) {
+        return fixUrl(url);
+    },
+    upgrade: function upgrade(url) {
+        return upgradeUrl(url);
     }
-
-    return this;
-}
-
-export function portal (options) {
-    return new Portal (options);
-}
+};
 
 export default portal;
 
-// var serialize = function(obj, prefix) {
-//     var str = [];
-//     for (var p in obj) {
-//         if (obj.hasOwnProperty(p)) {
-//             var k = prefix ? prefix + "[" + p + "]" : p;
-//             var v = obj[p];
-//             str.push(typeof v == "object" ?
-//                 serialize(v, k) :
-//                 encodeURIComponent(k) + "=" + encodeURIComponent(v));
-//         }
-//     }
-//     return str.join("&");
-// };
-//
-// return {
-//     Portal: function(config) {
-//         config = typeof config !== "undefined" ? config : {};
-//         this.portalUrl = config.portalUrl;
-//         this.username = config.username;
-//         this.token = config.token;
-//         this.withCredentials = false;
-//         this.jsonp = false;
-//         this.items = [];
-//         this.services = [];
-//         /**
-//          * Return the version of the portal.
-//          */
-//         this.version = function() {
-//             if (this.jsonp) {
-//                 return jquery.ajax({
-//                     type: "GET",
-//                     url: this.portalUrl + "sharing/rest?f=json",
-//                     async: false,
-//                     jsonpCallback: "callback",
-//                     crossdomain: true,
-//                     contentType: "application/json",
-//                     dataType: "jsonp"
-//                 });
-//             } else {
-//                 return jquery.ajax({
-//                     type: "GET",
-//                     url: this.portalUrl + "sharing/rest?f=json",
-//                     dataType: "json",
-//                     xhrFields: {
-//                         withCredentials: this.withCredentials
-//                     }
-//                 });
-//             }
-//         };
-//         /**
-//          * Return the view of the portal as seen by the current user,
-//          * anonymous or logged in.
-//          */
-//         this.self = function() {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/portals/self?" + jquery.param({
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Generates an access token in exchange for user credentials that
-//          * can be used by clients when working with the ArcGIS Portal API.
-//          */
-//         // this.generateToken = function(username, password) {
-//         //     return jquery.ajax({
-//         //         type: "POST",
-//         //         url: this.portalUrl + "sharing/rest/generateToken?",
-//         //         data: {
-//         //             username: username,
-//         //             password: password,
-//         //             referer: jquery(location).attr("href"), // URL of the sending app.
-//         //             expiration: 60, // Lifetime of the token in minutes.
-//         //             f: "json"
-//         //         },
-//         //         dataType: "json",
-//         //         xhrFields: {
-//         //             withCredentials: this.withCredentials
-//         //         }
-//         //     });
-//         // };
-//         this.generateToken = function(username, password) {
-//             var portal = this;
-//             var url = portal.portalUrl + "sharing/rest/generateToken";
-//             var method = "POST";
-//             var data = {
-//                 client: "referer",
-//                 referer: window.location.hostname,
-//                 expiration: 60,
-//                 username: username,
-//                 password: password,
-//                 f: "json"
-//             };
-//
-//             return new Promise(function(resolve, reject) {
-//
-//                 var xhr = new XMLHttpRequest();
-//                 xhr.withCredentials = portal.withCredentials;
-//
-//                 xhr.addEventListener("readystatechange", function() {
-//                     console.log("ok");
-//                 });
-//
-//                 xhr.addEventListener("error", function() {
-//                     console.log("error");
-//                     reject(Error(xhr));
-//                 });
-//
-//                 // xhr.addEventListener("readystatechange", function() {
-//                 //     if (this.readyState === 4) {
-//                 //         console.log(this.responseText);
-//                 //     }
-//                 // });
-//
-//                 xhr.open(method, url);
-//                 xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
-//
-//                 xhr.onload = function() {
-//                     // This is called even on 404 etc
-//                     // so check the status
-//                     if (xhr.status == 200) {
-//                         // Resolve the promise with the response text
-//                         resolve(JSON.parse(xhr.responseText));
-//                     } else {
-//                         // Otherwise reject with the status text
-//                         // which will hopefully be a meaningful error
-//                         reject(Error(xhr));
-//                     }
-//                 };
-//
-//                 xhr.send(serialize(data));
-//             });
-//
-//         };
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
 //         /**
 //          * Searches for content items in the portal.
 //          * The results of a search only contain items that the user
@@ -542,3 +443,4 @@ export default portal;
 //     }
 // };
 // });
+// ///////////////////////////////////////////////////////////////////////////////////////////////////

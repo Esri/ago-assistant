@@ -2,7 +2,9 @@
 
 module.exports = function(grunt) {
 
-    var babel = require("rollup-plugin-babel");
+    var rollup_json = require("rollup-plugin-json");
+    var rollup_babel = require("rollup-plugin-babel");
+    var rollup_uglify = require("rollup-plugin-uglify");
 
     // Project configuration.
     grunt.initConfig({
@@ -11,11 +13,15 @@ module.exports = function(grunt) {
         // Task configuration.
         clean: {
             // Clean up build files.
-            src: ["src/js/portal/*.min.js", "src/js/main.min.js"],
+            src: ["src/js/main.min.js"],
             build: ["build/**"]
         },
         eslint: {
             // Validate the javascripts.
+            options: {
+                useEslintrc: "true"
+                // configFile: "./.eslintrc.js"
+            },
             all: ["src/js/*.js", "src/js/portal/*.js"]
         },
         concat: {
@@ -28,6 +34,22 @@ module.exports = function(grunt) {
                 dest: "build/index.html"
             }
         },
+        rollup: {
+            options: {
+                format: "amd"
+            },
+            plugins: function() {
+                return [
+                    rollup_json(),
+                    rollup_babel(),
+                    rollup_uglify()
+                ];
+            },
+            main: [{
+                dest: "build/js/portal.js",
+                src: "src/js/portal/portal.js"
+            }]
+        },
         uglify: {
             // Minify the javascript files.
             options: {
@@ -35,10 +57,10 @@ module.exports = function(grunt) {
             },
             build: {
                 files: {
-                    "src/js/main.min.js": "src/js/main.js",
-                    "src/js/portal/portal.min.js": "src/js/portal/portal.js",
-                    "src/js/portal/info.min.js": "src/js/portal/info.js",
-                    "src/js/portal/util.min.js": "src/js/portal/util.js"
+                    "src/js/main.min.js": "src/js/main.js"
+                    // "src/js/portal/portal.min.js": "src/js/portal/portal.js",
+                    // "src/js/portal/info.min.js": "src/js/portal/info.js",
+                    // "src/js/portal/util.min.js": "src/js/portal/util.js"
                 }
             }
         },
@@ -54,11 +76,11 @@ module.exports = function(grunt) {
                             return src + dest.replace(".min", "");
                         }
                     },
-                    {expand: true, cwd: "src/", src: "js/portal/*", dest: "build/",
-                        rename: function(src, dest) {
-                            return src + dest.replace(".min", "");
-                        }
-                    },
+                    // {expand: true, cwd: "src/", src: "js/portal/*", dest: "build/",
+                    //     rename: function(src, dest) {
+                    //         return src + dest.replace(".min", "");
+                    //     }
+                    // },
                     {expand: true, cwd: "src/", src: ["js/lib/**"], dest: "build/"}
                 ]
             }
@@ -108,21 +130,6 @@ module.exports = function(grunt) {
                     {expand: true, cwd: "build/", src: ["**"], dest: ""}
                 ]
             }
-        },
-        rollup: {
-            options: {
-                format: "amd"
-            },
-            // plugins: function() {
-            //     return [
-            //         babel({
-            //             exclude: "./node_modules/**"
-            //         })
-            //     ];
-            // },
-            files: {
-                "build/js/portal.js": "src/js/portal/portal.js"
-            }
         }
     });
 
@@ -138,7 +145,7 @@ module.exports = function(grunt) {
     // Default task.
     grunt.registerTask("default", ["clean", "eslint", "concat", "uglify", "copy"]);
     grunt.registerTask("cleanup", ["clean"]);
-    grunt.registerTask("rollup", ["concat", "copy"]);
+    grunt.registerTask("rollup", ["rollup"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
     grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
     grunt.registerTask("s3_staging", ["aws_s3:staging"]);

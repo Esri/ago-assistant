@@ -33,6 +33,7 @@
     "grunt-rollup": "^0.8.0",
     "rollup": "^0.34.10",
     "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-json": "^2.0.2",
     "rollup-plugin-uglify": "^1.0.1"
   },
   "engines": {
@@ -51,6 +52,6 @@
   },
   "scripts": {
     "build": "grunt",
-    "es6build": "rollup -c"
+    "rollup": "rollup -c"
   }
 }
