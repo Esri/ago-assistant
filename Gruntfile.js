@@ -58,9 +58,6 @@ module.exports = function(grunt) {
             build: {
                 files: {
                     "src/js/main.min.js": "src/js/main.js"
-                    // "src/js/portal/portal.min.js": "src/js/portal/portal.js",
-                    // "src/js/portal/info.min.js": "src/js/portal/info.js",
-                    // "src/js/portal/util.min.js": "src/js/portal/util.js"
                 }
             }
         },
@@ -76,11 +73,6 @@ module.exports = function(grunt) {
                             return src + dest.replace(".min", "");
                         }
                     },
-                    // {expand: true, cwd: "src/", src: "js/portal/*", dest: "build/",
-                    //     rename: function(src, dest) {
-                    //         return src + dest.replace(".min", "");
-                    //     }
-                    // },
                     {expand: true, cwd: "src/", src: ["js/lib/**"], dest: "build/"}
                 ]
             }
