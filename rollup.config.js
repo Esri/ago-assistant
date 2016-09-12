@@ -9,8 +9,8 @@ export default {
     format: "umd",
     plugins: [
         json(),
-        babel()
-        // uglify()
+        babel() ,
+        uglify()
     ],
     dest: "src/js/lib/portal.min.js",
     sourceMap: "src/js/lib/portal.min.js.map"
