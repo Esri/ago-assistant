@@ -23,7 +23,6 @@
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-preset-es2015": "^6.14.0",
-    "eslint": "^2.13.1",
     "grunt": "~0.4.4",
     "grunt-aws-s3": "^0.9.4",
     "grunt-cli": "^1.2.0",
