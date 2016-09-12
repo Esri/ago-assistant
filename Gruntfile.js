@@ -102,6 +102,10 @@ module.exports = function(grunt) {
                     {expand: true, cwd: "build/", src: ["**"], dest: ""}
                 ]
             }
+        },
+        shell: {
+            // Use rollup from the command line since grunt-rollup didn't work.
+            command: "rollup -c"
         }
     });
 
@@ -112,9 +116,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-aws-s3");
+    grunt.loadNpmTasks("grunt-shell");
 
     // Default task.
-    grunt.registerTask("default", ["clean", "eslint", "concat", "uglify", "copy"]);
+    grunt.registerTask("default", ["clean", "eslint", "shell", "concat", "uglify", "copy"]);
+    grunt.registerTask("build_portal", ["shell"]);
     grunt.registerTask("cleanup", ["clean"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
     grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
