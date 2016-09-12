@@ -668,7 +668,7 @@ require([
                         // port designators (e.g. switching from 6080 endpoints to the web adaptor).
                         if (origTextUserInput.length > 0) {
                             var webmapServices = jquery("[data-original]");
-                            var foundMatches = 0;
+                            var foundMatches = 0; // eslint-disable-line no-unused-vars
                             jquery.each(webmapServices, function(service) {
                                 var originalUrl = jquery(webmapServices[service]).val();
                                 if (originalUrl.indexOf(origTextUserInput) > -1) {
@@ -1086,12 +1086,12 @@ require([
                                             // Set the count manually in weird cases where maxRecordCount is negative.
                                             var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
                                             var added = 0;
-                                            var x = 1;
+                                            var x = 1; // eslint-disable-line no-unused-vars
                                             while (offset <= records.count) {
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
                                                     // the linter doesn't like anonymous callback functions within loops
-                                                    /* eslint no-loop-func: "off" */
+                                                    /* eslint-disable no-loop-func */
                                                     .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
                                                             .then(function() {
@@ -1103,6 +1103,7 @@ require([
                                                                 }
                                                             });
                                                     });
+                                                    /* eslint-enable no-loop-func */
                                                 offset += count;
                                             }
                                         });

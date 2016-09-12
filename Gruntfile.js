@@ -15,8 +15,7 @@ module.exports = function(grunt) {
         eslint: {
             // Validate the javascripts.
             options: {
-                useEslintrc: "true"
-                // configFile: "./.eslintrc.js"
+                useEslintrc: true
             },
             all: ["src/js/*.js", "src/js/portal/*.js"]
         },
@@ -120,6 +119,7 @@ module.exports = function(grunt) {
 
     // Default task.
     grunt.registerTask("default", ["clean", "eslint", "shell", "concat", "uglify", "copy"]);
+    grunt.registerTask("lint", ["eslint"]);
     grunt.registerTask("build_portal", ["shell"]);
     grunt.registerTask("cleanup", ["clean"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);

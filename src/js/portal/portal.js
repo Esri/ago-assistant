@@ -1,6 +1,6 @@
 import request from "./request";
-import { items } from "./info";
-import { fixUrl, upgradeUrl } from "./util";
+import {items} from "./info";
+import {fixUrl, upgradeUrl} from "./util";
 
 export function Portal(config) {
     config = typeof config !== "undefined" ? config : {};
