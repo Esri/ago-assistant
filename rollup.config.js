@@ -9,7 +9,7 @@ export default {
     format: "umd",
     plugins: [
         json(),
-        babel() ,
+        babel(),
         uglify()
     ],
     dest: "src/js/lib/portal.min.js",

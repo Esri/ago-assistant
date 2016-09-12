@@ -2,10 +2,6 @@
 
 module.exports = function(grunt) {
 
-    var rollup_json = require("rollup-plugin-json");
-    var rollup_babel = require("rollup-plugin-babel");
-    var rollup_uglify = require("rollup-plugin-uglify");
-
     // Project configuration.
     grunt.initConfig({
         // Metadata.
@@ -33,22 +29,6 @@ module.exports = function(grunt) {
                 src: ["src/index.html", "src/templates.html"],
                 dest: "build/index.html"
             }
-        },
-        rollup: {
-            options: {
-                format: "amd"
-            },
-            plugins: function() {
-                return [
-                    rollup_json(),
-                    rollup_babel(),
-                    rollup_uglify()
-                ];
-            },
-            main: [{
-                dest: "build/js/portal.js",
-                src: "src/js/portal/portal.js"
-            }]
         },
         uglify: {
             // Minify the javascript files.
@@ -132,12 +112,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-aws-s3");
-    grunt.loadNpmTasks("grunt-rollup");
 
     // Default task.
     grunt.registerTask("default", ["clean", "eslint", "concat", "uglify", "copy"]);
     grunt.registerTask("cleanup", ["clean"]);
-    grunt.registerTask("rollup", ["rollup"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
     grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
     grunt.registerTask("s3_staging", ["aws_s3:staging"]);
