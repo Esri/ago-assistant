@@ -15,24 +15,24 @@ export function Portal(config) {
      * Return the version of the portal.
      */
     this.version = function() {
-        var portal = this;
-        var url = portal.portalUrl + "sharing/rest";
-        var parameters = {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest`;
+        let parameters = {
             f: "json"
         };
-        var options = {
+        let options = {
             withCredentials: portal.withCredentials
         };
         return request.get(url, parameters, options);
     },
-    /**
+    /*
      * Generates an access token in exchange for user credentials that
      * can be used by clients when working with the ArcGIS Portal API.
      */
     this.generateToken = function(username, password) {
-        var portal = this;
-        var url = portal.portalUrl + "sharing/rest/generateToken";
-        var data = {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/generateToken`;
+        let payload = {
             client: "referer",
             referer: window.location.hostname,
             expiration: 60,
@@ -40,25 +40,343 @@ export function Portal(config) {
             password: password,
             f: "json"
         };
-        var options = {
+        let options = {
             withCredentials: portal.withCredentials
         };
-        return request.post(url, data, options);
+        return request.post(url, payload, options);
     },
     /* Return the view of the portal as seen by the current user,
      * anonymous or logged in.
      */
     this.self = function() {
-        var portal = this;
-        var url = portal.portalUrl + "sharing/rest/portals/self";
-        var parameters = {
+        let portal = this;
+        let url =  `${portal.portalUrl}sharing/rest/portals/self`;
+        let parameters = {
             token: portal.token,
             f: "json"
         };
-        var options = {
+        let options = {
             withCredentials: portal.withCredentials
         };
         return request.get(url, parameters, options);
+    },
+    /*
+     * Searches for content items in the portal.
+     * The results of a search only contain items that the user
+     * (token) has permission to access.
+     * Excluding a token will yield only public items.
+     */
+    this.search = function(query, numResults, sortField, sortOrder) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/search`;
+        let parameters = {
+            q: query,
+            num: numResults,
+            sortField: sortField,
+            sortOrder: sortOrder,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    this.userProfile = function(username) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/community/users/${username}`;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    this.userContent = function(username, folder) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}`;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    this.itemDescription = function(id) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/items/${id}`;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    this.itemData = function(id) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/items/${id}/data`;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Create a new item.
+     */
+    this.addItem = function(username, folder, description, data, thumbnailUrl) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/addItem`;
+        /*
+         * Clean up description items for posting.
+         * This is necessary because some of the item descriptions (e.g. tags and extent)
+         * are returned as arrays, but the POST operation expects comma separated strings.
+         */
+        for (let [key, value] of description) {
+            if (value === null) {
+                description[key] = "";
+            } else if (value instanceof Array) {
+                description[key] = value.toString();
+            }
+        }
+        let payload = {
+            item: description.title,
+            text: JSON.stringify(data), // Stringify the object so it can be properly sent.
+            overwrite: false, // Prevent users from accidentally overwriting items.
+            thumbnailurl: thumbnailUrl,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Update the content in a web map.
+     */
+    this.updateWebmapData = function(username, folder, id, data) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/items/${id}/update`;
+        let payload = {
+            text: JSON.stringify(data), // Stringify the object so it can be properly sent.
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Update an item's description.
+     */
+    this.updateDescription = function(username, id, folder, description) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/items/${id}/update`;
+        /*
+         * Clean up description items for posting.
+         * This is necessary because some of the item descriptions (e.g. tags and extent)
+         * are returned as arrays, but the POST operation expects comma separated strings.
+         */
+        for (let [key, value] of description) {
+            if (value === null) {
+                description[key] = "";
+            } else if (value instanceof Array) {
+                description[key] = value.toString();
+            }
+        }
+        let payload = JSON.parse(description);
+        payload.token = portal.token;
+        payload.f = "json";
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Update the content in a Web Map.
+     */
+    this.updateData = function(username, id, folder, data) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/items/${id}/update`;
+        let payload = {
+            text: data,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Update the URL of a registered service or web application.
+     */
+    this.updateUrl = function(username, folder, id, newUrl) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/items/${id}/update`;
+        let payload = {
+            url: newUrl,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Get the description of a Hosted Service.
+     */
+    this.serviceDescription = function(serviceUrl) {
+        let portal = this;
+        let url = serviceUrl;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Retrieve the individual layers from a Hosted Service.
+     */
+    this.serviceLayers = function(serviceUrl) {
+        let portal = this;
+        let url = `${serviceUrl}/layers`;
+        let parameters = {
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Return the number of records in the service layer.
+     */
+    this.layerRecordCount = function(serviceUrl, layerId) {
+        let portal = this;
+        let url = `${serviceUrl}/${layerId}/query`;
+        let parameters = {
+            where: "1=1",
+            returnCountOnly: true,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Create a new Hosted Service.
+     */
+    this.createService = function(username, folder, serviceParameters) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/content/users/${username}/${folder}/createService`;
+        let payload = {
+            createParameters: serviceParameters,
+            outputType: "featureService",
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Modify the definition of an existing Hosted Service.
+     */
+    this.addToServiceDefinition = function(serviceUrl, definition) {
+        let portal = this;
+        serviceUrl = serviceUrl.replace("/rest/services/", "/rest/admin/services/");
+        let url = `${serviceUrl}/addToDefinition`;
+        let payload = {
+            addToDefinition: definition,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Check if the provided service name is available.
+     */
+    this.checkServiceName = function(portalId, name, type) {
+        let portal = this;
+        let url = `${portal.portalUrl}sharing/rest/portals/${portalId}/isServiceNameAvailable`;
+        let parameters = {
+            name: name,
+            type: type,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Query the records of a service.
+     */
+    this.harvestRecords = function(serviceUrl, layerId, offset, numresults) {
+        let portal = this;
+        let url = `${serviceUrl}/${layerId}/query`;
+        let parameters = {
+            where: "1=1",
+            outFields: "*",
+            returnGeometry: true,
+            resultOffset: offset,
+            resultRecordCount: numresults,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.get(url, parameters, options);
+    },
+    /*
+     * Add features to an existing service.
+     */
+    this.addFeatures = function(serviceUrl, layerId, features) {
+        let portal = this;
+        let url = `${serviceUrl}/${layerId}/addFeatures`;
+        let payload = {
+            features: features,
+            token: portal.token,
+            f: "json"
+        };
+        let options = {
+            withCredentials: portal.withCredentials
+        };
+        return request.post(url, payload, options);
+    },
+    /*
+     * Stores an item within the portal object.
+     */
+    this.cacheItem = function(description) {
+        this.items.push({
+            id: description.id,
+            description: description
+        });
     };
 }
 
@@ -70,7 +388,7 @@ export function itemInfo(type) {
     return items(type);
 }
 
-export var url = {
+export let url = {
     fix: function fix(url) {
         return fixUrl(url);
     },
@@ -80,367 +398,3 @@ export var url = {
 };
 
 export default portal;
-
-// ///////////////////////////////////////////////////////////////////////////////////////////////////
-//         /**
-//          * Searches for content items in the portal.
-//          * The results of a search only contain items that the user
-//          * (token) has permission to access.
-//          * Excluding a token will yield only public items.
-//          */
-//         this.search = function(query, numResults, sortField, sortOrder) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/search?",
-//                 data: {
-//                     q: query,
-//                     num: numResults,
-//                     sortField: sortField,
-//                     sortOrder: sortOrder,
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         this.userProfile = function(username) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/community/users/" + username + "?",
-//                 data: {
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         this.userContent = function(username, folder) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "?",
-//                 data: {
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         this.itemDescription = function(id) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/content/items/" + id + "?",
-//                 data: {
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         this.itemData = function(id) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/content/items/" + id + "/data?",
-//                 data: {
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         /**
-//          * Create a new item on the specified portal.
-//          */
-//         this.addItem = function(username, folder, description, data, thumbnailUrl) {
-//             // Clean up description items for posting.
-//             // This is necessary because some of the item descriptions (e.g. tags and extent)
-//             // are returned as arrays, but the post operation expects comma separated strings.
-//             jquery.each(description, function(item, value) {
-//                 if (value === null) {
-//                     description[item] = "";
-//                 } else if (value instanceof Array) {
-//                     description[item] = util.arrayToString(value);
-//                 }
-//             });
-//
-//             // Create a new item in a user's content.
-//             var params = {
-//                 item: description.title,
-//                 text: JSON.stringify(data), // Stringify the Javascript object so it can be properly sent.
-//                 overwrite: false, // Prevent users from accidentally overwriting items with the same name.
-//                 thumbnailurl: thumbnailUrl,
-//                 f: "json",
-//                 token: this.token
-//             };
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/addItem?",
-//                 data: jquery.extend(description, params), // Merge the description and params JSON objects.
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Update the content in a web map.
-//          */
-//         this.updateWebmapData = function(username, folder, id, data) {
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update?",
-//                 data: {
-//                     text: JSON.stringify(data), // Stringify the Javascript object so it can be properly sent.
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Update the description for an item.
-//          */
-//         this.updateDescription = function(username, id, folder, description) {
-//             var postData = JSON.parse(description);
-//             /**
-//              * Clean up description items for posting.
-//              * This is necessary because some of the item descriptions
-//              * (e.g. tags and extent) are returned as arrays, but the post
-//              * operation expects comma separated strings.
-//              */
-//             jquery.each(postData, function(item, value) {
-//                 if (value === null) {
-//                     postData[item] = "";
-//                 } else if (value instanceof Array) {
-//                     postData[item] = value.join(",");
-//                 }
-//             });
-//
-//             postData.token = this.token;
-//             postData.f = "json";
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
-//                 data: postData,
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//
-//         this.updateData = function(username, id, folder, data) {
-//             // Update the content in a web map.
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
-//                 data: {
-//                     text: data, // Stringify the Javascript object so it can be properly sent.
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Update the URL of a registered service or web application.
-//          */
-//         this.updateUrl = function(username, folder, id, url) {
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/items/" + id + "/update",
-//                 data: {
-//                     url: url,
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Get service details.
-//          */
-//         this.serviceDescription = function(url) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: url + "?" + jquery.param({
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * Get service details.
-//          */
-//         this.serviceLayers = function(url) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: url + "/layers?" + jquery.param({
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.createService = function(username, folder, serviceParameters) {
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: this.portalUrl + "sharing/rest/content/users/" + username + "/" + folder + "/createService",
-//                 data: {
-//                     createParameters: serviceParameters,
-//                     outputType: "featureService",
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.addToServiceDefinition = function(serviceUrl, definition) {
-//             serviceUrl = serviceUrl.replace("/rest/services/", "/rest/admin/services/");
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: serviceUrl + "/addToDefinition",
-//                 data: {
-//                     addToDefinition: definition,
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.checkServiceName = function(portalId, name, type) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: this.portalUrl + "sharing/rest/portals/" + portalId + "/isServiceNameAvailable?" + jquery.param({
-//                     name: name,
-//                     type: type,
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.layerRecordCount = function(serviceUrl, layerId) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
-//                     where: "1=1",
-//                     returnCountOnly: true,
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.harvestRecords = function(serviceUrl, layerId, offset, numresults) {
-//             return jquery.ajax({
-//                 type: "GET",
-//                 url: serviceUrl + "/" + layerId + "/query?" + jquery.param({
-//                     where: "1=1",
-//                     outFields: "*",
-//                     returnGeometry: true,
-//                     resultOffset: offset,
-//                     resultRecordCount: numresults,
-//                     token: this.token,
-//                     f: "json"
-//                 }),
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          *
-//          */
-//         this.addFeatures = function(serviceUrl, layerId, features) {
-//             return jquery.ajax({
-//                 type: "POST",
-//                 url: serviceUrl + "/" + layerId + "/addFeatures",
-//                 data: {
-//                     features: features,
-//                     token: this.token,
-//                     f: "json"
-//                 },
-//                 dataType: "json",
-//                 xhrFields: {
-//                     withCredentials: this.withCredentials
-//                 }
-//             });
-//         };
-//         /**
-//          * cacheItem() Stores an item with the portal object.
-//          * @description {Object} the item's description object
-//          */
-//         this.cacheItem = function(description) {
-//             this.items.push({
-//                 id: description.id,
-//                 description: description
-//             });
-//         };
-//     }
-// };
-// });
-// ///////////////////////////////////////////////////////////////////////////////////////////////////

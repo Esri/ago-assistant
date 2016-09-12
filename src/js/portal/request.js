@@ -3,7 +3,7 @@ function get(url, parameters, options) {
     options = typeof options !== "undefined" ? options : {withCredentials: false};
     return new Promise(function(resolve, reject) {
 
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
@@ -17,7 +17,7 @@ function get(url, parameters, options) {
             reject(Error(xhr));
         });
 
-        xhr.open("GET", url + "?" + serialize(parameters));
+        xhr.open("GET", `${url}?${serialize(parameters)}`);
         xhr.send();
     });
 
@@ -29,7 +29,7 @@ function post(url, data, options) {
 
     return new Promise(function(resolve, reject) {
 
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
@@ -51,11 +51,11 @@ function post(url, data, options) {
 }
 
 function serialize(obj, prefix) {
-    var str = [];
-    for (var p in obj) {
+    let str = [];
+    for (let p in obj) {
         if (obj.hasOwnProperty(p)) {
-            var k = prefix ? prefix + "[" + p + "]" : p;
-            var v = obj[p];
+            let k = prefix ? prefix + "[" + p + "]" : p;
+            let v = obj[p];
             str.push(typeof v == "object" ?
                 serialize(v, k) :
                 encodeURIComponent(k) + "=" + encodeURIComponent(v));
@@ -64,7 +64,7 @@ function serialize(obj, prefix) {
     return str.join("&");
 }
 
-export var Request = {
+export let Request = {
     get: get,
     post: post
 };
