@@ -30,7 +30,6 @@ function post(url, data, options) {
     return new Promise(function(resolve, reject) {
 
         let xhr = new XMLHttpRequest();
-        // xhr.responseType = "json";
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
