@@ -464,13 +464,14 @@ require([
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
+            console.log("getting description");
             portal.itemDescription(id)
                 .then(function(description) {
                     portal.itemData(id)
                         .then(function(data) {
-                            itemData = data;
-                        })
-                        .then(function() {
+                            if (data) {
+                                itemData = data;
+                            }
                             var templateData = {
                                 title: title,
                                 url: portal.portalUrl,

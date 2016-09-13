@@ -4,12 +4,13 @@ function get(url, parameters, options) {
     return new Promise(function(resolve, reject) {
 
         let xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
             if (xhr.readyState === 4 && xhr.status == 200) {
-                // Resolve the promise with the response text.
-                resolve(JSON.parse(xhr.responseText));
+                // Resolve the promise with the response.
+                resolve(xhr.response);
             }
         });
 
@@ -30,12 +31,13 @@ function post(url, data, options) {
     return new Promise(function(resolve, reject) {
 
         let xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
             if (xhr.readyState === 4 && xhr.status == 200) {
-                // Resolve the promise with the response text.
-                resolve(JSON.parse(xhr.responseText));
+                // Resolve the promise with the response.
+                resolve(xhr.response);
             }
         });
 
