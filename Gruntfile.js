@@ -47,11 +47,7 @@ module.exports = function(grunt) {
                     {expand: true, cwd: "src/", src: ["*.html"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["assets/**"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["css/**"], dest: "build/"},
-                    {expand: true, cwd: "src/", src: ["js/*"], dest: "build/",
-                        rename: function(src, dest) {
-                            return src + dest.replace(".min", "");
-                        }
-                    },
+                    {expand: true, cwd: "src/", src: ["js/main.min.js"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["js/lib/**"], dest: "build/"}
                 ]
             }
