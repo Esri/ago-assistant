@@ -6,7 +6,7 @@ export function Portal(config) {
     config = typeof config !== "undefined" ? config : {};
     this.portalUrl = config.portalUrl;
     this.username = config.username;
-    this.token = config.token;
+    this.token = typeof config.token !== "undefined" ? config.token : "";
     this.withCredentials = false;
     this.jsonp = false;
     this.items = [];
@@ -141,11 +141,11 @@ export function Portal(config) {
          * This is necessary because some of the item descriptions (e.g. tags and extent)
          * are returned as arrays, but the POST operation expects comma separated strings.
          */
-        for (let [key, value] of description) {
-            if (value === null) {
+        for (let key in description) {
+            if (description[key] === null) {
                 description[key] = "";
-            } else if (value instanceof Array) {
-                description[key] = value.toString();
+            } else if (description[key] instanceof Array) {
+                description[key] = description[key].toString();
             }
         }
         let payload = {
@@ -156,6 +156,8 @@ export function Portal(config) {
             token: portal.token,
             f: "json"
         };
+        // Merge the description items into the payload object.
+        Object.assign(payload, description);
         let options = {
             withCredentials: portal.withCredentials
         };
