@@ -7,6 +7,9 @@ module.exports = {
         "node": true
     },
     "extends": "eslint:recommended",
+    "parserOptions": {
+      "sourceType": "module"
+    },
     "rules": {
       "array-bracket-spacing": ["warn", "never"],
       "block-spacing": ["warn", "always"],
@@ -24,9 +27,9 @@ module.exports = {
       "max-len": ["off", {"code": 100, "ignoreUrls": true}],
       "new-cap": ["warn", {"newIsCapExceptions": ["arcgisOAuthInfo"]}],
       "new-parens": ["warn"],
-      "newline-after-var": ["off"],
-      "newline-before-return": ["off"],
-      "newline-per-chained-call": ["off"],
+      // "newline-after-var": ["off"],
+      // "newline-before-return": ["off"],
+      // "newline-per-chained-call": ["off"],
       "no-array-constructor": ["warn"],
       "no-console": ["off"],
       "no-empty": ["off"],
@@ -34,8 +37,8 @@ module.exports = {
       "no-trailing-spaces": ["warn"],
       "no-unneeded-ternary": ["warn"],
       "no-whitespace-before-property": ["warn"],
-      "object-curly-spacing": ["warn", "never"],
-      "object-property-newline": ["warn"],
+      // "object-curly-spacing": ["warn", "never"],
+      // "object-property-newline": ["off"],
       "one-var": ["warn", "never"],
       "one-var-declaration-per-line": ["warn", "always"],
       "operator-assignment": ["off"],
@@ -51,9 +54,6 @@ module.exports = {
       "space-infix-ops": ["warn"],
       "space-unary-ops": ["warn"],
       "spaced-comment": ["warn", "always"],
-      "wrap-regex": ["off"]
-    },
-    "parserOptions": {
-      "sourceType": "module"
+      // "wrap-regex": ["off"]
     }
 };
