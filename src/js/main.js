@@ -80,9 +80,8 @@ require([
                                 console.log("API v" + data.currentVersion);
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).next().addClass("glyphicon-ok");
-                            }).catch(function(xhr, textStatus) {
+                            }).catch(function() {
                                 // OK, it's really not working.
-                                console.log(xhr, textStatus);
                                 portal.withCredentials = false;
                                 portal.jsonp = false;
                                 jquery(".alert-danger.alert-dismissable").remove();
@@ -163,10 +162,8 @@ require([
                 }
                 jquery("#portalLoginBtn").button("reset");
             })
-            .catch(function(response) {
-                console.log("catch");
+            .catch(function() {
                 jquery("#portalLoginBtn").button("reset");
-                console.log(response.statusText);
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
@@ -220,8 +217,7 @@ require([
                     jquery("#destinationLoginForm").before(html);
                 }
             })
-            .catch(function(response) {
-                console.log(response.statusText);
+            .catch(function() {
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#destinationLoginForm").before(html);
@@ -464,7 +460,6 @@ require([
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
-            console.log("getting description");
             portal.itemDescription(id)
                 .then(function(description) {
                     portal.itemData(id)
@@ -1924,9 +1919,6 @@ require([
                     showDestinationFolders();
                     NProgress.done();
                 });
-            }, function error(err) {
-
-                console.error("There was an error retrieving credentials:", err);
             });
         });
 

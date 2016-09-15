@@ -36,6 +36,7 @@ module.exports = {
       "no-loop-func": ["warn"],
       "no-trailing-spaces": ["warn"],
       "no-unneeded-ternary": ["warn"],
+      "no-unused-vars": ["warn"],
       "no-whitespace-before-property": ["warn"],
       // "object-curly-spacing": ["warn", "never"],
       // "object-property-newline": ["off"],
