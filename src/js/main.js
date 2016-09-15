@@ -46,7 +46,7 @@ require([
     var validateUrl = function(el, portal) {
         "use strict";
         var inputUrl = jquery.trim(jquery(el).val());
-        portalSelf.url.fix(inputUrl).then(function(portalUrl) {
+        portalSelf.util.fixUrl(inputUrl).then(function(portalUrl) {
             jquery(el).val(portalUrl);
             var urlError = jquery("#urlErrorTemplate").html();
             var checkbox = jquery(el).parent().parent()
@@ -1050,7 +1050,7 @@ require([
             clone.attr("data-portal", destinationPortal.portalUrl);
 
             // Upgrade the service url to https to prevent mixed content errors.
-            service.serviceurl = portalSelf.url.upgrade(service.serviceurl);
+            service.serviceurl = portalSelf.util.upgradeUrl(service.serviceurl);
 
             // Update the new item's tags to make it easier to trace its origins.
             var newTags = description.tags;
@@ -1162,7 +1162,7 @@ require([
                     case "Feature Service":
 
                         // Upgrade the service url to https to prevent mixed content errors.
-                        description.url = portalSelf.url.upgrade(description.url);
+                        description.url = portalSelf.util.upgradeUrl(description.url);
 
                         // Also update the cached url.
                         portal.items[portal.items.length - 1].description.url = description.url;
