@@ -1,10 +1,9 @@
-import * as core from "./core/index";
-import * as users from "./users/index";
-import * as content from "./content/index";
-import * as hosting from "./hosting/index";
-
-import * as info from "./info/index";
-import * as utils from "./util/index";
+import * as core from "./core";
+import * as users from "./users";
+import * as content from "./content";
+import * as hosting from "./hosting";
+import * as info from "./info";
+import * as utils from "./util";
 
 export class Portal {
     constructor(config) {
