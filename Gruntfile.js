@@ -8,8 +8,13 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON("package.json"),
         // Task configuration.
         clean: {
-            // Clean up build files.
-            src: ["src/js/main.min.js"],
+            // Clean up build files and source maps.
+            src: [
+                "src/js/main.min.js",
+                "src/js/main.min.js.map",
+                "src/js/lib/portal.min.js",
+                "src/js/lib/portal.min.js.map"
+            ],
             build: ["build/**"]
         },
         eslint: {
@@ -31,12 +36,28 @@ module.exports = function(grunt) {
         },
         uglify: {
             // Minify the javascript files.
+            // Production build removes console statements and source maps.
             options: {
                 banner: "/*! <%= pkg.name %> <%= pkg.version %> */\n"
             },
-            build: {
+            prod: {
+                options: {
+                    preserveComments: false,
+                    sourceMap: false
+                },
                 files: {
-                    "src/js/main.min.js": "src/js/main.js"
+                    "src/js/main.min.js": ["src/js/main.js"]
+                }
+            },
+            dev: {
+                // Dev build includes source maps and console statements.
+                options: {
+                    preserveComments: "all",
+                    report: "gzip",
+                    sourceMap: true
+                },
+                files: {
+                    "src/js/main.min.js": ["src/js/main.js"]
                 }
             }
         },
@@ -106,17 +127,17 @@ module.exports = function(grunt) {
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks("grunt-contrib-clean");
-    grunt.loadNpmTasks("grunt-eslint");
     grunt.loadNpmTasks("grunt-contrib-concat");
-    grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-aws-s3");
+    grunt.loadNpmTasks("grunt-eslint");
     grunt.loadNpmTasks("grunt-shell");
 
     // Default task.
-    grunt.registerTask("default", ["clean", "eslint", "shell", "concat", "uglify", "copy"]);
+    grunt.registerTask("default", ["clean", "eslint", "shell", "concat", "uglify:prod", "copy"]);
+    grunt.registerTask("dev", ["clean", "eslint", "shell", "concat", "uglify:dev", "copy"]);
     grunt.registerTask("lint", ["eslint"]);
-    grunt.registerTask("build_portal", ["shell"]);
     grunt.registerTask("cleanup", ["clean"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
     grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
