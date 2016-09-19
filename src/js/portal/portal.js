@@ -8,6 +8,7 @@ import * as utils from "./util";
 export class Portal {
     constructor(config) {
         // Portal properties.
+        config = typeof config !== "undefined" ? config : "{}";
         this.portalUrl = typeof config.portalUrl !== "undefined" ? config.portalUrl : "https://www.arcgis.com";
         this.username = typeof config.username !== "undefined" ? config.username : "";
         this.token = typeof config.token !== "undefined" ? config.token : "";
