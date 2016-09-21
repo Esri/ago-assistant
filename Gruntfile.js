@@ -27,7 +27,7 @@ module.exports = function(grunt) {
             all: ["src/js/*.js", "src/js/portal/*.js"]
         },
         "string-replace": {
-            inline: {
+            js: {
                 files: {
                     "src/js/main_config.js": "src/js/main.js"
                 },
@@ -86,7 +86,7 @@ module.exports = function(grunt) {
             // Copy everything to the build directory for testing.
             main: {
                 files: [
-                    {expand: true, cwd: "src/", src: ["*.html"], dest: "build/"},
+                    {expand: true, cwd: "src/", src: ["oauth-callback.html"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["assets/**"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["css/**"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["js/main.min.js"], dest: "build/"},

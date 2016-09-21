@@ -1669,54 +1669,50 @@ require([
     // Do stuff when the DOM is ready.
     jquery(document).ready(function() {
 
-        // Load the html templates.
-        jquery.get("templates.html", function(templates) {
-            jquery("body").append(templates);
+        // Enable the login button.
+        // Doing it here ensures all required libraries have loaded.
+        jquery(".jumbotron > p > [data-action='login']")
+            .removeAttr("disabled");
+        jquery("a.portal-signin").attr("href", "#portalLoginModal");
 
-            // Enable the login button.
-            // Doing it here ensures all required libraries have loaded.
-            jquery(".jumbotron > p > [data-action='login']")
-                .removeAttr("disabled");
-            jquery("a.portal-signin").attr("href", "#portalLoginModal");
+        // Restore previous ArcGIS Online login if it was deleted
+        // during interrupted destination login.
+        if (sessionStorage.esriJSAPIOAuthBackup && sessionStorage.esriIdBackup) {
+            esriId.destroyCredentials();
+            esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
+            sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
+        }
 
-            // Restore previous ArcGIS Online login if it was deleted
-            // during interrupted destination login.
-            if (sessionStorage.esriJSAPIOAuthBackup && sessionStorage.esriIdBackup) {
-                esriId.destroyCredentials();
-                esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
-                sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
+        // Check for previously authenticated sessions.
+        esriId.registerOAuthInfos([appInfo]);
+        portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
+            /*
+             * Build the sharingUrl. This is necessary because esriId automatically
+             * appends /sharing to the portalUrl when it contains arcgis.com.
+             */
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
             }
-
-            // Check for previously authenticated sessions.
-            esriId.registerOAuthInfos([appInfo]);
-            portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
-                /*
-                 * Build the sharingUrl. This is necessary because esriId automatically
-                 * appends /sharing to the portalUrl when it contains arcgis.com.
-                 */
-                var sharingUrl = portalUrl;
-                if (sharingUrl.indexOf("arcgis.com") === -1) {
-                    sharingUrl += "sharing/";
-                }
-                esriId.checkSignInStatus(sharingUrl)
-                    .then(
-                        function(user) {
-                            jquery("#splashContainer").css("display", "none");
-                            jquery("#itemsContainer").css("display", "block");
-                            app.portals.sourcePortal = new portalSelf.Portal({
-                                portalUrl: portalUrl,
-                                username: user.userId,
-                                token: user.token
-                            });
-                            startSession();
-                        })
-                    .otherwise(
-                        function() {
-                            jquery("#itemsContainer").css("display", "none");
-                            jquery("#splashContainer").css("display", "block");
-                        }
-                    );
-            });
+            esriId.checkSignInStatus(sharingUrl)
+                .then(
+                    function(user) {
+                        jquery("#splashContainer").css("display", "none");
+                        jquery("#itemsContainer").css("display", "block");
+                        app.portals.sourcePortal = new portalSelf.Portal({
+                            portalUrl: portalUrl,
+                            username: user.userId,
+                            token: user.token
+                        });
+                        startSession();
+                    })
+                .otherwise(
+                    function() {
+                        jquery("#itemsContainer").css("display", "none");
+                        jquery("#splashContainer").css("display", "block");
+                    }
+                );
+        });
 
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
