@@ -22,9 +22,9 @@ require([
 
     // *** ArcGIS OAuth ***
     var appInfo = new arcgisOAuthInfo({
-        appId: "4E1s0Mv5r0c2l6W8",
+        appId: "<config.appId>", // Set this in config.json.
         popup: true,
-        portalUrl: "https://www.arcgis.com/"
+        portalUrl: "<config.portalUrl>" // Set this in config.json.
     });
 
     // Some app level variables.

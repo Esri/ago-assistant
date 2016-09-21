@@ -6,10 +6,12 @@ module.exports = function(grunt) {
     grunt.initConfig({
         // Metadata.
         pkg: grunt.file.readJSON("package.json"),
+        cfg: grunt.file.readJSON("config.json"),
         // Task configuration.
         clean: {
             // Clean up build files and source maps.
             src: [
+                "src/js/main_config.js",
                 "src/js/main.min.js",
                 "src/js/main.min.js.map",
                 "src/js/lib/portal.min.js",
@@ -23,6 +25,25 @@ module.exports = function(grunt) {
                 useEslintrc: true
             },
             all: ["src/js/*.js", "src/js/portal/*.js"]
+        },
+        "string-replace": {
+            inline: {
+                files: {
+                    "src/js/main_config.js": "src/js/main.js"
+                },
+                options: {
+                    replacements: [
+                        {
+                            pattern: "<config.appId>",
+                            replacement: "<%= cfg.appId %>"
+                        },
+                        {
+                            pattern: "<config.portalUrl>",
+                            replacement: "<%= cfg.portalUrl %>"
+                        }
+                    ]
+                }
+            }
         },
         concat: {
             // Combine files where it makes sense.
@@ -46,7 +67,7 @@ module.exports = function(grunt) {
                     sourceMap: false
                 },
                 files: {
-                    "src/js/main.min.js": ["src/js/main.js"]
+                    "src/js/main.min.js": ["src/js/main_config.js"]
                 }
             },
             dev: {
@@ -57,7 +78,7 @@ module.exports = function(grunt) {
                     sourceMap: true
                 },
                 files: {
-                    "src/js/main.min.js": ["src/js/main.js"]
+                    "src/js/main.min.js": ["src/js/main_config.js"]
                 }
             }
         },
@@ -133,10 +154,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-aws-s3");
     grunt.loadNpmTasks("grunt-eslint");
     grunt.loadNpmTasks("grunt-shell");
+    grunt.loadNpmTasks("grunt-string-replace");
 
     // Default task.
-    grunt.registerTask("default", ["clean", "eslint", "shell", "concat", "uglify:prod", "copy"]);
-    grunt.registerTask("dev", ["clean", "eslint", "shell", "concat", "uglify:dev", "copy"]);
+    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy", "clean:src"]);
+    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src"]);
     grunt.registerTask("lint", ["eslint"]);
     grunt.registerTask("cleanup", ["clean"]);
     grunt.registerTask("s3_backup", ["aws_s3:backup"]);
