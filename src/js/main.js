@@ -1689,25 +1689,34 @@ require([
 
             // Check for previously authenticated sessions.
             esriId.registerOAuthInfos([appInfo]);
-            esriId.checkSignInStatus(appInfo.portalUrl)
-                .then(
-                    function(user) {
-                        jquery("#splashContainer").css("display", "none");
-                        jquery("#itemsContainer").css("display", "block");
-                        app.portals.sourcePortal = new portalSelf.Portal({
-                            portalUrl: user.server + "/",
-                            username: user.userId,
-                            token: user.token
-                        });
-                        startSession();
-                    })
-                .otherwise(
-                    function() {
-                        jquery("#itemsContainer").css("display", "none");
-                        jquery("#splashContainer").css("display", "block");
-                    }
-                );
-        });
+            portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
+                /*
+                 * Build the sharingUrl. This is necessary because esriId automatically
+                 * appends /sharing to the portalUrl when it contains arcgis.com.
+                 */
+                var sharingUrl = portalUrl;
+                if (sharingUrl.indexOf("arcgis.com") === -1) {
+                    sharingUrl += "sharing/";
+                }
+                esriId.checkSignInStatus(sharingUrl)
+                    .then(
+                        function(user) {
+                            jquery("#splashContainer").css("display", "none");
+                            jquery("#itemsContainer").css("display", "block");
+                            app.portals.sourcePortal = new portalSelf.Portal({
+                                portalUrl: portalUrl,
+                                username: user.userId,
+                                token: user.token
+                            });
+                            startSession();
+                        })
+                    .otherwise(
+                        function() {
+                            jquery("#itemsContainer").css("display", "none");
+                            jquery("#splashContainer").css("display", "block");
+                        }
+                    );
+            });
 
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
