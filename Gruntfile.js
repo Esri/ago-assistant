@@ -94,52 +94,6 @@ module.exports = function(grunt) {
                 ]
             }
         },
-        aws_s3: {
-            // Copy the latest build to an AWS S3 bucket.
-            options: {
-                region: "us-east-1",
-                sslEnabled: true
-                // Omit the following options by setting equivalent environment variables.
-                // AWS_ACCESS_KEY_ID: <YOUR_KEY>,
-                // AWS_SECRET_ACCESS_KEY: <YOUR_KEY>
-            },
-            backup: {
-                options: {
-                    bucket: "ago-assistant"
-                },
-                files: [
-                    {cwd: "backup/", dest: "/", action: "download"}
-                ]
-            },
-            simulate: {
-                options: {
-                    bucket: "ago-assistant-staging",
-                    debug: true
-                },
-                files: [
-                    {dest: "/", action: "delete"},
-                    {expand: true, cwd: "build/", src: ["**"], dest: ""}
-                ]
-            },
-            staging: {
-                options: {
-                    bucket: "ago-assistant-staging"
-                },
-                files: [
-                    {dest: "/", action: "delete"}, // Delete all existing files.
-                    {expand: true, cwd: "build/", src: ["**"], dest: ""}
-                ]
-            },
-            production: {
-                options: {
-                    bucket: "ago-assistant"
-                },
-                files: [
-                    {dest: "/", action: "delete"}, // Delete all existing files.
-                    {expand: true, cwd: "build/", src: ["**"], dest: ""}
-                ]
-            }
-        },
         shell: {
             // Use rollup from the command line since grunt-rollup didn't work.
             command: "rollup -c"
@@ -151,7 +105,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-uglify");
-    grunt.loadNpmTasks("grunt-aws-s3");
     grunt.loadNpmTasks("grunt-eslint");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-string-replace");
@@ -161,9 +114,5 @@ module.exports = function(grunt) {
     grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src"]);
     grunt.registerTask("lint", ["eslint"]);
     grunt.registerTask("cleanup", ["clean"]);
-    grunt.registerTask("s3_backup", ["aws_s3:backup"]);
-    grunt.registerTask("s3_simulate", ["aws_s3:simulate"]);
-    grunt.registerTask("s3_staging", ["aws_s3:staging"]);
-    grunt.registerTask("s3_production", ["aws_s3:production"]);
 
 };
