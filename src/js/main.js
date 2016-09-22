@@ -1,8 +1,6 @@
 require([
     "jquery",
-    "portal/portal",
-    "portal/info",
-    "portal/util",
+    "portal",
     "mustache",
     "nprogress",
     "esri/arcgis/Portal",
@@ -14,8 +12,6 @@ require([
 ], function(
     jquery,
     portalSelf,
-    portalInfo,
-    portalUtil,
     mustache,
     NProgress,
     arcgisPortal,
@@ -26,9 +22,9 @@ require([
 
     // *** ArcGIS OAuth ***
     var appInfo = new arcgisOAuthInfo({
-        appId: "4E1s0Mv5r0c2l6W8",
+        appId: "<config.appId>", // Set this in config.json.
         popup: true,
-        portalUrl: "https://www.arcgis.com/"
+        portalUrl: "<config.portalUrl>" // Set this in config.json.
     });
 
     // Some app level variables.
@@ -50,8 +46,7 @@ require([
     var validateUrl = function(el, portal) {
         "use strict";
         var inputUrl = jquery.trim(jquery(el).val());
-
-        portalUtil.fixUrl(inputUrl).done(function(portalUrl) {
+        portalSelf.util.fixUrl(inputUrl).then(function(portalUrl) {
             jquery(el).val(portalUrl);
             var urlError = jquery("#urlErrorTemplate").html();
             var checkbox = jquery(el).parent().parent()
@@ -61,33 +56,32 @@ require([
 
             portal.portalUrl = portalUrl;
             portal.version()
-                .done(function(data) {
+                .then(function(data) {
                     console.log("API v" + data.currentVersion);
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery(el).next().addClass("glyphicon-ok");
                 })
-                .fail(function() {
+                .catch(function() {
                     // Try it again with enterprise auth.
                     portal.withCredentials = true;
                     portal.version()
-                        .done(function(data) {
+                        .then(function(data) {
                             console.log("API v" + data.currentVersion);
                             jquery(".alert-danger.alert-dismissable").remove();
                             jquery(el).next().addClass("glyphicon-ok");
                             jquery(checkbox).trigger("click");
                         })
-                        .fail(function() {
+                        .catch(function() {
                             // Now try enterprise auth with jsonp so crossdomain will follow redirects.
                             portal.jsonp = true;
-                            portal.version().done(function(data) {
+                            portal.version().then(function(data) {
                                 // It worked so keep enterprise auth but turn jsonp back off.
                                 portal.jsonp = false;
                                 console.log("API v" + data.currentVersion);
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).next().addClass("glyphicon-ok");
-                            }).fail(function(xhr, textStatus) {
+                            }).catch(function() {
                                 // OK, it's really not working.
-                                console.log(xhr, textStatus);
                                 portal.withCredentials = false;
                                 portal.jsonp = false;
                                 jquery(".alert-danger.alert-dismissable").remove();
@@ -102,7 +96,7 @@ require([
     var startSession = function() {
         "use strict";
         var searchHtml;
-        app.portals.sourcePortal.self().done(function(data) {
+        app.portals.sourcePortal.self().then(function(data) {
             var template = jquery("#sessionTemplate").html();
             var html = mustache.to_html(template, data);
             app.portals.sourcePortal.username = data.user.username;
@@ -154,7 +148,7 @@ require([
         var password = jquery("#portalPassword").val();
         jquery("#portalLoginBtn").button("loading");
         app.portals.sourcePortal.generateToken(username, password)
-            .done(function(response) {
+            .then(function(response) {
                 if (response.token) {
                     app.portals.sourcePortal.token = response.token;
                     jquery("#portalLoginModal").modal("hide");
@@ -166,14 +160,15 @@ require([
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery("#portalLoginForm").before(html);
                 }
+                jquery("#portalLoginBtn").button("reset");
             })
-            .fail(function(response) {
-                console.log(response.statusText);
+            .catch(function() {
+                jquery("#portalLoginBtn").button("reset");
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
             })
-            .always(function() {
+            .then(function() {
                 jquery("#portalLoginBtn").button("reset");
             });
     };
@@ -192,10 +187,10 @@ require([
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
         app.portals.destinationPortal.generateToken(username, password)
-            .done(function(response) {
+            .then(function(response) {
                 if (response.token) {
                     app.portals.destinationPortal.token = response.token;
-                    app.portals.destinationPortal.self().done(function(data) {
+                    app.portals.destinationPortal.self().then(function(data) {
                         app.portals.destinationPortal.username = data.user.username;
                         if (data.isPortal === true) {
                             // Portal.
@@ -222,13 +217,12 @@ require([
                     jquery("#destinationLoginForm").before(html);
                 }
             })
-            .fail(function(response) {
-                console.log(response.statusText);
+            .catch(function() {
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#destinationLoginForm").before(html);
             })
-            .always(function() {
+            .then(function() {
                 jquery("#destinationLoginBtn").button("reset");
             });
     };
@@ -280,7 +274,7 @@ require([
 
         NProgress.start();
         portal.search(query, 100, "numViews", "desc")
-            .done(function(results) {
+            .then(function(results) {
                 listSearchItems(portal.portalUrl, results);
                 NProgress.done();
             });
@@ -407,7 +401,7 @@ require([
                     }
 
                     if (editButton.attr("data-container") === "Description") {
-                        portal.updateDescription(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
+                        portal.updateDescription(itemInfo.owner, itemInfo.id, ownerFolder, newJson).then(function(response) {
                             if (response.success) {
                                 saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                 saveButton.css("color", "green");
@@ -418,7 +412,7 @@ require([
                         });
                     } else if (editButton.attr("data-container") === "Data") {
                         saveButton.children("span").attr("class", "fa fa-lg fa-spinner fa-spin");
-                        portal.updateData(itemInfo.owner, itemInfo.id, ownerFolder, newJson).done(function(response) {
+                        portal.updateData(itemInfo.owner, itemInfo.id, ownerFolder, newJson).then(function(response) {
                             if (response.success) {
                                 saveButton.children("span").attr("class", "fa fa-lg fa-check");
                                 saveButton.css("color", "green");
@@ -467,12 +461,12 @@ require([
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
             portal.itemDescription(id)
-                .done(function(description) {
+                .then(function(description) {
                     portal.itemData(id)
-                        .done(function(data) {
-                            itemData = data;
-                        })
-                        .always(function() {
+                        .then(function(data) {
+                            if (data) {
+                                itemData = data;
+                            }
                             var templateData = {
                                 title: title,
                                 url: portal.portalUrl,
@@ -567,7 +561,7 @@ require([
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
             portal.itemDescription(id)
-                .done(function(description) {
+                .then(function(description) {
                     owner = description.owner;
                     if (!description.ownerFolder) {
                         // Handle content in the user's root folder.
@@ -578,7 +572,7 @@ require([
                 });
 
             portal.itemData(id)
-                .done(function(data) {
+                .then(function(data) {
                     webmapData = JSON.stringify(data);
                     var operationalLayers = [];
                     jquery.each(data.operationalLayers, function(layer) {
@@ -670,7 +664,7 @@ require([
                         // port designators (e.g. switching from 6080 endpoints to the web adaptor).
                         if (origTextUserInput.length > 0) {
                             var webmapServices = jquery("[data-original]");
-                            var foundMatches = 0;
+                            var foundMatches = 0; // eslint-disable-line no-unused-vars
                             jquery.each(webmapServices, function(service) {
                                 var originalUrl = jquery(webmapServices[service]).val();
                                 if (originalUrl.indexOf(origTextUserInput) > -1) {
@@ -701,7 +695,7 @@ require([
 
                         var webmapId = jquery(".content.active.btn-primary").attr("data-id");
                         var itemData = JSON.parse(webmapData);
-                        portal.updateWebmapData(owner, folder, webmapId, itemData).done(function(response) {
+                        portal.updateWebmapData(owner, folder, webmapId, itemData).then(function(response) {
                             var html;
                             if (response.success) {
                                 // Set the stored original URL to the new value.
@@ -755,7 +749,7 @@ require([
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
-            portal.itemDescription(id).done(function(description) {
+            portal.itemDescription(id).then(function(description) {
                 owner = description.owner;
                 if (!description.ownerFolder) {
                     folder = ""; // Handle content in the user's root folder.
@@ -772,7 +766,7 @@ require([
                 jquery("#btnUpdateContentUrl").click(function() {
                     var contentId = jquery(".content.active.btn-primary").attr("data-id");
                     var url = jquery("[data-original]").val();
-                    portal.updateUrl(owner, folder, contentId, url).done(function(response) {
+                    portal.updateUrl(owner, folder, contentId, url).then(function(response) {
                         var html;
                         if (response.success) {
                             // Set the stored original URL to the new value.
@@ -837,7 +831,7 @@ require([
         };
 
         portal.userProfile(portal.username)
-            .done(function(user) {
+            .then(function(user) {
 
                 var template = jquery("#statsTemplate").html();
                 var thumbnailUrl;
@@ -866,7 +860,7 @@ require([
                 // Get the user's 3 most viewed items.
                 var searchQuery = "owner:" + portal.username;
                 portal.search(searchQuery, 3, "numViews", "desc")
-                    .done(function(results) {
+                    .then(function(results) {
                         jquery.each(results.results, function(result) {
                             results.results[result].numViews =
                                 results.results[result]
@@ -974,7 +968,7 @@ require([
         var description = item[0].description;
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
-        portal.itemData(id).always(function(data) {
+        portal.itemData(id).then(function(data) {
             /**
              * Post it to the destination using always
              * to ensure that it copies Web Mapping Applications
@@ -982,7 +976,7 @@ require([
              * generate a failed response.
              */
             destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
-                .done(function(response) {
+                .then(function(response) {
                     var html;
                     if (response.success === true) {
                         // Swizzle the portal url and id parameter to reflect the url of new item.
@@ -991,7 +985,7 @@ require([
                             newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
                             var folder = response.folder || "";
                             destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                                .done(function() {
+                                .then(function() {
                                     jquery("#" + id + "_clone").addClass("btn-success");
                                 });
                         } else {
@@ -1006,7 +1000,7 @@ require([
                         jquery("#" + id + "_clone").before(html);
                     }
                 })
-                .fail(function() {
+                .catch(function() {
                     showCopyError(id, "Something went wrong.");
                 });
         });
@@ -1051,7 +1045,7 @@ require([
             clone.attr("data-portal", destinationPortal.portalUrl);
 
             // Upgrade the service url to https to prevent mixed content errors.
-            service.serviceurl = portalUtil.upgradeUrl(service.serviceurl);
+            service.serviceurl = portalSelf.util.upgradeUrl(service.serviceurl);
 
             // Update the new item's tags to make it easier to trace its origins.
             var newTags = description.tags;
@@ -1088,12 +1082,12 @@ require([
                                             // Set the count manually in weird cases where maxRecordCount is negative.
                                             var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
                                             var added = 0;
-                                            var x = 1;
+                                            var x = 1; // eslint-disable-line no-unused-vars
                                             while (offset <= records.count) {
                                                 x++;
                                                 portal.harvestRecords(description.url, layerId, offset, count)
                                                     // the linter doesn't like anonymous callback functions within loops
-                                                    /*jshint -W083  */
+                                                    /* eslint-disable no-loop-func */
                                                     .then(function(serviceData) {
                                                         destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
                                                             .then(function() {
@@ -1105,7 +1099,7 @@ require([
                                                                 }
                                                             });
                                                     });
-                                                    /*jshint +W083 */
+                                                    /* eslint-enable no-loop-func */
                                                 offset += count;
                                             }
                                         });
@@ -1118,7 +1112,7 @@ require([
                                 showCopyError(id, message);
                             }
                         })
-                        .fail(function() {
+                        .catch(function() {
                             jquery("#" + id + "_clone > img").remove();
                             jquery("#" + id + "_clone").removeClass("btn-info");
                             jquery("#" + id + "_clone").addClass("btn-danger");
@@ -1157,18 +1151,18 @@ require([
             // Ensure the content type is supported before trying to copy it.
             if (isSupported(type)) {
                 // Get the full item description and data from the source.
-                portal.itemDescription(id).done(function(description) {
+                portal.itemDescription(id).then(function(description) {
                     portal.cacheItem(description);
                     switch (type) {
                     case "Feature Service":
 
                         // Upgrade the service url to https to prevent mixed content errors.
-                        description.url = portalUtil.upgradeUrl(description.url);
+                        description.url = portalSelf.util.upgradeUrl(description.url);
 
                         // Also update the cached url.
                         portal.items[portal.items.length - 1].description.url = description.url;
 
-                        portal.serviceDescription(description.url).done(function(serviceDescription) {
+                        portal.serviceDescription(description.url).then(function(serviceDescription) {
                             var item = jquery.grep(portal.items, function(item) {
                                 return (item.id === id);
                             });
@@ -1246,7 +1240,7 @@ require([
     };
 
     var cleanUp = function() {
-        jquery("#dropArea").empty(); //Clear any old items.
+        jquery("#dropArea").empty(); // Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
         jquery(".content").attr("disabled", "disabled");
@@ -1282,7 +1276,7 @@ require([
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
                 setMaxWidth(this);
-                makeDraggable(jquery(this)); //Make the content draggable.
+                makeDraggable(jquery(this)); // Make the content draggable.
             }
         });
     };
@@ -1399,7 +1393,7 @@ require([
                 id: this.id,
                 title: this.title,
                 type: this.type,
-                icon: portalInfo.items(this.type).icon,
+                icon: portalSelf.itemInfo(this.type).icon,
                 portal: portalUrl
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1447,7 +1441,7 @@ require([
             });
         }
 
-        portal.userContent(portal.username, "/").done(function(content) {
+        portal.userContent(portal.username, "/").then(function(content) {
             // Append the root folder accordion.
             var folderData = {
                 title: "Root",
@@ -1463,7 +1457,7 @@ require([
                     id: this.id,
                     title: this.title,
                     type: this.type,
-                    icon: portalInfo.items(this.type).icon,
+                    icon: portalSelf.itemInfo(this.type).icon,
                     portal: portal.portalUrl
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1475,7 +1469,7 @@ require([
             jquery.each(content.folders, function(folder) {
                 sortFoldersAlpha(jquery("#itemsArea"));
                 portal.userContent(portal.username, content.folders[folder].id)
-                    .done(function(content) {
+                    .then(function(content) {
                         var folderData = {
                             title: content.currentFolder.title,
                             id: content.currentFolder.id,
@@ -1492,7 +1486,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portalSelf.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1543,14 +1537,14 @@ require([
             });
         }
 
-        portal.userProfile(portal.username).done(function(user) {
+        portal.userProfile(portal.username).then(function(user) {
             jquery.each(user.groups, function() {
                 sortFoldersAlpha(jquery("#itemsArea"));
                 var group = this;
                 var query = "group:" + this.id;
 
                 portal.search(query, 100)
-                    .done(function(search) {
+                    .then(function(search) {
                         var folderData = {
                             title: group.title,
                             id: group.id,
@@ -1567,7 +1561,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portalSelf.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1601,7 +1595,7 @@ require([
             });
         }
 
-        portal.userContent(portal.username, "/").done(function(content) {
+        portal.userContent(portal.username, "/").then(function(content) {
             var folderData = {
                 title: "Root",
                 id: "",
@@ -1620,7 +1614,7 @@ require([
                     id: this.id,
                     title: this.title,
                     type: this.type,
-                    icon: portalInfo.items(this.type).icon,
+                    icon: portalSelf.itemInfo(this.type).icon,
                     portal: portal.portalUrl
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1635,7 +1629,7 @@ require([
             // Append the other folders.
             jquery.each(content.folders, function(folder) {
                 portal.userContent(portal.username, content.folders[folder].id)
-                    .done(function(content) {
+                    .then(function(content) {
                         var folderData = {
                             title: content.currentFolder.title,
                             id: content.currentFolder.id,
@@ -1653,7 +1647,7 @@ require([
                                 id: this.id,
                                 title: this.title,
                                 type: this.type,
-                                icon: portalInfo.items(this.type).icon,
+                                icon: portalSelf.itemInfo(this.type).icon,
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1675,33 +1669,38 @@ require([
     // Do stuff when the DOM is ready.
     jquery(document).ready(function() {
 
-        // Load the html templates.
-        jquery.get("templates.html", function(templates) {
-            jquery("body").append(templates);
+        // Enable the login button.
+        // Doing it here ensures all required libraries have loaded.
+        jquery(".jumbotron > p > [data-action='login']")
+            .removeAttr("disabled");
+        jquery("a.portal-signin").attr("href", "#portalLoginModal");
 
-            // Enable the login button.
-            // Doing it here ensures all required libraries have loaded.
-            jquery(".jumbotron > p > [data-action='login']")
-                .removeAttr("disabled");
-            jquery("a.portal-signin").attr("href", "#portalLoginModal");
+        // Restore previous ArcGIS Online login if it was deleted
+        // during interrupted destination login.
+        if (sessionStorage.esriJSAPIOAuthBackup && sessionStorage.esriIdBackup) {
+            esriId.destroyCredentials();
+            esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
+            sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
+        }
 
-            // Restore previous ArcGIS Online login if it was deleted
-            // during interrupted destination login.
-            if (sessionStorage.esriJSAPIOAuthBackup && sessionStorage.esriIdBackup) {
-                esriId.destroyCredentials();
-                esriId.initialize(JSON.parse(sessionStorage.getItem("esriIdBackup")));
-                sessionStorage.setItem("esriJSAPIOAuth", sessionStorage.getItem("esriJSAPIOAuthBackup"));
+        // Check for previously authenticated sessions.
+        esriId.registerOAuthInfos([appInfo]);
+        portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
+            /*
+             * Build the sharingUrl. This is necessary because esriId automatically
+             * appends /sharing to the portalUrl when it contains arcgis.com.
+             */
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
             }
-
-            // Check for previously authenticated sessions.
-            esriId.registerOAuthInfos([appInfo]);
-            esriId.checkSignInStatus(appInfo.portalUrl)
+            esriId.checkSignInStatus(sharingUrl)
                 .then(
                     function(user) {
                         jquery("#splashContainer").css("display", "none");
                         jquery("#itemsContainer").css("display", "block");
                         app.portals.sourcePortal = new portalSelf.Portal({
-                            portalUrl: user.server + "/",
+                            portalUrl: portalUrl,
                             username: user.userId,
                             token: user.token
                         });
@@ -1873,18 +1872,18 @@ require([
         // Login.
         jquery("[data-action='login']").click(function() {
             esriId.getCredential(appInfo.portalUrl, {
-                    oAuthPopupConfirmation: false
-                })
-                .then(function(user) {
-                    jquery("#splashContainer").css("display", "none");
-                    jquery("#itemsContainer").css("display", "block");
-                    app.portals.sourcePortal = new portalSelf.Portal({
-                        portalUrl: user.server + "/",
-                        username: user.userId,
-                        token: user.token
-                    });
-                    startSession();
+                oAuthPopupConfirmation: false
+            })
+            .then(function(user) {
+                jquery("#splashContainer").css("display", "none");
+                jquery("#itemsContainer").css("display", "block");
+                app.portals.sourcePortal = new portalSelf.Portal({
+                    portalUrl: user.server + "/",
+                    username: user.userId,
+                    token: user.token
                 });
+                startSession();
+            });
         });
 
         // Destination ArcGIS Online login.
@@ -1918,16 +1917,13 @@ require([
                 esriId.initialize(appIdJson);
                 sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
 
-                app.portals.destinationPortal.self().done(function(data) {
+                app.portals.destinationPortal.self().then(function() {
                     jquery("#copyModal").modal("hide");
                     highlightCopyableContent();
                     NProgress.start();
                     showDestinationFolders();
                     NProgress.done();
                 });
-            }, function error(err) {
-
-                console.error("There was an error retrieving credentials:", err);
             });
         });
 

@@ -23,7 +23,9 @@ This project uses [Grunt](http://gruntjs.com/) to automate building the applicat
 
   * Download and install [node.js](http://nodejs.org/).
   * Download or clone this project to your machine.
-  * Go to the project folder in your terminal or command prompt and run `npm install` to download the project dependencies.
+  * Go to the project folder in your terminal or command prompt and run `npm install` to install the project dependencies.
+  * [Register the app in your portal](http://server.arcgis.com/en/server/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B) to obtain an `appId` for using the OAuth dialog to log in. Be sure to add the correct redirect URI (the location where your app will be hosted).
+  * Update [`config.json`](config.json) with your portal's url and new `appId`.
   * Run `grunt` from the command line to generate an optimized build of the app in the `build` folder.
 
 ## Requirements
