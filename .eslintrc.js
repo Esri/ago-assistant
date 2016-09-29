@@ -22,7 +22,7 @@ module.exports = {
       "indent": ["warn", 4],
       "key-spacing": ["warn"],
       "keyword-spacing": ["warn"],
-      "linebreak-style": ["warn"],
+      // "linebreak-style": ["off"],
       "lines-around-comment": ["off"],
       "max-len": ["off", {"code": 100, "ignoreUrls": true}],
       "new-cap": ["warn", {"newIsCapExceptions": ["arcgisOAuthInfo"]}],
