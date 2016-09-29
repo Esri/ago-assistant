@@ -97,6 +97,14 @@ module.exports = function(grunt) {
         shell: {
             // Use rollup from the command line since grunt-rollup didn't work.
             command: "rollup -c"
+        },
+        "http-server": {
+            dev: {
+                root: "build",
+                host: "0.0.0.0",
+                port: 8080,
+                openBrowser: true
+            }
         }
     });
 
@@ -106,13 +114,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-eslint");
+    grunt.loadNpmTasks("grunt-http-server");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-string-replace");
 
     // Default task.
     grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy", "clean:src"]);
-    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src"]);
+    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src", "http-server"]);
     grunt.registerTask("lint", ["eslint"]);
+    grunt.registerTask("serve", ["http-server"]);
     grunt.registerTask("cleanup", ["clean"]);
 
 };
