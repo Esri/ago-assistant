@@ -1332,7 +1332,8 @@ require([
             "Symbol Set",
             "Color Set",
             "Document Link",
-            "Feature Service"
+            "Feature Service",
+            "Vector Tile Service"
         ];
         if (jquery.inArray(type, supportedTypes) > -1) {
             return true;
