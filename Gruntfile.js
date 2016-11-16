@@ -84,13 +84,18 @@ module.exports = function(grunt) {
         },
         copy: {
             // Copy everything to the build directory for testing.
-            main: {
+            prod: {
                 files: [
                     {expand: true, cwd: "src/", src: ["oauth-callback.html"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["assets/**"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["css/**"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["js/main.min.js"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["js/lib/**"], dest: "build/"}
+                ]
+            },
+            dev: {
+                files: [
+                    {expand: true, cwd: "src/", src: ["js/main*"], dest: "build/"}
                 ]
             }
         },
@@ -119,8 +124,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-string-replace");
 
     // Default task.
-    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy", "clean:src"]);
-    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src", "http-server"]);
+    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy:prod", "clean:src"]);
+    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src", "http-server"]);
     grunt.registerTask("lint", ["eslint"]);
     grunt.registerTask("serve", ["http-server"]);
     grunt.registerTask("cleanup", ["clean"]);
