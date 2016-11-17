@@ -112,7 +112,7 @@ module.exports = function(grunt) {
                 root: "build",
                 host: "0.0.0.0",
                 port: 8080,
-                openBrowser: true
+                openBrowser: false
             }
         }
     });
