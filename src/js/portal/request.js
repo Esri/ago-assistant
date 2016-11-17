@@ -4,13 +4,21 @@ function get(url, parameters, options) {
     return new Promise(function(resolve, reject) {
 
         let xhr = new XMLHttpRequest();
-        xhr.responseType = "json";
+        // xhr.responseType = "json"; // Can't use this until IE11 supports it.
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
             if (xhr.readyState === 4 && xhr.status == 200) {
+                // Handle empty responses.
+                let response;
+                if (xhr.response === "") {
+                    response = null;
+                } else {
+                    response = JSON.parse(xhr.response);
+                }
+
                 // Resolve the promise with the response.
-                resolve(xhr.response);
+                resolve(response);
             }
         });
 
@@ -31,13 +39,21 @@ function post(url, data, options) {
     return new Promise(function(resolve, reject) {
 
         let xhr = new XMLHttpRequest();
-        xhr.responseType = "json";
+        // xhr.responseType = "json"; // Can't use this until IE11 supports it.
         xhr.withCredentials = options.withCredentials;
 
         xhr.addEventListener("readystatechange", function() {
             if (xhr.readyState === 4 && xhr.status == 200) {
+                // Handle empty responses.
+                let response;
+                if (xhr.response === "") {
+                    response = null;
+                } else {
+                    response = JSON.parse(xhr.response);
+                }
+
                 // Resolve the promise with the response.
-                resolve(xhr.response);
+                resolve(response);
             }
         });
 
