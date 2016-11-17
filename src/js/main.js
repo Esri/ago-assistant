@@ -6,6 +6,7 @@ require([
     "esri/arcgis/Portal",
     "esri/arcgis/OAuthInfo",
     "esri/IdentityManager",
+    "clipboard",
     "highlight",
     "jquery.ui",
     "bootstrap-shim"
@@ -17,6 +18,7 @@ require([
     arcgisPortal,
     arcgisOAuthInfo,
     esriId,
+    Clipboard,
     hljs
 ) {
 
@@ -285,6 +287,27 @@ require([
         var portal;
         var jsonBackup;
         var jsonValid;
+
+        // Copy JSON with clipboard.js.
+        var clipboard = new Clipboard(".btn");
+        clipboard.on("success", function(e) {
+
+            var el = jquery(e.trigger);
+
+            el.tooltip({
+                title: "Copied!",
+                placement: "left",
+                container: "body"
+            });
+            el.tooltip("show");
+
+            // Destroy the tooltip so it doesn't keep popping up.
+            el.mouseleave(function() {
+                el.tooltip("destroy");
+            });
+
+            e.clearSelection();
+        });
 
         var validateJson = function(jsonString) {
             try {
