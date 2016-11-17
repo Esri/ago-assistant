@@ -53,6 +53,10 @@ module.exports = function(grunt) {
             build_index: {
                 src: ["src/index.html", "src/templates.html"],
                 dest: "build/index.html"
+            },
+            polyfill_portaljs: {
+                src: ["node_modules/babel-polyfill/dist/polyfill.min.js", "src/js/lib/portal.min.js"],
+                dest: "src/js/lib/portal.min.js"
             }
         },
         uglify: {
