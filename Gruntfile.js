@@ -11,6 +11,7 @@ module.exports = function(grunt) {
         clean: {
             // Clean up build files and source maps.
             src: [
+                "src/index_config.html",
                 "src/js/main_config.js",
                 "src/js/main.min.js",
                 "src/js/main.min.js.map",
@@ -27,7 +28,7 @@ module.exports = function(grunt) {
             all: ["src/js/*.js", "src/js/portal/*.js"]
         },
         "string-replace": {
-            js: {
+            config: {
                 files: {
                     "src/js/main_config.js": "src/js/main.js"
                 },
@@ -43,6 +44,19 @@ module.exports = function(grunt) {
                         }
                     ]
                 }
+            },
+            version: {
+                files: {
+                    "src/index_config.html": "src/index.html"
+                },
+                options: {
+                    replacements: [
+                        {
+                            pattern: "<package.version>",
+                            replacement: "<%= pkg.version %>"
+                        }
+                    ]
+                }
             }
         },
         concat: {
@@ -51,7 +65,7 @@ module.exports = function(grunt) {
                 separator: ";"
             },
             build_index: {
-                src: ["src/index.html", "src/templates.html"],
+                src: ["src/index_config.html", "src/templates.html"],
                 dest: "build/index.html"
             },
             polyfill_portaljs: {
