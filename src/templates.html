@@ -9,10 +9,7 @@
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
-                </li>
-                <li>
-                    <a data-toggle="modal" data-target="#aboutModal">Help</a>
+                    <a data-toggle="modal" data-target="#aboutModal">About</a>
                 </li>
                 <li data-action="logout">
                     <a>Logout</a>
@@ -153,7 +150,10 @@
                 </li>
                 <li class="list-group-item">
                     <div class="btn-group btn-group-lg edit-controls" role="group">
-                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                      <button type="button" class="btn btn-default" data-clipboard-target="#descriptionJson" aria-label="Left Align">
+                        <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                      </button>
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits">
                             <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                         </button>
                         <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
@@ -169,6 +169,9 @@
                     <li class="list-group-item">Data</li>
                     <li class="list-group-item">
                         <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default" data-clipboard-target="#dataJson" aria-label="Left Align">
+                              <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                            </button>
                             <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                                 <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                             </button>

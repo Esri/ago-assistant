@@ -6,13 +6,17 @@ import * as info from "./info";
 import * as utils from "./util";
 
 export class Portal {
-    constructor(config) {
+    constructor({
+        portalUrl = "https://www.arcgis.com",
+        username = "",
+        token = "",
+        withCredentials = false
+    } = {}) {
         // Portal properties.
-        config = typeof config !== "undefined" ? config : "{}";
-        this.portalUrl = typeof config.portalUrl !== "undefined" ? config.portalUrl : "https://www.arcgis.com";
-        this.username = typeof config.username !== "undefined" ? config.username : "";
-        this.token = typeof config.token !== "undefined" ? config.token : "";
-        this.withCredentials = typeof config.withCredentials !== "undefined" ? config.withCredentials : false;
+        this.portalUrl = portalUrl;
+        this.username = username;
+        this.token = token;
+        this.withCredentials = withCredentials;
         this.items = [];
         this.services = [];
 

@@ -11,6 +11,7 @@ module.exports = function(grunt) {
         clean: {
             // Clean up build files and source maps.
             src: [
+                "src/index_config.html",
                 "src/js/main_config.js",
                 "src/js/main.min.js",
                 "src/js/main.min.js.map",
@@ -27,7 +28,7 @@ module.exports = function(grunt) {
             all: ["src/js/*.js", "src/js/portal/*.js"]
         },
         "string-replace": {
-            js: {
+            config: {
                 files: {
                     "src/js/main_config.js": "src/js/main.js"
                 },
@@ -43,6 +44,19 @@ module.exports = function(grunt) {
                         }
                     ]
                 }
+            },
+            version: {
+                files: {
+                    "src/index_config.html": "src/index.html"
+                },
+                options: {
+                    replacements: [
+                        {
+                            pattern: "<package.version>",
+                            replacement: "<%= pkg.version %>"
+                        }
+                    ]
+                }
             }
         },
         concat: {
@@ -51,8 +65,12 @@ module.exports = function(grunt) {
                 separator: ";"
             },
             build_index: {
-                src: ["src/index.html", "src/templates.html"],
+                src: ["src/index_config.html", "src/templates.html"],
                 dest: "build/index.html"
+            },
+            polyfill_portaljs: {
+                src: ["node_modules/babel-polyfill/dist/polyfill.min.js", "src/js/lib/portal.min.js"],
+                dest: "src/js/lib/portal.min.js"
             }
         },
         uglify: {
@@ -84,7 +102,7 @@ module.exports = function(grunt) {
         },
         copy: {
             // Copy everything to the build directory for testing.
-            main: {
+            prod: {
                 files: [
                     {expand: true, cwd: "src/", src: ["oauth-callback.html"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["assets/**"], dest: "build/"},
@@ -92,11 +110,24 @@ module.exports = function(grunt) {
                     {expand: true, cwd: "src/", src: ["js/main.min.js"], dest: "build/"},
                     {expand: true, cwd: "src/", src: ["js/lib/**"], dest: "build/"}
                 ]
+            },
+            dev: {
+                files: [
+                    {expand: true, cwd: "src/", src: ["js/main*"], dest: "build/"}
+                ]
             }
         },
         shell: {
             // Use rollup from the command line since grunt-rollup didn't work.
             command: "rollup -c"
+        },
+        "http-server": {
+            dev: {
+                root: "build",
+                host: "0.0.0.0",
+                port: 8080,
+                openBrowser: false
+            }
         }
     });
 
@@ -106,13 +137,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-eslint");
+    grunt.loadNpmTasks("grunt-http-server");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-string-replace");
 
     // Default task.
-    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy", "clean:src"]);
-    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy", "clean:src"]);
+    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy:prod", "clean:src"]);
+    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src", "http-server"]);
     grunt.registerTask("lint", ["eslint"]);
+    grunt.registerTask("serve", ["http-server"]);
     grunt.registerTask("cleanup", ["clean"]);
 
 };
