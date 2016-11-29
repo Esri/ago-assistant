@@ -598,9 +598,13 @@ require([
                 .then(function(data) {
                     webmapData = JSON.stringify(data);
                     var operationalLayers = [];
-                    jquery.each(data.operationalLayers, function(layer) {
-                        if (data.operationalLayers[layer].hasOwnProperty("url")) {
-                            operationalLayers.push(data.operationalLayers[layer]);
+                    jquery.each(data.operationalLayers, function() {
+                        if (this.hasOwnProperty("url")) {
+                            operationalLayers.push(this);
+                        } else if (this.hasOwnProperty("styleUrl")) {
+                            // Support updating Vector Tile Styles.
+                            this.url = this.styleUrl;
+                            operationalLayers.push(this);
                         }
                     });
 
@@ -615,9 +619,13 @@ require([
 
                     var basemapTitle = data.baseMap.title;
                     var basemapLayers = [];
-                    jquery.each(data.baseMap.baseMapLayers, function(layer) {
-                        if (data.baseMap.baseMapLayers[layer].hasOwnProperty("url")) {
-                            basemapLayers.push(data.baseMap.baseMapLayers[layer]);
+                    jquery.each(data.baseMap.baseMapLayers, function() {
+                        if (this.hasOwnProperty("url")) {
+                            basemapLayers.push(this);
+                        } else if (this.hasOwnProperty("styleUrl")) {
+                            // Support updating Vector Tile Styles.
+                            this.url = this.styleUrl;
+                            basemapLayers.push(this);
                         }
                     });
 
