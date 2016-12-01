@@ -104,8 +104,23 @@ body {
     font-size: .8em;
 }
 
+
+.message {
+    display: inline-block;
+    float: right;
+    height: 20px;
+    width: auto;
+}
+
+.messages {
+    display: inline;
+    float: left;
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
 .harvester {
-    display: block;
+    display: inline;
     float: right;
     height: 20px;
     width: 20px;
