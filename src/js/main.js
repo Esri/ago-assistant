@@ -1091,8 +1091,13 @@ require([
                                 srid: 102100
                             }
                         };
+                        /*
+                         * Clear out the layer's indexes.
+                         * This prevents occasional critical  errors on the addToServiceDefinition call.
+                         * The indexes will automatically be created when the new service is published.
+                         */
+                        layer.indexes = [];
                     });
-
                     destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
                         .then(function(response) {
                             if (!("error" in response)) {
