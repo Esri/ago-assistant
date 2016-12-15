@@ -1077,10 +1077,10 @@ require([
 
             // Update the new item's tags to make it easier to trace its origins.
             var newTags = description.tags;
-            newTags.push("source-" + description.id);
-            destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({
-                tags: newTags
-            }));
+            newTags.push("sourceId-" + description.id);
+            newTags.push("copied with ago-assistant");
+            destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({tags: newTags}));
+
             portal.serviceLayers(description.url)
                 .then(function(definition) {
                     var layerCount = definition.layers.length;
