@@ -59,7 +59,7 @@ require([
             portal.portalUrl = portalUrl;
             portal.version()
                 .then(function(data) {
-                    console.log("API v" + data.currentVersion);
+                    console.info("API v" + data.currentVersion);
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery(el).next().addClass("glyphicon-ok");
                 })
@@ -68,7 +68,7 @@ require([
                     portal.withCredentials = true;
                     portal.version()
                         .then(function(data) {
-                            console.log("API v" + data.currentVersion);
+                            console.info("API v" + data.currentVersion);
                             jquery(".alert-danger.alert-dismissable").remove();
                             jquery(el).next().addClass("glyphicon-ok");
                             jquery(checkbox).trigger("click");
@@ -79,7 +79,7 @@ require([
                             portal.version().then(function(data) {
                                 // It worked so keep enterprise auth but turn jsonp back off.
                                 portal.jsonp = false;
-                                console.log("API v" + data.currentVersion);
+                                console.info("API v" + data.currentVersion);
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).next().addClass("glyphicon-ok");
                             }).catch(function() {
