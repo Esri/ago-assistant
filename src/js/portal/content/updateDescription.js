@@ -11,14 +11,15 @@ export function updateDescription(username, id, folder, description) {
      * This is necessary because some of the item descriptions (e.g. tags and extent)
      * are returned as arrays, but the POST operation expects comma separated strings.
      */
-    for (let [key, value] of description) {
+    let payload = JSON.parse(description);
+    for (let key of Object.keys(payload)) {
+        let value = payload[key];
         if (value === null) {
-            description[key] = "";
+            payload[key] = "";
         } else if (value instanceof Array) {
-            description[key] = value.toString();
+            payload[key] = value.toString();
         }
     }
-    let payload = JSON.parse(description);
     payload.token = portal.token;
     payload.f = "json";
     let options = {
