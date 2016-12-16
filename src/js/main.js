@@ -598,9 +598,13 @@ require([
                 .then(function(data) {
                     webmapData = JSON.stringify(data);
                     var operationalLayers = [];
-                    jquery.each(data.operationalLayers, function(layer) {
-                        if (data.operationalLayers[layer].hasOwnProperty("url")) {
-                            operationalLayers.push(data.operationalLayers[layer]);
+                    jquery.each(data.operationalLayers, function() {
+                        if (this.hasOwnProperty("url")) {
+                            operationalLayers.push(this);
+                        } else if (this.hasOwnProperty("styleUrl")) {
+                            // Support updating Vector Tile Styles.
+                            this.url = this.styleUrl;
+                            operationalLayers.push(this);
                         }
                     });
 
@@ -615,9 +619,13 @@ require([
 
                     var basemapTitle = data.baseMap.title;
                     var basemapLayers = [];
-                    jquery.each(data.baseMap.baseMapLayers, function(layer) {
-                        if (data.baseMap.baseMapLayers[layer].hasOwnProperty("url")) {
-                            basemapLayers.push(data.baseMap.baseMapLayers[layer]);
+                    jquery.each(data.baseMap.baseMapLayers, function() {
+                        if (this.hasOwnProperty("url")) {
+                            basemapLayers.push(this);
+                        } else if (this.hasOwnProperty("styleUrl")) {
+                            // Support updating Vector Tile Styles.
+                            this.url = this.styleUrl;
+                            basemapLayers.push(this);
                         }
                     });
 
@@ -752,7 +760,7 @@ require([
     var updateContentUrls = function() {
         var owner;
         var folder;
-        var supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application'], .content[data-type='Scene Service']");
+        var supportedContent = jquery(".content[data-type='Feature Service'], .content[data-type='Map Service'], .content[data-type='Image Service'], .content[data-type='KML'], .content[data-type='WMS'], .content[data-type='Geodata Service'], .content[data-type='Globe Service'], .content[data-type='Geometry Service'], .content[data-type='Geocoding Service'], .content[data-type='Network Analysis Service'], .content[data-type='Geoprocessing Service'], .content[data-type='Web Mapping Application'], .content[data-type='Mobile Application'], .content[data-type='Scene Service'], .content[data-type='Vector Tile Service']");
         var portal = app.portals.sourcePortal;
 
         // Highlight supported content.
