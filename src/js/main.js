@@ -1423,6 +1423,26 @@ require([
 //        }
 //    };
 
+    /**
+     * sortArrayAlpha() sorts an array of objects in-place alphabetically based on a specified object property.
+     * @param (array) array - array of objects to sort
+     * @param (string) key - object property to base the sort on
+     */
+    var sortArrayAlpha = function(array, key) {
+        array.sort(function(a, b) {
+            var titleA = a[key].toUpperCase();
+            var titleB = b[key].toUpperCase();
+            if (titleA < titleB) {
+                return -1;
+            }
+            if (titleA > titleB) {
+                return 1;
+            }
+            // Names are equal.
+            return 0;
+        });
+    };
+
     var listSearchItems = function(portalUrl, results) {
         "use strict";
         clearResults();
@@ -1465,32 +1485,8 @@ require([
             app.stats.activities[seconds] = 1;
         }
 
-        function sortFoldersAlpha(container) {
-            var folders = container.children(".panel").get();
-            folders.sort(function(a, b) {
-                return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
-            });
-
-            jquery.each(folders, function(idx, folder) {
-                container.append(folder);
-            });
-
-            container.prepend(jquery("[data-title='Root']").parent());
-        }
-
-        function sortItemsAlpha(folder) {
-            var folderItems = folder.children("button").get();
-            folderItems.sort(function(a, b) {
-                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
-            });
-
-            jquery.each(folderItems, function(idx, item) {
-                folder.append(item);
-            });
-        }
-
         portal.userContent(portal.username, "/").then(function(content) {
-            // Append the root folder accordion.
+          // Append the root folder accordion.
             var folderData = {
                 title: "Root",
                 id: "",
@@ -1498,6 +1494,9 @@ require([
             };
             var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
             jquery("#itemsArea").append(html);
+
+            // Sort the items alphabetically.
+            sortArrayAlpha(content.items, "title");
 
             // Append the root items to the Root folder.
             jquery.each(content.items, function(item) {
@@ -1513,20 +1512,28 @@ require([
                 storeActivity(content.items[item].modified);
             });
 
-            sortItemsAlpha(jquery("#collapse_"));
-            jquery.each(content.folders, function(folder) {
-                sortFoldersAlpha(jquery("#itemsArea"));
-                portal.userContent(portal.username, content.folders[folder].id)
-                    .then(function(content) {
-                        var folderData = {
-                            title: content.currentFolder.title,
-                            id: content.currentFolder.id,
-                            count: content.items.length
-                        };
+            // Sort the folders alphabetically.
+            sortArrayAlpha(content.folders, "title");
 
-                        // Append an accordion for the folder.
-                        var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                        jquery("#itemsArea").append(html);
+            // Add the other folders.
+            jquery.each(content.folders, function() {
+                var folderData = {
+                    title: this.title,
+                    id: this.id,
+                    count: 0
+                };
+
+                // Append an accordion for the folder.
+                var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                jquery("#itemsArea").append(html);
+                portal.userContent(portal.username, this.id)
+                    .then(function(content) {
+
+                        // Update the folder count.
+                        jquery("#collapse_" + content.currentFolder.id).parent().find("span.badge")[0].innerHTML = content.total;
+
+                        // Sort the items alphabetically.
+                        sortArrayAlpha(content.items, "title");
 
                         // Append the items to the folder.
                         jquery.each(content.items, function(item) {
@@ -1538,17 +1545,14 @@ require([
                                 portal: portal.portalUrl
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
-                            jquery("#collapse_" + content.currentFolder.id).append(html);
+                            jquery("#collapse_" + this.ownerFolder).append(html);
                             storeActivity(content.items[item].modified);
                         });
-
-                        sortItemsAlpha(jquery("#collapse_" + content.currentFolder.id));
                     });
             });
 
             setTimeout(function() {
-                // Wait a second to let all of the items populate before sorting and highlighting them.
-                sortFoldersAlpha(jquery("#itemsArea"));
+                // Wait a second to let all of the items populate before highlighting them.
                 highlightSupportedContent();
             }, 1000);
         });
@@ -1561,47 +1565,30 @@ require([
         cleanUp();
         clearResults();
 
-        function sortFoldersAlpha(container) {
-            var folders = container.children(".panel").get();
-            folders.sort(function(a, b) {
-                return jquery(a).children("div.panel-heading").attr("data-title").toUpperCase().localeCompare(jquery(b).children("div.panel-heading").attr("data-title").toUpperCase());
-            });
-
-            jquery.each(folders, function(idx, folder) {
-                container.append(folder);
-            });
-
-            container.prepend(jquery("[data-title='Root']").parent());
-        }
-
-        function sortItemsAlpha(folder) {
-            var folderItems = folder.children("button").get();
-            folderItems.sort(function(a, b) {
-                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
-            });
-
-            jquery.each(folderItems, function(idx, item) {
-                folder.append(item);
-            });
-        }
-
         portal.userProfile(portal.username).then(function(user) {
+
+            // Sort the groups alphabetically.
+            sortArrayAlpha(user.groups, "title");
+
+            // Add the groups.
             jquery.each(user.groups, function() {
-                sortFoldersAlpha(jquery("#itemsArea"));
                 var group = this;
                 var query = "group:" + this.id;
+                var folderData = {
+                    title: this.title,
+                    id: this.id,
+                    count: 0
+                };
+
+                // Append an accordion for the folder.
+                var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                jquery("#itemsArea").append(html);
 
                 portal.search(query, 100)
                     .then(function(search) {
-                        var folderData = {
-                            title: group.title,
-                            id: group.id,
-                            count: search.results.length
-                        };
 
-                        // Append an accordion for the folder.
-                        var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                        jquery("#itemsArea").append(html);
+                        // Update the folder count.
+                        jquery("#collapse_" + group.id).parent().find("span.badge")[0].innerHTML = search.total;
 
                         // Append the items to the folder.
                         jquery.each(search.results, function() {
@@ -1615,14 +1602,11 @@ require([
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                             jquery("#collapse_" + group.id).append(html);
                         });
-
-                        sortItemsAlpha(jquery("#collapse_" + group.id));
                     });
             });
 
             setTimeout(function() {
-                // Wait a second to let all of the items populate before sorting and highlighting them.
-                sortFoldersAlpha(jquery("#itemsArea"));
+                // Wait a second to let all of the items populate before highlighting them.
                 highlightSupportedContent();
             }, 1000);
         });
@@ -1632,62 +1616,60 @@ require([
         "use strict";
         var portal = app.portals.destinationPortal;
 
-        function sortItemsAlpha(folder) {
-            var folderItems = folder.children("button").get();
-            folderItems.sort(function(a, b) {
-                return jquery(a).text().toUpperCase().localeCompare(jquery(b).text().toUpperCase());
-            });
-
-            jquery.each(folderItems, function(idx, item) {
-                folder.append(item);
-            });
-        }
-
         portal.userContent(portal.username, "/").then(function(content) {
-            var folderData = {
+            var folderData;
+            var html;
+            // Append the root folder accordion.
+            folderData = {
                 title: "Root",
                 id: "",
                 count: content.items.length
             };
-
-            // Append the root folder accordion.
-            var html = mustache.to_html(jquery("#dropFolderTemplate").html(),
+            html = mustache.to_html(
+                jquery("#dropFolderTemplate").html(),
                 folderData
             );
             jquery("#dropArea").append(html);
 
+            // Sort the items alphabetically.
+            sortArrayAlpha(content.items, "title");
+
             // Append the root items to the Root folder.
             jquery.each(content.items, function() {
-                var templateData = {
+                var itemData = {
                     id: this.id,
                     title: this.title,
                     type: this.type,
                     icon: portalSelf.itemInfo(this.type).icon,
                     portal: portal.portalUrl
                 };
-                var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                var html = mustache.to_html(jquery("#contentTemplate").html(), itemData);
                 jquery("#collapseDest_").append(html);
             });
-
-            sortItemsAlpha(jquery("#collapseDest_"));
 
             // Enable the droppable area.
             makeDroppable("");
 
-            // Append the other folders.
-            jquery.each(content.folders, function(folder) {
-                portal.userContent(portal.username, content.folders[folder].id)
-                    .then(function(content) {
-                        var folderData = {
-                            title: content.currentFolder.title,
-                            id: content.currentFolder.id,
-                            count: content.items.length
-                        };
+            // Sort the folders alphabetically.
+            sortArrayAlpha(content.folders, "title");
 
-                        // Append an accordion for the folder.
-                        var template = jquery("#dropFolderTemplate").html();
-                        var html = mustache.to_html(template, folderData);
-                        jquery("#dropArea").append(html);
+            // Append the other folders.
+            jquery.each(content.folders, function() {
+                folderData = {
+                    title: this.title,
+                    id: this.id,
+                    count: 0
+                };
+                html = mustache.to_html(
+                    jquery("#dropFolderTemplate").html(),
+                    folderData
+                );
+                jquery("#dropArea").append(html);
+                portal.userContent(portal.username, this.id)
+                    .then(function(content) {
+
+                        // Sort the items alphabetically.
+                        sortArrayAlpha(content.items, "title");
 
                         // Append the items to the folder.
                         jquery.each(content.items, function() {
@@ -1703,9 +1685,7 @@ require([
                         });
 
                         // Collapse the accordion to avoid cluttering the display.
-                        jquery("#collapseDest_" + content.currentFolder.id)
-                            .collapse("hide");
-                        sortItemsAlpha(jquery("#collapseDest_" + content.currentFolder.id));
+                        jquery("#collapseDest_" + content.currentFolder.id).collapse("hide");
 
                         // Enable the droppable area.
                         makeDroppable(content.currentFolder.id);
