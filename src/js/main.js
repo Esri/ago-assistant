@@ -2005,6 +2005,13 @@ require([
             }
         });
 
+        // Add a listener for the enter key on the portal login form.
+        jquery("#portalLoginForm").keypress(function(e) {
+            if (e.which == 13) {
+                jquery("#portalLoginBtn").focus().click();
+            }
+        });
+
         // Add a listener for the future search bar picker.
         jquery(document).on("click", "#searchMenu li", function(e) {
             var selectedAction = jquery(e.target).parent().attr("data-action");
