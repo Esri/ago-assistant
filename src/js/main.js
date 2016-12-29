@@ -1584,7 +1584,8 @@ require([
                 var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
                 jquery("#itemsArea").append(html);
 
-                portal.search(query, 100)
+                // Get the items in the group (sorted alphabetically).
+                portal.search(query, 100, "title", "asc")
                     .then(function(search) {
 
                         // Update the folder count.
