@@ -6,7 +6,7 @@ import request from "../request";
  * (token) has permission to access.
  * Excluding a token will yield only public items.
  */
-export function search(query, numResults, sortField, sortOrder) {
+export function search(query, numResults, sortField = "", sortOrder = "") {
     let portal = this;
     let url = `${portal.portalUrl}sharing/rest/search`;
     let parameters = {
