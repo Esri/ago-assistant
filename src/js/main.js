@@ -825,42 +825,6 @@ require([
 
         var portal = app.portals.sourcePortal;
 
-        var statsCalendar = function(activities) {
-            require(["d3", "cal-heatmap"], function(d3, CalHeatMap) {
-                // Create a date object for three months ago.
-                var today = new Date();
-                var startDate = new Date();
-                startDate.setMonth(today.getMonth() - 2);
-                if (today.getMonth() < 2) {
-                    startDate.setYear(today.getFullYear() - 1);
-                }
-
-                var cal = new CalHeatMap();
-                cal.init({
-                    itemSelector: "#statsCalendar",
-                    domain: "month",
-                    subDomain: "day",
-                    data: activities,
-                    start: startDate,
-                    cellSize: 10,
-                    domainGutter: 10,
-                    range: 3,
-                    legend: [1, 2, 5, 10],
-                    displayLegend: false,
-                    tooltip: true,
-                    itemNamespace: "cal",
-                    previousSelector: "#calPrev",
-                    nextSelector: "#calNext",
-                    domainLabelFormat: "%b '%y",
-                    subDomainTitleFormat: {
-                        empty: "No activity on {date}",
-                        filled: "Saved {count} {name} {connector} {date}"
-                    },
-                    domainDynamicDimension: false
-                });
-            });
-        };
-
         portal.userProfile(portal.username)
             .then(function(user) {
 
@@ -884,7 +848,6 @@ require([
 
                 var html = mustache.to_html(template, templateData);
                 jquery("body").append(html);
-                statsCalendar(app.stats.activities);
 
                 jquery("#statsModal").modal("show");
 
@@ -908,17 +871,6 @@ require([
                             searchResults: results.results
                         }));
                     });
-
-                jquery("#statsModal").on("shown.bs.modal", function() {
-                    // Apply CSS to style the calendar arrows.
-                    var calHeight = jquery(".calContainer").height();
-
-                    // Center the calendar.
-                    jquery(".cal-heatmap-container").css("margin", "auto");
-
-                    // Adjust the arrows.
-                    jquery(".calArrow").css("margin-top", (calHeight - 20) + "px");
-                });
 
                 jquery("#statsModal").on("hidden.bs.modal", function() {
                     // Destroy the stats modal so it can be properly rendered next time.
