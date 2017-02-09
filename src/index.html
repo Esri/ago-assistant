@@ -75,10 +75,12 @@
             <div class="jumbotron">
                 <h2>ArcGIS Online Assistant</h2>
                 <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
-                <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
-                <p><a class="portal-signin" data-toggle="modal">
-                    Click here to log in to a Portal instance
-                </a></p>
+                <div class="loginButtons">
+                    <p>
+                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Log in to ArcGIS Online</button>
+                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Log in to Portal for ArcGIS</button>
+                    </p>
+                </div>
             </div>
 
             <div class="row marketing">

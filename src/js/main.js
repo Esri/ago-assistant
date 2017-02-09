@@ -1698,11 +1698,10 @@ require([
     // Do stuff when the DOM is ready.
     jquery(document).ready(function() {
 
-        // Enable the login button.
+        // Enable the login buttons.
         // Doing it here ensures all required libraries have loaded.
-        jquery(".jumbotron > p > [data-action='login']")
+        jquery(".loginButtons > p > button")
             .removeAttr("disabled");
-        jquery("a.portal-signin").attr("href", "#portalLoginModal");
 
         // Restore previous ArcGIS Online login if it was deleted
         // during interrupted destination login.
@@ -1899,7 +1898,7 @@ require([
         });
 
         // Login.
-        jquery("[data-action='login']").click(function() {
+        jquery("[data-action='login-agol']").click(function() {
             esriId.getCredential(appInfo.portalUrl, {
                 oAuthPopupConfirmation: false
             })
