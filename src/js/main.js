@@ -1000,12 +1000,6 @@ require([
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
         portal.itemData(id).then(function(data) {
-            /**
-             * Post it to the destination using always
-             * to ensure that it copies Web Mapping Applications
-             * which don't have a data component and therefore
-             * generate a failed response.
-             */
             destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
                 .then(function(response) {
                     var html;
