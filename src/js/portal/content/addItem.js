@@ -20,12 +20,17 @@ export function addItem(username, folder, description, data, thumbnailUrl) {
     }
     let payload = {
         item: description.title,
-        text: JSON.stringify(data), // Stringify the object so it can be properly sent.
         overwrite: false, // Prevent users from accidentally overwriting items.
         thumbnailurl: thumbnailUrl,
         token: portal.token,
         f: "json"
     };
+    // Handle "dataless" items like Map Services.
+    if (typeof data === "object" && data !== null) {
+        payload.text = JSON.stringify(data); // Stringify the object so it can be properly sent.
+    } else {
+        payload.text = "";
+    }
     // Merge the description items into the payload object.
     Object.assign(payload, description);
     let options = {

@@ -10,7 +10,6 @@
         <link rel="stylesheet" href="js/lib/bootstrap/css/bootstrap-3.3.4.min.css"/>
         <link rel="stylesheet" href="css/styles.css"/>
         <link rel="stylesheet" href="js/lib/nprogress.css" />
-        <link rel="stylesheet" href="js/lib/cal-heatmap-3.5.0.css" />
         <link rel="stylesheet" href="js/lib/tomorrow.min.css">
         <link rel="stylesheet" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
         <link rel="shortcut icon" href="assets/images/favicon.ico">
@@ -76,10 +75,12 @@
             <div class="jumbotron">
                 <h2>ArcGIS Online Assistant</h2>
                 <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
-                <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
-                <p><a class="portal-signin" data-toggle="modal">
-                    Click here to log in to a Portal instance
-                </a></p>
+                <div class="loginButtons">
+                    <p>
+                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Log in to ArcGIS Online</button>
+                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Log in to Portal for ArcGIS</button>
+                    </p>
+                </div>
             </div>
 
             <div class="row marketing">
@@ -319,9 +320,7 @@
                     {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.4.min"},
                     {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
                     {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
-                    {name: "d3", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "d3-3.4.13.min"},
                     {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
-                    {name: "cal-heatmap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "cal-heatmap-3.5.0.min"},
                     {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
                     {name: "clipboard", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "clipboard-1.5.15.min"},
                     {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "portal.min"}
