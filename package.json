@@ -1,7 +1,7 @@
 {
   "name": "ago-assistant",
   "description": "ArcGIS Online Assistant: A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "author": "Evan Caldwell",
   "contributors": [
     {
