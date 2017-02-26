@@ -349,7 +349,9 @@ require([
                 editButton.tooltip();
                 jsonBackup = codeBlock.text();
                 codeBlock.attr("contentEditable", "true");
-                codeBlock.bind("input", function() {
+                // Check for IE ('Trident') which does not fire an `input` event in anything other than input.
+                var eventType = /Trident/.test(navigator.userAgent) ? "paste cut keyup" : "input";
+                codeBlock.bind(eventType, function() {
                     // Validate the JSON as it is edited.
                     jsonValid = validateJson(codeBlock.text());
                     saveButton.tooltip("destroy");
