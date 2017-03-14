@@ -121,12 +121,28 @@ module.exports = function(grunt) {
             // Use rollup from the command line since grunt-rollup didn't work.
             command: "rollup -c"
         },
-        "http-server": {
-            dev: {
-                root: "build",
-                host: "0.0.0.0",
-                port: 8080,
-                openBrowser: false
+        connect: {
+            server: {
+                options: {
+                    port: 8080,
+                    livereload: true,
+                    open: true,
+                    base: ['build']
+                }
+            }
+          },
+        "watch": {
+            options: {
+                livereload: true
+            },
+            src: {
+                files: [ 
+                'Gruntfile.js',
+                 'src/**/*',
+                  '!src/**/*.min.js',
+                  '!src/**/*_config*',
+                  '!src/**/*.map'],
+                tasks: ['build-dev']
             }
         }
     });
@@ -136,16 +152,19 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-contrib-watch");
+    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks("grunt-eslint");
-    grunt.loadNpmTasks("grunt-http-server");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-string-replace");
 
+
     // Default task.
     grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy:prod", "clean:src"]);
-    grunt.registerTask("dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src", "http-server"]);
+    grunt.registerTask("build-dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src"]);
+    grunt.registerTask("dev", ["build-dev", "connect", "watch"]);
     grunt.registerTask("lint", ["eslint"]);
-    grunt.registerTask("serve", ["http-server"]);
+    grunt.registerTask("serve", ["connect"]);
     grunt.registerTask("cleanup", ["clean"]);
 
 };
