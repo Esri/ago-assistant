@@ -9,10 +9,7 @@
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
-                </li>
-                <li>
-                    <a data-toggle="modal" data-target="#aboutModal">Help</a>
+                    <a data-toggle="modal" data-target="#aboutModal">About</a>
                 </li>
                 <li data-action="logout">
                     <a>Logout</a>
@@ -72,6 +69,7 @@
                             <li id="searchContent" data-url={{ portal }} class="active"><a>Search My Content</a></li>
                             <li class="divider"></li>
                             <li data-action="viewMyContent"><a>View My Content</a></li>
+                            <li data-action="viewMyGroups"><a>View My Groups</a></li>
                         </ul>
                     </div>
                 </div>
@@ -148,11 +146,14 @@
         <div class="panel-body" id="itemDescription">
             <ul class="list-group">
                 <li class="list-group-item">Description
-                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (Link to Item Details)</a>
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (View Item Details)</a>
                 </li>
                 <li class="list-group-item">
                     <div class="btn-group btn-group-lg edit-controls" role="group">
-                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                      <button type="button" class="btn btn-default" data-clipboard-target="#descriptionJson" aria-label="Left Align">
+                        <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                      </button>
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits">
                             <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                         </button>
                         <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
@@ -168,6 +169,9 @@
                     <li class="list-group-item">Data</li>
                     <li class="list-group-item">
                         <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default" data-clipboard-target="#dataJson" aria-label="Left Align">
+                              <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                            </button>
                             <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                                 <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                             </button>
@@ -204,17 +208,6 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
-                            </div>
-                            <div class="col-md-9 calContainer">
-                                <div class="col-md-1 calArrow" style="height: auto"><i id="calPrev" class="glyphicon glyphicon-backward"></i></div>
-                                <div class="col-md-10" id="statsCalendar" style="width: auto">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <h4 class="text-center muted">Recent Activity</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
                             </div>
                         </div>
                         <br>
@@ -260,6 +253,27 @@
         </div>
         <div class="panel-body" id="itemDescription>
             <form role="form">
+                <h5>Quick Text Find/Replace</h5>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="originalTextUserInput" list="origServiceUrlList" class="form-control" placeholder="Find">
+                            <datalist id="origServiceUrlList">
+                                <!--items are added dynamically based on a calculated unique root URL list-->
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="newTextUserInput" placeholder="Replace">
+                        </div>
+                        <div class="form-group">
+                            <button id="bulkUpdateWebmapServiceUrlsBtn" class="btn btn-primary" style="float: right">Replace</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="stringMatchesFoundText" class="text-muted"></span>
+                    </div>
+                </form>
+                </br>
                 <div class="form-group">
                     <h4>Operational Layers</h4>
                     {{ #operationalLayers }}

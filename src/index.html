@@ -10,7 +10,6 @@
         <link rel="stylesheet" href="js/lib/bootstrap/css/bootstrap-3.3.4.min.css"/>
         <link rel="stylesheet" href="css/styles.css"/>
         <link rel="stylesheet" href="js/lib/nprogress.css" />
-        <link rel="stylesheet" href="js/lib/cal-heatmap-3.5.0.css" />
         <link rel="stylesheet" href="js/lib/tomorrow.min.css">
         <link rel="stylesheet" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
         <link rel="shortcut icon" href="assets/images/favicon.ico">
@@ -76,10 +75,12 @@
             <div class="jumbotron">
                 <h2>ArcGIS Online Assistant</h2>
                 <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
-                <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
-                <p><a class="portal-signin" data-toggle="modal">
-                    Click here to log in to a Portal instance
-                </a></p>
+                <div class="loginButtons">
+                    <p>
+                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Log in to ArcGIS Online</button>
+                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Log in to Portal for ArcGIS</button>
+                    </p>
+                </div>
             </div>
 
             <div class="row marketing">
@@ -105,34 +106,15 @@
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                             <h3 id="copyModalLabel">About this application</h3>
+                            <p class="text-muted">v<package.version> <a href="https://github.com/esri/ago-assistant/releases" target="_blank">changelog</a></p>
                         </div>
                         <div class="modal-body">
-                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>The key features are:
-                            <ul>
-                                <li>
-                                    Copy content between accounts (even on different organizations or Portals)
-                                    <ul>
-                                        <li><em>Files cannot be copied at this time.</em></li>
-                                    </ul>
-                                </li>
-                                <li>Inspect content</li>
-                                <li>Update the URLs for services in a Web Map</li>
-                                <li>Update the URL for registered Web Apps and Map Services</li>
-                                <li>View user stats</li>
-                            </ul>
-                            <p>The code is available on GitHub. Please contribute to this project by submitting<a href="https://github.com/esri/ago-assistant/issues" target="_blank"> ideas, feeback, issues,</a> or <a href="https://github.com/esri/ago-assistant" target="_blank">code</a>.</p>
+                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>
+                            <p>The code is available on GitHub. Please contribute to this project by submitting<a href="https://github.com/esri/ago-assistant/issues" target="_blank"> ideas, feedback, issues,</a> or <a href="https://github.com/esri/ago-assistant" target="_blank">code</a>.</p>
                         </div>
                         <div class="modal-footer">
                             <button class="btn" data-dismiss="modal">Close</button>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Changelog modal -->
-            <div id="changelogModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="changelogModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <!-- Changelog content -->
                     </div>
                 </div>
             </div>
@@ -304,7 +286,7 @@
                                 </div>
                             </form>
                             <div class="alert alert-info">
-                                <p><strong>Simple copy</strong> creates a reference to the original service 
+                                <p><strong>Simple copy</strong> creates a reference to the original service
                                     in the destination account.</p>
                                 <p><strong>Full copy (EXPERIMENTAL)</strong> replicates the original service in the
                                     destination account and harvests all of its associated data.</p>
@@ -317,13 +299,13 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Item containers -->
             <div id="itemsContainer" class="row">
-                <div id="itemsArea" class="col-md-5 itemArea">
+                <div id="itemsArea" class="col-xs-5 itemArea">
                     <!-- content goes here -->
                 </div>
-                <div id="dropArea" class="col-md-7 itemArea">
+                <div id="dropArea" class="col-xs-7 itemArea">
                     <!-- dropped items will go here -->
                 </div>
             </div>
@@ -338,16 +320,15 @@
                     {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.4.min"},
                     {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
                     {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
-                    {name: "d3", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "d3-3.4.13.min"},
                     {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
-                    {name: "cal-heatmap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "cal-heatmap-3.5.0.min"},
                     {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
-                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal"}
+                    {name: "clipboard", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "clipboard-1.5.15.min"},
+                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "portal.min"}
                 ],
             };
         </script>
         <script src="js/lib/arcgis/dojo/dojo.js"></script>
-        <script src="js/main.js"></script>
+        <script src="js/main.min.js"></script>
 
     </body>
 
