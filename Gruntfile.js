@@ -137,8 +137,9 @@ module.exports = function(grunt) {
             },
             src: {
                 files: [ 
-                'Gruntfile.js',
-                 'src/**/*',
+                  'Gruntfile.js',
+                  'config.json',
+                  'src/**/*',
                   '!src/**/*.min.js',
                   '!src/**/*_config*',
                   '!src/**/*.map'],
