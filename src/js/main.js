@@ -41,9 +41,9 @@ require([
   };
 
   /**
-     * Check the url for errors (e.g. no trailing slash)
-     * and update it before sending.
-     */
+   * Check the url for errors (e.g. no trailing slash)
+   * and update it before sending.
+   */
   var validateUrl = function(el, portal) {
     "use strict";
     var inputUrl = jquery.trim(jquery(el).val());
@@ -274,9 +274,9 @@ require([
     }
 
     /**
-         * Prevent trying to pass a portal token when
-         * searching ArcGIS Online.
-         */
+     * Prevent trying to pass a portal token when
+     * searching ArcGIS Online.
+     */
     if (
       portalUrl === "https://www.arcgis.com/" &&
       portalUrl !== app.portals.sourcePortal.portalUrl
@@ -479,9 +479,9 @@ require([
       var itemData;
 
       /**
-             * Prevent trying to pass a portal token when
-             * inspecting content from an ArcGIS Online search.
-             */
+       * Prevent trying to pass a portal token when
+       * inspecting content from an ArcGIS Online search.
+       */
       if (
         server === "https://www.arcgis.com/" &&
         server !== app.portals.sourcePortal.portalUrl
@@ -531,9 +531,9 @@ require([
           // Add the HTML container with the JSON.
           jquery("#dropArea").html(html);
           /**
-                             * Color code the JSON to make it easier
-                             * to read (uses highlight.js).
-                             */
+           * Color code the JSON to make it easier
+           * to read (uses highlight.js).
+           */
           jquery("pre").each(function(i, e) {
             hljs.highlightBlock(e);
           });
@@ -718,7 +718,7 @@ require([
           // port designators (e.g. switching from 6080 endpoints to the web adaptor).
           if (origTextUserInput.length > 0) {
             var webmapServices = jquery("[data-original]");
-            var foundMatches = 0; // eslint-disable-line no-unused-vars
+            var foundMatches = 0;
             jquery.each(webmapServices, function(service) {
               var originalUrl = jquery(webmapServices[service]).val();
               if (originalUrl.indexOf(origTextUserInput) > -1) {
@@ -984,17 +984,17 @@ require([
   };
 
   /**
-     * simpleCopy() Copies a given item ID.
-     * @id {String} id of the source item
-     * @folder {String} id of the destination folder
-     */
+   * simpleCopy() Copies a given item ID.
+   * @id {String} id of the source item
+   * @folder {String} id of the destination folder
+   */
   var simpleCopy = function(id, folder) {
     var portalUrl = jquery("#" + id).attr("data-portal");
     var portal;
     /**
-         * Prevent trying to pass a portal token when
-         * copying content from ArcGIS Online.
-         */
+     * Prevent trying to pass a portal token when
+     * copying content from ArcGIS Online.
+     */
     if (
       portalUrl === "https://www.arcgis.com/" &&
       portalUrl !== app.portals.sourcePortal.portalUrl
@@ -1140,8 +1140,6 @@ require([
           var layerCount = definition.layers.length;
           var layerJobs = {};
           var layerSummary = {};
-          // var totalRecords = 0; // Keep track of the total records for the entire service.
-          // var totalAdded = 0; // Keep track of the total successfully added records.
           var reportResult = function(layerId) {
             // Check if the current layer's requests have all finished.
             // Using 'attempted' handles both successes and failures.
@@ -1207,11 +1205,11 @@ require([
             };
 
             /*
-                        * Force in the spatial reference.
-                        * Don't know why this is necessary, but if you
-                        * don't then any geometries not in 102100 end up
-                        * on Null Island.
-                        */
+             * Force in the spatial reference.
+             * Don't know why this is necessary, but if you
+             * don't then any geometries not in 102100 end up
+             * on Null Island.
+             */
             layer.adminLayerInfo = {
               geometryField: {
                 name: "Shape",
@@ -1220,10 +1218,10 @@ require([
             };
 
             /*
-                         * Clear out the layer's indexes.
-                         * This prevents occasional critical  errors on the addToServiceDefinition call.
-                         * The indexes will automatically be created when the new service is published.
-                         */
+             * Clear out the layer's indexes.
+             * This prevents occasional critical  errors on the addToServiceDefinition call.
+             * The indexes will automatically be created when the new service is published.
+             */
             layer.indexes = [];
           });
 
@@ -1246,7 +1244,7 @@ require([
                       var count = definition.layers[layerId].maxRecordCount < 1
                         ? 1000
                         : definition.layers[layerId].maxRecordCount;
-                      var x = 1; // eslint-disable-line no-unused-vars
+                      var x = 1;
                       while (offset <= records.count) {
                         x++;
                         messages.text("harvesting data");
@@ -1257,8 +1255,6 @@ require([
                             offset,
                             count
                           )
-                          // the linter doesn't like anonymous callback functions within loops
-                          /* eslint-disable no-loop-func */
                           .then(function(serviceData) {
                             messages.text(
                               "adding features for " + layerCount + " layers"
@@ -1289,7 +1285,6 @@ require([
                             console.info("Errors creating service " + name);
                             console.info("Failed to retrieve all records.");
                           });
-                        /* eslint-enable no-loop-func */
                         offset += count;
                       }
                     });
@@ -1325,17 +1320,17 @@ require([
     var portal;
 
     /**
-         * copyItem() Copies a given item ID.
-         * @id {String} ID of the source item
-         * @folder {String} id of the destination folder
-         */
+     * copyItem() Copies a given item ID.
+     * @id {String} ID of the source item
+     * @folder {String} id of the destination folder
+     */
     var copyItem = function(id, folder) {
       var type = jquery("#" + id).attr("data-type");
       var portalUrl = jquery("#" + id).attr("data-portal");
       /**
-             * Prevent trying to pass a portal token when
-             * copying content from ArcGIS Online.
-             */
+       * Prevent trying to pass a portal token when
+       * copying content from ArcGIS Online.
+       */
       if (
         portalUrl === "https://www.arcgis.com/" &&
         portalUrl !== app.portals.sourcePortal.portalUrl
@@ -1403,9 +1398,9 @@ require([
       }
     };
     /**
-         * Move the content DOM element from the source
-         * to the destination container on the page.
-         */
+     * Move the content DOM element from the source
+     * to the destination container on the page.
+     */
     var moveItem = function(item, destination) {
       "use strict";
       var itemId = jquery(item).attr("data-id");
@@ -1509,14 +1504,13 @@ require([
   };
 
   /**
-     * isSupported() returns true if the content type is supported
-     * @type (String) type
-     * @return (Boolean)
-     * List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
-     */
+   * isSupported() returns true if the content type is supported
+   * @type (String) type
+   * @return (Boolean)
+   * List of types available here: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r3000000ms000000
+   */
   var isSupported = function(type) {
     // Check if the content type is supported.
-    //
     var supportedTypes = [
       "Web Map",
       "Web Scene",
@@ -1546,47 +1540,11 @@ require([
     }
   };
 
-  //    var isTypeText = function(type) {
-  //        var textTypes = [
-  //            "Web Map",
-  //            "Feature Collection",
-  //            "Feature Collection Template",
-  //            "Operation View",
-  //            "Symbol Set",
-  //            "Color Set",
-  //            "Document Link"
-  //        ];
-  //        if (jquery.inArray(type, textTypes) > -1) {
-  //            return true;
-  //        }
-  //    };
-  //
-  //    var isTypeUrl = function(type) {
-  //        var urlTypes = [
-  //            "Feature Service",
-  //            "Map Service",
-  //            "Image Service",
-  //            "KML",
-  //            "WMS",
-  //            "Geodata Service",
-  //            "Globe Service",
-  //            "Geometry Service",
-  //            "Geocoding Service",
-  //            "Network Analysis Service",
-  //            "Geoprocessing Service",
-  //            "Web Mapping Application",
-  //            "Mobile Application"
-  //        ];
-  //        if (jquery.inArray(type, urlTypes) > -1) {
-  //            return true;
-  //        }
-  //    };
-
   /**
-     * sortArrayAlpha() sorts an array of objects in-place alphabetically based on a specified object property.
-     * @param (array) array - array of objects to sort
-     * @param (string) key - object property to base the sort on
-     */
+   * sortArrayAlpha() sorts an array of objects in-place alphabetically based on a specified object property.
+   * @param (array) array - array of objects to sort
+   * @param (string) key - object property to base the sort on
+   */
   var sortArrayAlpha = function(array, key) {
     array.sort(function(a, b) {
       var titleA = a[key].toUpperCase();
@@ -1894,9 +1852,9 @@ require([
     esriId.registerOAuthInfos([appInfo]);
     portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
       /*
-             * Build the sharingUrl. This is necessary because esriId automatically
-             * appends /sharing to the portalUrl when it contains arcgis.com.
-             */
+       * Build the sharingUrl. This is necessary because esriId automatically
+       * appends /sharing to the portalUrl when it contains arcgis.com.
+       */
       var sharingUrl = portalUrl;
       if (sharingUrl.indexOf("arcgis.com") === -1) {
         sharingUrl += "sharing/";
@@ -2143,9 +2101,9 @@ require([
     });
 
     /**
-         * Use the existing credentials when "My Account"
-         * is selected as the copy target.
-         */
+     * Use the existing credentials when "My Account"
+     * is selected as the copy target.
+     */
     jquery("[data-action='copyMyAccount']").click(function() {
       app.portals.destinationPortal = app.portals.sourcePortal;
       jquery("#copyModal").modal("hide");
@@ -2156,9 +2114,9 @@ require([
     });
 
     /**
-         * Show other destination form when "Another Account"
-         * is selected as the copy target.
-         */
+     * Show other destination form when "Another Account"
+     * is selected as the copy target.
+     */
     jquery("[data-action='copyOtherAccount']").click(function() {
       jquery("#destinationChoice").css("display", "none");
       jquery("#destinationForm").css("display", "block");
