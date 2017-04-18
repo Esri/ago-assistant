@@ -7,6 +7,7 @@ module.exports = function(grunt) {
         // Metadata.
         pkg: grunt.file.readJSON("package.json"),
         cfg: grunt.file.readJSON("config.json"),
+        node_modules: ".\\node_modules\\.bin\\",
         // Task configuration.
         clean: {
             // Clean up build files and source maps.
@@ -19,13 +20,6 @@ module.exports = function(grunt) {
                 "src/js/lib/portal.min.js.map"
             ],
             build: ["build/**"]
-        },
-        eslint: {
-            // Validate the javascripts.
-            options: {
-                useEslintrc: true
-            },
-            all: ["src/js/*.js", "src/js/portal/*.js"]
         },
         "string-replace": {
             config: {
@@ -118,8 +112,8 @@ module.exports = function(grunt) {
             }
         },
         shell: {
-            // Use rollup from the command line since grunt-rollup didn't work.
-            command: "rollup -c"
+            prettier: "<%= node_modules %>prettier --write Gruntfile.js rollup.config.js src/js/main.js src/js/portal/**/*.js",
+            rollup: "<%= node_modules %>rollup -c"
         },
         connect: {
             server: {
@@ -136,7 +130,7 @@ module.exports = function(grunt) {
                 livereload: true
             },
             src: {
-                files: [ 
+                files: [
                   'Gruntfile.js',
                   'config.json',
                   'src/**/*',
@@ -156,17 +150,17 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks("grunt-eslint");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-string-replace");
 
 
     // Default task.
-    grunt.registerTask("default", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:prod", "copy:prod", "clean:src"]);
-    grunt.registerTask("build-dev", ["clean", "string-replace", "eslint", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src"]);
+    grunt.registerTask("default", ["clean", "string-replace", "shell", "concat", "uglify:prod", "copy:prod", "clean:src"]);
+    grunt.registerTask("build-dev", ["clean", "string-replace", "shell", "concat", "uglify:dev", "copy:prod", "copy:dev", "clean:src"]);
     grunt.registerTask("dev", ["build-dev", "connect", "watch"]);
-    grunt.registerTask("lint", ["eslint"]);
     grunt.registerTask("serve", ["connect"]);
     grunt.registerTask("cleanup", ["clean"]);
+    grunt.registerTask("prettier", ["shell:prettier"]);
+    grunt.registerTask("rollup", ["shell:rollup"]);
 
 };
