@@ -142,7 +142,8 @@ module.exports = function(grunt) {
                   'src/**/*',
                   '!src/**/*.min.js',
                   '!src/**/*_config*',
-                  '!src/**/*.map'],
+                  '!src/**/*.map'
+                ],
                 tasks: ['build-dev']
             }
         }
