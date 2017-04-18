@@ -7,11 +7,11 @@ import { updateUrl } from "./updateUrl";
 import { updateWebmapData } from "./updateWebmapData";
 
 export {
-    addItem,
-    itemData,
-    itemDescription,
-    updateData,
-    updateDescription,
-    updateUrl,
-    updateWebmapData
+  addItem,
+  itemData,
+  itemDescription,
+  updateData,
+  updateDescription,
+  updateUrl,
+  updateWebmapData
 };

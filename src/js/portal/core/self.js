@@ -5,14 +5,14 @@ import request from "../request";
  * anonymous or logged in.
  */
 export function self() {
-    let portal = this;
-    let url =  `${portal.portalUrl}sharing/rest/portals/self`;
-    let parameters = {
-        token: portal.token,
-        f: "json"
-    };
-    let options = {
-        withCredentials: portal.withCredentials
-    };
-    return request.get(url, parameters, options);
+  let portal = this;
+  let url = `${portal.portalUrl}sharing/rest/portals/self`;
+  let parameters = {
+    token: portal.token,
+    f: "json"
+  };
+  let options = {
+    withCredentials: portal.withCredentials
+  };
+  return request.get(url, parameters, options);
 }

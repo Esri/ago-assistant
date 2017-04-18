@@ -9,13 +9,13 @@ import { serviceDescription } from "./serviceDescription";
 import { serviceLayers } from "./serviceLayers";
 
 export {
-    addFeatures,
-    addToServiceDefinition,
-    cacheItem,
-    checkServiceName,
-    createService,
-    harvestRecords,
-    layerRecordCount,
-    serviceDescription,
-    serviceLayers
+  addFeatures,
+  addToServiceDefinition,
+  cacheItem,
+  checkServiceName,
+  createService,
+  harvestRecords,
+  layerRecordCount,
+  serviceDescription,
+  serviceLayers
 };
