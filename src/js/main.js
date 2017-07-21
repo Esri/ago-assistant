@@ -203,7 +203,7 @@ require([
                             app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
                         } else {
                             // ArcGIS Online personal account.
-                            app.portals.destinationPortal.portalUrl = "https://www.arcgis.com/";
+                            app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
                         }
 
                         jquery("#copyModal").modal("hide");
