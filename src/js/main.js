@@ -1430,8 +1430,14 @@ require([
      */
     var sortArrayAlpha = function(array, key) {
         array.sort(function(a, b) {
-            var titleA = a[key].toUpperCase();
-            var titleB = b[key].toUpperCase();
+            var titleA = null;
+            var titleB = null;
+            if (a[key])  {
+                titleA = a[key].toUpperCase();
+            }
+            if (b[key]) {
+                titleB = b[key].toUpperCase();
+            }
             if (titleA < titleB) {
                 return -1;
             }
