@@ -721,6 +721,21 @@ require([
                                 .attr("data-original");
                             var newUrl = jquery(webmapServices[service]).val();
 
+                            var webmapObject = JSON.parse(webmapData);
+                            for (var operationalIndex in webmapObject.operationalLayers) {
+                              if (webmapObject.operationalLayers[operationalIndex].url == originalUrl) {
+                                delete webmapObject.operationalLayers[operationalIndex].itemId;
+                              }
+                            }
+
+                            for (var basemapIndex in webmapObject.baseMap.basemapLayers) {
+                              if (webmapObject.baseMap.basemapLayers[basemapIndex].url == originalUrl) {
+                                delete webmapObject.baseMap.basemapLayers[basemapIndex].itemId;
+                              }
+                            }
+
+                            webmapData = JSON.stringify(webmapObject);
+
                             // Find and replace each URL.
                             webmapData = webmapData.replace("\"" + originalUrl + "\"", "\"" + newUrl + "\"");
                             jquery(webmapServices[service]).val(newUrl);
