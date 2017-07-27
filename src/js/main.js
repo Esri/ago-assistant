@@ -25,9 +25,10 @@ require([
     // *** ArcGIS OAuth ***
     var appInfo = new arcgisOAuthInfo({
         appId: "<config.appId>", // Set this in config.json.
-        popup: true,
+        popup: false,
         portalUrl: "<config.portalUrl>" // Set this in config.json.
     });
+
 
     // Some app level variables.
     var app = {
@@ -40,7 +41,7 @@ require([
             })
         }
     };
-
+    window.app = app;
     /**
      * Check the url for errors (e.g. no trailing slash)
      * and update it before sending.
@@ -148,38 +149,87 @@ require([
     var loginPortal = function() {
         var username = jquery("#portalUsername").val();
         var password = jquery("#portalPassword").val();
-        jquery("#portalLoginBtn").button("loading");
-        app.portals.sourcePortal.generateToken(username, password)
-            .then(function(response) {
-                if (response.token) {
-                    app.portals.sourcePortal.token = response.token;
-                    jquery("#portalLoginModal").modal("hide");
-                    jquery("#splashContainer").css("display", "none");
-                    jquery("#itemsContainer").css("display", "block");
-                    startSession();
-                } else if (response.error.code === 400) {
-                    var html = jquery("#loginErrorTemplate").html();
-                    jquery(".alert-danger.alert-dismissable").remove();
-                    jquery("#portalLoginForm").before(html);
-                }
-                jquery("#portalLoginBtn").button("reset");
-            })
-            .catch(function() {
-                jquery("#portalLoginBtn").button("reset");
+        var appid = jquery("#portalAppId").val();
+        var onSuccess = function(response) {
+            if (response.token) {
+                app.portals.sourcePortal.token = response.token;
+                jquery("#portalLoginModal").modal("hide");
+                jquery("#splashContainer").css("display", "none");
+                jquery("#itemsContainer").css("display", "block");
+                startSession();
+            } else if (response.error.code === 400) {
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
-            })
-            .then(function() {
-                jquery("#portalLoginBtn").button("reset");
+            }
+            jquery("#portalLoginBtn").button("reset");
+        };
+        var onError = function() {
+            jquery("#portalLoginBtn").button("reset");
+            var html = jquery("#loginErrorTemplate").html();
+            jquery(".alert-danger.alert-dismissable").remove();
+            jquery("#portalLoginForm").before(html);
+        };
+        var onThen = function() {
+            jquery("#portalLoginBtn").button("reset");
+        };
+        jquery("#portalLoginBtn").button("loading");
+        if (appid) {
+            console.log("using appid");
+            var pInfo = new arcgisOAuthInfo({
+                appId: appid,
+                popup: false,
+                portalUrl: app.portals.sourcePortal.portalUrl
             });
+            esriId.registerOAuthInfos([pInfo]);
+            esriId.checkSignInStatus(pInfo.portalUrl + "/sharing")
+                .then(
+                    function(user) {
+                        app.portals.sourcePortal.token = user.token;
+                        app.portals.sourcePortal.username = user.userId;
+                        jquery("#portalLoginModal").modal("hide");
+                        jquery("#splashContainer").css("display", "none");
+                        jquery("#itemsContainer").css("display", "block");
+                        startSession();
+                    },
+                    function(e) {
+                        console.log("not logged in", e);
+                        localStorage.setItem("sourcePortalUrl", app.portals.sourcePortal.portalUrl);
+                        localStorage.setItem("sourcePortalAppId", appid);
+                        esriId.getCredential(pInfo.portalUrl + "/sharing", { oAuthPopupConfirmation: false })
+                            .then(
+                                function() {
+                                    esriId.checkSignInStatus(pInfo.portalUrl + "/sharing")
+                                        .then(
+                                            function(user) {
+                                                app.portals.sourcePortal.token = user.token;
+                                                app.portals.sourcePortal.username = user.userId;
+                                                jquery("#portalLoginModal").modal("hide");
+                                                jquery("#splashContainer").css("display", "none");
+                                                jquery("#itemsContainer").css("display", "block");
+                                                startSession();
+                                            }
+                                        );
+                                },
+                                function(e) {
+                                    console.log("error getting credentials", e);
+                                }
+                            );
+                    }
+                );
+        } else {
+            app.portals.sourcePortal.generateToken(username, password)
+                .then(onSuccess)
+                .catch(onError)
+                .then(onThen);
+        }
     };
 
     var loginDestination = function() {
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
         var portalUrl = jquery("#destinationUrl").val();
-
+        var appid = jquery("#destinationAppId").val();
         if (!app.portals.destinationPortal) {
             app.portals.destinationPortal = new portalSelf.Portal({
                 portalUrl: portalUrl
@@ -188,6 +238,129 @@ require([
 
         jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
+
+        if (appid) {
+            console.log("using appid");
+            var pInfo = new arcgisOAuthInfo({
+                appId: appid,
+                popup: false,
+                portalUrl: app.portals.destinationPortal.portalUrl
+            });
+            esriId.registerOAuthInfos([pInfo]);
+            esriId.checkSignInStatus(pInfo.portalUrl + "/sharing")
+                .then(function(user) {
+                    if (user.token) {
+                        app.portals.destinationPortal.token = user.token;
+                        app.portals.destinationPortal.self().then(function(data) {
+                            app.portals.destinationPortal.username = data.user.username;
+                            if (data.isPortal === true) {
+                                // Portal.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                            } else if (data.isPortal === false && data.id) {
+                                // ArcGIS Online Org.
+                                // Set it to the org's custom URL instead of www.arcgis.com.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+                            } else {
+                                // ArcGIS Online personal account.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                            }
+
+                            jquery("#copyModal").modal("hide");
+                            highlightCopyableContent();
+                            NProgress.start();
+                            showDestinationFolders();
+                            NProgress.done();
+
+                        });
+                    }
+                },
+                function(e) {
+                    console.log("not logged in", e);
+                    localStorage.setItem("destinationPortalUrl", app.portals.destinationPortal.portalUrl);
+                    localStorage.setItem("destinationPortalAppId", appid);
+                    esriId.getCredential(pInfo.portalUrl + "/sharing", { oAuthPopupConfirmation: false })
+                        .then(
+                            function() {
+                                esriId.checkSignInStatus(pInfo.portalUrl + "/sharing")
+                                    .then(
+                                        function(user) {
+                                            app.portals.sourcePortal.token = user.token;
+                                            if (user.token) {
+                                                app.portals.destinationPortal.token = user.token;
+                                                app.portals.destinationPortal.self().then(function(data) {
+                                                    app.portals.destinationPortal.username = data.user.username;
+                                                    if (data.isPortal === true) {
+                                                        // Portal.
+                                                        app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                                                    } else if (data.isPortal === false && data.id) {
+                                                        // ArcGIS Online Org.
+                                                        // Set it to the org's custom URL instead of www.arcgis.com.
+                                                        app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+                                                    } else {
+                                                        // ArcGIS Online personal account.
+                                                        app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                                                    }
+
+                                                    jquery("#copyModal").modal("hide");
+                                                    highlightCopyableContent();
+                                                    NProgress.start();
+                                                    showDestinationFolders();
+                                                    NProgress.done();
+
+                                                });
+                                            }
+                                        }
+                                    );
+                            },
+                            function(e) {
+                                console.log("error getting credentials", e);
+                            }
+                        );
+                }
+                );
+
+        } else {
+            app.portals.destinationPortal.generateToken(username, password)
+                .then(function(response) {
+                    if (response.token) {
+                        app.portals.destinationPortal.token = response.token;
+                        app.portals.destinationPortal.self().then(function(data) {
+                            app.portals.destinationPortal.username = data.user.username;
+                            if (data.isPortal === true) {
+                                // Portal.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                            } else if (data.isPortal === false && data.id) {
+                                // ArcGIS Online Org.
+                                // Set it to the org's custom URL instead of www.arcgis.com.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
+                            } else {
+                                // ArcGIS Online personal account.
+                                app.portals.destinationPortal.portalUrl = "https://" + data.portalHostname + "/";
+                            }
+
+                            jquery("#copyModal").modal("hide");
+                            highlightCopyableContent();
+                            NProgress.start();
+                            showDestinationFolders();
+                            NProgress.done();
+
+                        });
+                    } else if (response.error.code === 400) {
+                        var html = jquery("#loginErrorTemplate").html();
+                        jquery(".alert-danger.alert-dismissable").remove();
+                        jquery("#destinationLoginForm").before(html);
+                    }
+                })
+                .catch(function() {
+                    var html = jquery("#loginErrorTemplate").html();
+                    jquery(".alert-danger.alert-dismissable").remove();
+                    jquery("#destinationLoginForm").before(html);
+                })
+                .then(function() {
+                    jquery("#destinationLoginBtn").button("reset");
+                });
+        }
+
         app.portals.destinationPortal.generateToken(username, password)
             .then(function(response) {
                 if (response.token) {
@@ -243,6 +416,11 @@ require([
         esriId.destroyCredentials();
         delete app.portals.sourcePortal;
         delete app.portals.destinationPortal;
+
+        localStorage.removeItem("sourcePortalUrl");
+        localStorage.removeItem("sourcePortalAppId");
+        localStorage.removeItem("destinationPortalUrl");
+        localStorage.removeItem("destinationPortalAppId");
         window.location.reload();
     };
 
@@ -1720,8 +1898,14 @@ require([
         }
 
         // Check for previously authenticated sessions.
-        esriId.registerOAuthInfos([appInfo]);
-        portalSelf.util.fixUrl(appInfo.portalUrl).then(function(portalUrl) {
+        var appInfoLocal = localStorage.getItem("sourcePortalUrl") ?
+            new arcgisOAuthInfo({
+                appId: localStorage.getItem("sourcePortalAppId"),
+                popup: false,
+                portalUrl: localStorage.getItem("sourcePortalUrl")
+            }) : appInfo;
+        esriId.registerOAuthInfos([appInfoLocal]);
+        portalSelf.util.fixUrl(appInfoLocal.portalUrl).then(function(portalUrl) {
             /*
              * Build the sharingUrl. This is necessary because esriId automatically
              * appends /sharing to the portalUrl when it contains arcgis.com.
