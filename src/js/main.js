@@ -487,7 +487,7 @@ require([
             jquery(this).removeClass("btn-info");
             portal.itemDescription(id)
                 .then(function(description) {
-                    portal.itemData(id)
+                    portal.itemData(id, description.name)
                         .then(function(data) {
                             if (data) {
                                 itemData = data;
