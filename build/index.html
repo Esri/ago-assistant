@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>ArcGIS Online Assistant</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="js/lib/jquery-ui-1.11.4.css"/>
+        <link rel="stylesheet" href="js/lib/bootstrap/css/bootstrap-3.3.4.min.css"/>
+        <link rel="stylesheet" href="css/styles.css"/>
+        <link rel="stylesheet" href="js/lib/nprogress.css" />
+        <link rel="stylesheet" href="js/lib/tomorrow.min.css">
+        <link rel="stylesheet" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+    </head>
+
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand">ArcGIS Online Assistant</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li data-action="copyContent">
+                                    <a href="#copyModal" data-toggle="modal">
+                                        <span class="fa fa-lg fa-files-o" aria-hidden="true"></span>
+                                        Copy Content
+                                    </a>
+                                </li>
+                                <li data-action="inspectContent">
+                                    <a>
+                                        <span class="fa fa-lg fa-eye" aria-hidden="true"></span>
+                                        View an Item's JSON
+                                    </a>
+                                </li>
+                                <li data-action="updateWebmapServices">
+                                    <a>
+                                        <span class="fa fa-lg fa-chain-broken" aria-hidden="true"></span>
+                                        Update the URLs of Services in a Web Map
+                                    </a>
+                                </li>
+                                <li data-action="updateContentUrl">
+                                    <a>
+                                        <span class="fa fa-lg fa-external-link" aria-hidden="true"></span>
+                                        Update the URLs of Registered Apps and Services
+                                    </a>
+                                </li>
+                                <li data-action="stats">
+                                    <a>
+                                        <span class="fa fa-lg fa-user" aria-hidden="true"></span>
+                                        View My Stats
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!--/.navbar-collapse -->
+            </div>
+        </div>
+        <!-- Splash jumbotron -->
+        <div id="splashContainer" class="container col-md-6 center">
+            <div class="jumbotron">
+                <h2>ArcGIS Online Assistant</h2>
+                <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
+                <div class="loginButtons">
+                    <p>
+                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Log in to ArcGIS Online</button>
+                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Log in to Portal for ArcGIS</button>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>Inspect</h4>
+                    <p>View the underlying JSON for any item in ArcGIS Online or your Portal.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Update</h4>
+                    <p>Modify the URLs for services in web maps and registered applications.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Copy</h4>
+                    <p>Search for and copy content to your account and other accounts.</p>
+                </div>
+            </div>
+        </div>
+        <div class="container col-md-10 center">
+            <!-- About modal -->
+            <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">About this application</h3>
+                            <p class="text-muted">v2.7.2 <a href="https://github.com/esri/ago-assistant/releases" target="_blank">changelog</a></p>
+                        </div>
+                        <div class="modal-body">
+                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>
+                            <p>The code is available on GitHub. Please contribute to this project by submitting<a href="https://github.com/esri/ago-assistant/issues" target="_blank"> ideas, feedback, issues,</a> or <a href="https://github.com/esri/ago-assistant" target="_blank">code</a>.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Portal login modal -->
+            <div id="portalLoginModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="portalLoginLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="portalLoginLabel">Log in to your Portal</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <p>Enter the URL to your Portal</p>
+                                <div class="form-group has-feedback">
+                                    <div class="input-group">
+                                        <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="portalUrl">
+                                        <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
+                                        <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalListBtn" disabled><span class="caret"></span></button>
+                                        <ul class="dropdown-menu dropdown-menu-right" role="menu" id="portalList">
+                                        </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div>
+                                    <!-- Nav tabs -->
+                                    <ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" class="active"><a href="#userPassTab" id="userPassTabBtn" aria-controls="userPassTab" role="tab" data-toggle="tab">Direct Login</a></li>
+                                        <li role="presentation"><a href="#oauthTab" id="oauthTabBtn" aria-controls="oauthTab" role="tab" data-toggle="tab">OAuth Login</a></li>
+                                        <li role="presentation"><a href="#pkiIwaTab" id="pkiIwaTabBtn" aria-controls="pkiIwaTab" role="tab" data-toggle="tab">PKI or IWA Login</a></li>
+                                    </ul>
+                                    <!-- Tab panes -->
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane active" id="userPassTab">
+                                            <div id="portalLoginForm" class="form-horizontal">
+                                                <br>
+                                                <div class="form-group">
+                                                    <label for="portalUsername" class="col-sm-2 control-label">Username</label>
+                                                    <div class="col-sm-6">
+                                                        <input class="form-control" type="text" placeholder="username" id="portalUsername">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="portalPassword" class="col-sm-2 control-label">Password</label>
+                                                    <div class="col-sm-6">
+                                                        <input class="form-control" type="password" placeholder="password" id="portalPassword">
+                                                    </div>
+                                                </div>
+                                                <a data-toggle="collapse" href="#collapseInfo0" aria-expanded="false" aria-controls="collapseInfo0">
+                                                    More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                            <div class="collapse" id="collapseInfo0">
+                                                <div class="well">
+                                                This login method makes use of a direct call to the
+                                                <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Generate_Token/02r3000000m5000000/" target="_blank">GenerateToken</a>
+                                                operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                </div>
+                                            </div>                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="oauthTab">
+                                            <div id="portalLoginForm2" class="form-horizontal">
+                                                <br>
+                                                <div class="form-group">
+                                                    <label for="portalAppId" class="col-sm-2 control-label">App ID</label>
+                                                    <div class="col-sm-6">
+                                                        <div class="input-group">
+                                                            <input class="form-control" type="text" placeholder="App ID" id="portalAppId" aria-describedby="ouathMore">
+                                                            <span class="input-group-btn" id="ouathMore">
+                                                                <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo1" aria-expanded="false" aria-controls="collapseInfo1">
+                                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="collapse" id="collapseInfo1">
+                                                <div class="well">
+                                                In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
+                                                you will need to Register AGO-Assistant as an application in your Portal, to generate an
+                                                AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                instructions
+                                                <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
+                                                using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
+                                                Redirect URI.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="pkiIwaTab">
+                                            <br>
+                                            <div>Secured with PKI or IWA
+                                                <a data-toggle="collapse" href="#collapseInfo2" aria-expanded="false" aria-controls="collapseInfo2">
+                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                            <br>
+                                            <div class="collapse" id="collapseInfo2">
+                                                <div class="well">
+                                                This login method is used for Portals with web-tier authentication, using username and
+                                                password or client certificate (PKI) authentication methods, often referred to as “SSO”
+                                                or Single Sign On). This authentication method is most often used for internal-facing
+                                                Portals inside of an intranet.
+                                                <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="portalCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="portalLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Copy content modal -->
+            <div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">Copy content</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div id="destinationChoice">
+                                <p>Select the account you want to copy into.</p>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyMyAccount">My account</button>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyOtherAccount">Another account</button>
+                            </div>
+                            <div id="destinationForm" style="display:none">
+                                <p>Log in to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
+                                <br>
+                                <form>
+                                    <p>Select the destination:</p>
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <div class="btn-group" data-toggle="buttons-radio">
+                                                    <button type="button" id="destinationAgolBtn" class="btn btn-default btn-primary active" data-toggle="button">ArcGIS Online</button>
+                                                    <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="portalDestinationGroup" style="display:none;">
+                                        <p>Enter the URL to your Portal</p>
+                                        <div class="form-group has-feedback">
+                                            <div class="input-group">
+                                                <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="destinationUrl">
+                                                <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
+                                                <div class="input-group-btn">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalList2Btn" disabled><span class="caret"></span></button>
+                                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id="portalList2">
+                                                </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div>
+                                            <!-- Nav tabs -->
+                                            <ul class="nav nav-tabs" role="tablist">
+                                                <li role="presentation" class="active"><a href="#userPassTab2" id="userPassTab2Btn" aria-controls="userPassTab2" role="tab" data-toggle="tab">Direct Login</a></li>
+                                                <li role="presentation"><a href="#oauthTab2" id="oauthTab2Btn" aria-controls="oauthTab2" role="tab" data-toggle="tab">OAuth Login</a></li>
+                                                <li role="presentation"><a href="#pkiIwaTab2" id="pkiIwaTab2Btn" aria-controls="pkiIwaTab2" role="tab" data-toggle="tab">PKI or IWA Login</a></li>
+                                            </ul>
+                                            <!-- Tab panes -->
+                                            <div class="tab-content">
+                                                <div role="tabpanel" class="tab-pane active" id="userPassTab2">
+                                                    <div id="destinationLoginForm" class="form-horizontal">
+                                                        <br>
+                                                        <div class="form-group">
+                                                            <label for="destinationUsername" class="col-sm-2 control-label">Username</label>
+                                                            <div class="col-sm-6">
+                                                                <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="destinationPassword" class="col-sm-2 control-label">Password</label>
+                                                            <div class="col-sm-6">
+                                                                <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                                            </div>
+                                                        </div>
+                                                        <a data-toggle="collapse" href="#collapseInfo3" aria-expanded="false" aria-controls="collapseInfo3">
+                                                            More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="collapse" id="collapseInfo3">
+                                                        <div class="well">
+                                                        This login method makes use of a direct call to the
+                                                        <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Generate_Token/02r3000000m5000000/" target="_blank">GenerateToken</a>
+                                                        operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="oauthTab2">
+                                                    <div id="destinationLoginForm2" class="form-horizontal">
+                                                        <br>
+                                                        <div class="form-group">
+                                                            <label for="portalAppId2" class="col-sm-2 control-label">App ID</label>
+                                                            <div class="col-sm-6">
+                                                                <div class="input-group">
+                                                                    <input class="form-control" type="text" placeholder="App ID" id="portalAppId2" aria-describedby="ouathMore">
+                                                                    <span class="input-group-btn" id="ouathMore">
+                                                                        <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo4" aria-expanded="false" aria-controls="collapseInfo4">
+                                                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                                        </a>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse" id="collapseInfo4">
+                                                        <div class="well">
+                                                        In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
+                                                        you will need to Register AGO-Assistant as an application in your Portal, to generate an
+                                                        AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                        instructions
+                                                        <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
+                                                        using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
+                                                        Redirect URI.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="pkiIwaTab2">
+                                                    <br>
+                                                    <div>
+                                                        <a data-toggle="collapse" href="#collapseInfo5" aria-expanded="false" aria-controls="collapseInfo5">
+                                                            Secured with PKI or IWA <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                        </a>
+                                                    </div>
+                                                    <br>
+                                                    <div class="collapse" id="collapseInfo5">
+                                                        <div class="well">
+                                                        This login method is used for Portals with web-tier authentication, using username and
+                                                        password or client certificate (PKI) authentication methods, often referred to as “SSO”
+                                                        or Single Sign On). This authentication method is most often used for internal-facing
+                                                        Portals inside of an intranet.
+                                                        <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in..." style="display: none">Log in</button>
+                            <button id="destinationEnterpriseBtn" class="btn btn-primary" role="button" data-action="logindestination">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Edit JSON modal -->
+            <div id="editJsonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editJsonModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="changelogModalLabel">Warning</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to directly modify the contents of an item. Do not proceed unless you are absolutely certain of the risks.</p>
+                            <h3><b>THIS IS UNTESTED AND UNSUPPORTED.</b></h3>
+                            <p>Potential risks include:</p>
+                            <ul>
+                                <li>Corrupting your content</li>
+                                <li>Losing access to your items</li>
+                                <li>Breaking apps built on top of your web maps</li>
+                            </ul>
+                            <br>
+                            <div class="checkbox input-lg">
+                                <label><input type="checkbox" class="acknowledgeRisk"> I understand the risks</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Cancel</button>
+                            <button id="editJsonBtn" class="btn btn-primary disabled">Proceed</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Deep Copy modal -->
+            <div id="deepCopyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deepCopyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="deepCopyModalLabel">Copy information</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <label>Copy Type</label>
+                                            <div id="copySelector" class="btn-group" data-toggle="buttons-radio">
+                                                <button type="button" id="btnSimpleCopy" class="btn btn-primary active" data-toggle="button">Simple</button>
+                                                <button type="button" id="btnFullCopy" class="btn btn-default" data-toggle="button">Full</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group has-feedback" style="display:none" id="serviceNameForm">
+                                        <div class="col-md-6">
+                                            <label>Service Name</label>
+                                            <input class="form-control" type="text" value="" id="serviceName">
+                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="alert alert-info">
+                                <p><strong>Simple copy</strong> creates a reference to the original service
+                                    in the destination account.</p>
+                                <p><strong>Full copy (EXPERIMENTAL)</strong> replicates the original service in the
+                                    destination account and harvests all of its associated data.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-default" data-dismiss="modal" id="btnCancelCopy">Cancel</button>
+                            <button type="submit" class="btn btn-primary disabled" id="btnCopyService">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item containers -->
+            <div id="itemsContainer" class="row">
+                <div id="itemsArea" class="col-xs-5 itemArea">
+                    <!-- content goes here -->
+                </div>
+                <div id="dropArea" class="col-xs-7 itemArea">
+                    <!-- dropped items will go here -->
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var dojoConfig = {
+                async: true,
+                packages: [
+                    {name: "jquery", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-1.10.2.min"},
+                    {name: "jquery.ui", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-ui-1.11.4.min"},
+                    {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.4.min"},
+                    {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
+                    {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
+                    {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
+                    {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
+                    {name: "clipboard", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "clipboard-1.5.15.min"},
+                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "portal.min"}
+                ],
+            };
+        </script>
+        <script src="js/lib/arcgis/dojo/dojo.js"></script>
+        <script src="js/main.min.js"></script>
+
+    </body>
+
+</html>
+;<script type="text/template" id="sessionTemplate">
+
+    <ul class="nav navbar-nav navbar-right" id="sessionDropdown">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {{#user}}
+                    {{username}}
+                {{/user}}
+            <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a data-toggle="modal" data-target="#aboutModal">About</a>
+                </li>
+                <li data-action="logout">
+                    <a>Logout</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+</script>
+
+<script type="text/template" id="urlErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <p><strong>Uh oh! There's a problem with the url.</strong></p>
+        <p>Make sure you've entered the url to your portal's web adaptor.</p>
+        <p>example: https://mydomain.com/portal</p>
+    </div>
+
+</script>
+
+<script type="text/template" id="loginErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Whoops!</strong> Double check your username and password.
+    </div>
+
+</script>
+
+<script type="text/template" id="serviceNameErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <p><strong>{{ name }} is already in use.</strong> Try a different name.</p>
+    </div>
+
+</script>
+
+<script type="text/template" id="searchTemplate">
+
+    <form id="searchForm" class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+            <div class="input-group add-on">
+                <div class="form-group has-feedback">
+                    <input id="searchText" type="text" class="form-control" placeholder="Search My Content">
+                    <i class="glyphicon glyphicon-search form-control-feedback" style="color:black"></i>
+                </div>
+                <div class="input-group-btn">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="searchMenu" class="dropdown-menu" role="menu">
+                            <li id="searchAGO" data-url="https://www.arcgis.com/"><a>Search ArcGIS Online</a></li>
+                            <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a>Search {{ name }}</a></li>
+                            <li id="searchContent" data-url={{ portal }} class="active"><a>Search My Content</a></li>
+                            <li class="divider"></li>
+                            <li data-action="viewMyContent"><a>View My Content</a></li>
+                            <li data-action="viewMyGroups"><a>View My Groups</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</script>
+
+<script type="text/template" id="folderTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading" data-title="{{ title }}">
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span class="badge pull-right"> {{ count }} </span> {{ title }} </a>
+        </div>
+        <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse" data-folder="{{ id }}">
+            <!-- content gets inserted here -->
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="dropFolderTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest_{{ id }}"> {{ title }} </a>
+        </div>
+        <div id="collapseDest_{{ id }}" class="panel-body panel-collapse collapse in" data-folder="{{ id }}">
+            <div class="dropArea">
+                <div id="dropFolder_{{ id }}" class="dropBorder">
+                    Drop items to copy to this folder
+                    <!-- content gets dropped here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="contentTemplate">
+
+    <button id="{{ id }}" class="btn btn-default btn-block content" disabled="disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-portal="{{ portal }}">
+        <span class="icon {{ icon }}"></span>
+        {{ title }}
+        <div class="pull-right itemDetailsDiv"><small><strong>{{ user }}</strong><small style="user-select:all;"> {{ id }}</small></small></div>
+    </button>
+
+</script>
+
+<script type="text/template" id="contentTypeErrorTemplate">
+
+    <div id="{{ id }}_alert" class="alert alert-info alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Sorry!</strong> {{ type }}s aren't supported yet.
+    </div>
+
+</script>
+
+<script type="text/template" id="contentCopyErrorTemplate">
+
+    <div id="{{ id }}_alert" class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Copying failed!</strong> {{ message }}
+    </div>
+
+</script>
+
+<script type="text/template" id="inspectTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription">
+            <ul class="list-group">
+                <li class="list-group-item">Description
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (View Item Details)</a>
+                </li>
+                <li class="list-group-item">
+                    <div class="btn-group btn-group-lg edit-controls" role="group">
+                      <button type="button" class="btn btn-default" data-clipboard-target="#descriptionJson" aria-label="Left Align">
+                        <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                      </button>
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits">
+                            <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
+                            <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <pre id="descriptionJson">{{ description }}</pre>
+                </li>
+            </ul>
+            {{ #data }}
+                <br>
+                <ul class="list-group">
+                    <li class="list-group-item">Data</li>
+                    <li class="list-group-item">
+                        <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default" data-clipboard-target="#dataJson" aria-label="Left Align">
+                              <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                                <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
+                                <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <pre id="dataJson">{{ data }}</pre>
+                    </li>
+                </ul>
+            {{ /data }}
+            {{! Add a download link }}
+            {{ #downloadLink }}
+                <br>
+                <a href="{{ downloadLink }}" target="_blank" class="btn btn-link btn-lg btn-block" role="button">Download {{ title }}</a>
+            {{ /downloadLink }}
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="statsTemplate">
+
+    <!-- User stats modal -->
+    <div id="statsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="statsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="statsModalLabel">Stats for {{ username }}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <h4 class="text-center">Most Popular Content</h4>
+                            <div id="mostViewedContent"><!--Most Viewed Content table--></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="mostViewedContentTemplate">
+
+    <table class="table table-condensed">
+        <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Views</th>
+        </tr>
+        {{#searchResults}}
+        <tr>
+            <td><a href="{{ itemUrl }}" target="_blank">{{ title }}</a></td>
+            <td>{{ type }}</td>
+            <td>{{ numViews }}</td>
+        </tr>
+        {{/searchResults}}
+    </table>
+
+</script>
+
+<script type="text/template" id="webmapServicesTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ webmapTitle }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <form role="form">
+                <h5>Quick Text Find/Replace</h5>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <input type="text" id="originalTextUserInput" list="origServiceUrlList" class="form-control" placeholder="Find">
+                            <datalist id="origServiceUrlList">
+                                <!--items are added dynamically based on a calculated unique root URL list-->
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="newTextUserInput" placeholder="Replace">
+                        </div>
+                        <div class="form-group">
+                            <button id="bulkUpdateWebmapServiceUrlsBtn" class="btn btn-primary" style="float: right">Replace</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="stringMatchesFoundText" class="text-muted"></span>
+                    </div>
+                </form>
+                </br>
+                <div class="form-group">
+                    <h4>Operational Layers</h4>
+                    {{ #operationalLayers }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /operationalLayers }}
+                    {{ ^operationalLayers }}
+                        No operational layers in this web map.
+                    {{ /operationalLayers }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Tables</h4>
+                    {{ #tables }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /tables }}
+                    {{ ^tables }}
+                        No tables in this web map.
+                    {{ /tables }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Basemap Layers <small>{{ basemapTitle }}</small></h4>
+                    {{#basemapLayers}}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ id }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{/basemapLayers}}
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-default" id="btnResetWebmapServices">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateWebmapServices">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateSuccessTemplate">
+
+    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99"">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Success!</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Update failed! {{ error.message }}</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="itemContentTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <form role="form">
+                <div class="form-group">
+                    <div class="form-group">
+                        <label for="{{ id }}">URL</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-default" id="btnResetContentUrl">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateContentUrl">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>

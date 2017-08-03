@@ -1,0 +1,197 @@
+body {
+    background: #fff;
+    padding-top: 50px;
+}
+
+.dropArea {
+    padding-bottom: 5px;
+    margin: 5px;
+    text-align: center;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+    background: #fff;
+    -webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.dropBorder {
+    position: relative;
+    top: 5px;
+    height: 45px;
+    margin: 5px;
+    border: #c3c3c3;
+    border-width: 2px;
+    border-style: dashed;
+}
+
+.itemArea {
+    background: #fff;
+    overflow-y: auto;
+    padding-top: 10px;
+    min-height: 400px;
+}
+
+.accordion-inner {
+    background: #fff;
+}
+
+.center {
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.content {
+    text-align: left;
+    white-space: normal;
+}
+
+.list-group-item pre{
+    font-size: .8em;
+}
+
+.navbar {
+    background-image: url("../assets/images/navigation-bar-background-green.jpg");
+    background-repeat: repeat-x;
+    color: #fff;
+}
+
+.navbar-inverse .navbar-brand {
+     color: #fff;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-inverse .navbar-nav > .open > a:focus {
+    opacity: 0.3;
+    filter: alpha(opacity=30); /* For IE8 and earlier */
+}
+
+/* Splash page jumbotron */
+.jumbotron .btn {
+    padding: 14px 24px;
+    font-size: 21px;
+    text-align: center;
+}
+
+/* Adjust splash page details */
+.marketing {
+    margin: 40px 0;
+}
+
+.marketing p + h4 {
+    margin-top: 28px;
+}
+
+.icon {
+    width:16px;
+    height:16px;
+    display: block;
+    float: left;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.edit-controls {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+}
+
+.portal-signin {
+    font-size: .8em;
+}
+
+
+.message {
+    display: inline-block;
+    float: right;
+    height: 20px;
+    width: auto;
+}
+
+.messages {
+    display: inline;
+    float: left;
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
+.harvester {
+    display: inline;
+    float: right;
+    height: 20px;
+    width: 20px;
+}
+
+.apps {
+    background:url(../assets/images/apps16.png);
+}
+
+.appsGray {
+    background:url(../assets/images/appsGray16.png);
+}
+
+.datafiles {
+    background:url(../assets/images/datafiles16.png);
+}
+
+.datafilesGray {
+    background:url(../assets/images/datafilesGray16.png);
+}
+
+.features {
+    background:url(../assets/images/Features16.png);
+}
+
+.imagery {
+    background:url(../assets/images/Imagery16.png);
+}
+
+.layers {
+    background:url(../assets/images/layers16.png);
+}
+
+.layersGray {
+    background:url(../assets/images/layersGray16.png);
+}
+
+.mapImages {
+    background:url(../assets/images/MapImages16.png);
+}
+
+.maps {
+    background:url(../assets/images/maps16.png);
+}
+
+.mapsGray {
+    background:url(../assets/images/mapsGray16.png);
+}
+
+.sceneLayer {
+    background:url(../assets/images/sceneweblayer16.png);
+}
+
+.tools {
+    background:url(../assets/images/tools16.png);
+}
+
+.toolsGray {
+    background:url(../assets/images/toolsGray16.png);
+}
+
+.webScene {
+    background:url(../assets/images/webscene16.png);
+}
+
+.removePortalBtn {
+    margin-top: -20px;
+    margin-right: 3px;
+    padding: 0!important;
+}
+
+.itemDetailsDiv {
+    text-align: right;
+}
