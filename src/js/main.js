@@ -1941,7 +1941,7 @@ require([
                 oAuthPopupConfirmation: false
             }).then(function(user) {
                 // If there is no destination or the destination is not the same as ArcGIS Online
-                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUr)) {
+                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUrl)) {
                     app.portals.destinationPortal = new portalSelf.Portal({
                         portalUrl: user.server + "/",
                         username: user.userId,
