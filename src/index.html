@@ -129,30 +129,100 @@
                         <div class="modal-body">
                             <form>
                                 <p>Enter the URL to your Portal</p>
-                                <div class="form-horizontal">
-                                    <div class="form-group has-feedback">
-                                        <div class="col-md-6">
-                                            <input class="form-control portalUrl" type="text" value="https://myportal.com/" id="portalUrl">
-                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input id="sourceWebTierAuth" type="checkbox">
-                                                    Secured with PKI or IWA
-                                                </label>
-                                            </div>
+                                <div class="form-group has-feedback">
+                                    <div class="input-group">
+                                        <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="portalUrl">
+                                        <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
+                                        <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalListBtn" disabled><span class="caret"></span></button>
+                                        <ul class="dropdown-menu dropdown-menu-right" role="menu" id="portalList">
+                                        </ul>
                                         </div>
                                     </div>
                                 </div>
                                 <br>
-                                <p>Enter your credentials:</p>
-                                <div id="portalLoginForm" class="form-inline">
-                                    <div class="form-group">
-                                        <input class="form-control" type="text" placeholder="username" id="portalUsername">
-                                    </div>
-                                    <div class="form-group">
-                                        <input class="form-control" type="password" placeholder="password" id="portalPassword">
+                                <div>
+                                    <!-- Nav tabs -->
+                                    <ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" class="active"><a href="#userPassTab" id="userPassTabBtn" aria-controls="userPassTab" role="tab" data-toggle="tab">Direct Login</a></li>
+                                        <li role="presentation"><a href="#oauthTab" id="oauthTabBtn" aria-controls="oauthTab" role="tab" data-toggle="tab">OAuth Login</a></li>
+                                        <li role="presentation"><a href="#pkiIwaTab" id="pkiIwaTabBtn" aria-controls="pkiIwaTab" role="tab" data-toggle="tab">PKI or IWA Login</a></li>
+                                    </ul>
+                                    <!-- Tab panes -->
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane active" id="userPassTab">
+                                            <div id="portalLoginForm" class="form-horizontal">
+                                                <br>
+                                                <div class="form-group">
+                                                    <label for="portalUsername" class="col-sm-2 control-label">Username</label>
+                                                    <div class="col-sm-6">
+                                                        <input class="form-control" type="text" placeholder="username" id="portalUsername">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="portalPassword" class="col-sm-2 control-label">Password</label>
+                                                    <div class="col-sm-6">
+                                                        <input class="form-control" type="password" placeholder="password" id="portalPassword">
+                                                    </div>
+                                                </div>
+                                                <a data-toggle="collapse" href="#collapseInfo0" aria-expanded="false" aria-controls="collapseInfo0">
+                                                    More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                            <div class="collapse" id="collapseInfo0">
+                                                <div class="well">
+                                                This login method makes use of a direct call to the
+                                                <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Generate_Token/02r3000000m5000000/" target="_blank">GenerateToken</a>
+                                                operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                </div>
+                                            </div>                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="oauthTab">
+                                            <div id="portalLoginForm2" class="form-horizontal">
+                                                <br>
+                                                <div class="form-group">
+                                                    <label for="portalAppId" class="col-sm-2 control-label">App ID</label>
+                                                    <div class="col-sm-6">
+                                                        <div class="input-group">
+                                                            <input class="form-control" type="text" placeholder="App ID" id="portalAppId" aria-describedby="ouathMore">
+                                                            <span class="input-group-btn" id="ouathMore">
+                                                                <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo1" aria-expanded="false" aria-controls="collapseInfo1">
+                                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="collapse" id="collapseInfo1">
+                                                <div class="well">
+                                                In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
+                                                you will need to Register AGO-Assistant as an application in your Portal, to generate an
+                                                AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                instructions
+                                                <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
+                                                using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
+                                                Redirect URI.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="pkiIwaTab">
+                                            <br>
+                                            <div>Secured with PKI or IWA
+                                                <a data-toggle="collapse" href="#collapseInfo2" aria-expanded="false" aria-controls="collapseInfo2">
+                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                            <br>
+                                            <div class="collapse" id="collapseInfo2">
+                                                <div class="well">
+                                                This login method is used for Portals with web-tier authentication, using username and
+                                                password or client certificate (PKI) authentication methods, often referred to as “SSO”
+                                                or Single Sign On). This authentication method is most often used for internal-facing
+                                                Portals inside of an intranet.
+                                                <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -192,29 +262,105 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div id="portalDestinationGroup" style="display:none;">
+                                        <p>Enter the URL to your Portal</p>
                                         <div class="form-group has-feedback">
-                                            <div class="col-md-6">
-                                                <input class="form-control portalUrl" type="text" value="https://www.arcgis.com/" id="destinationUrl">
-                                                <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="checkbox" id="destinationWebTierAuth">
-                                                    <label>
-                                                        <input id="destWebTierAuthChk" type="checkbox">
-                                                        Secured with PKI or IWA
-                                                    </label>
+                                            <div class="input-group">
+                                                <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="destinationUrl">
+                                                <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
+                                                <div class="input-group-btn">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalList2Btn" disabled><span class="caret"></span></button>
+                                                <ul class="dropdown-menu dropdown-menu-right" role="menu" id="portalList2">
+                                                </ul>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <br>
-                                    <div id="destinationLoginForm" class="form-inline">
-                                        <p>Enter your credentials:</p>
-                                        <div class="form-group">
-                                            <input class="form-control" type="text" placeholder="username" id="destinationUsername">
-                                        </div>
-                                        <div class="form-group">
-                                            <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                        <br>
+                                        <div>
+                                            <!-- Nav tabs -->
+                                            <ul class="nav nav-tabs" role="tablist">
+                                                <li role="presentation" class="active"><a href="#userPassTab2" id="userPassTab2Btn" aria-controls="userPassTab2" role="tab" data-toggle="tab">Direct Login</a></li>
+                                                <li role="presentation"><a href="#oauthTab2" id="oauthTab2Btn" aria-controls="oauthTab2" role="tab" data-toggle="tab">OAuth Login</a></li>
+                                                <li role="presentation"><a href="#pkiIwaTab2" id="pkiIwaTab2Btn" aria-controls="pkiIwaTab2" role="tab" data-toggle="tab">PKI or IWA Login</a></li>
+                                            </ul>
+                                            <!-- Tab panes -->
+                                            <div class="tab-content">
+                                                <div role="tabpanel" class="tab-pane active" id="userPassTab2">
+                                                    <div id="destinationLoginForm" class="form-horizontal">
+                                                        <br>
+                                                        <div class="form-group">
+                                                            <label for="destinationUsername" class="col-sm-2 control-label">Username</label>
+                                                            <div class="col-sm-6">
+                                                                <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="destinationPassword" class="col-sm-2 control-label">Password</label>
+                                                            <div class="col-sm-6">
+                                                                <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                                            </div>
+                                                        </div>
+                                                        <a data-toggle="collapse" href="#collapseInfo3" aria-expanded="false" aria-controls="collapseInfo3">
+                                                            More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="collapse" id="collapseInfo3">
+                                                        <div class="well">
+                                                        This login method makes use of a direct call to the
+                                                        <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Generate_Token/02r3000000m5000000/" target="_blank">GenerateToken</a>
+                                                        operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="oauthTab2">
+                                                    <div id="destinationLoginForm2" class="form-horizontal">
+                                                        <br>
+                                                        <div class="form-group">
+                                                            <label for="portalAppId2" class="col-sm-2 control-label">App ID</label>
+                                                            <div class="col-sm-6">
+                                                                <div class="input-group">
+                                                                    <input class="form-control" type="text" placeholder="App ID" id="portalAppId2" aria-describedby="ouathMore">
+                                                                    <span class="input-group-btn" id="ouathMore">
+                                                                        <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo4" aria-expanded="false" aria-controls="collapseInfo4">
+                                                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                                        </a>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse" id="collapseInfo4">
+                                                        <div class="well">
+                                                        In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
+                                                        you will need to Register AGO-Assistant as an application in your Portal, to generate an
+                                                        AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                        instructions
+                                                        <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
+                                                        using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
+                                                        Redirect URI.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="pkiIwaTab2">
+                                                    <br>
+                                                    <div>
+                                                        <a data-toggle="collapse" href="#collapseInfo5" aria-expanded="false" aria-controls="collapseInfo5">
+                                                            Secured with PKI or IWA <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                        </a>
+                                                    </div>
+                                                    <br>
+                                                    <div class="collapse" id="collapseInfo5">
+                                                        <div class="well">
+                                                        This login method is used for Portals with web-tier authentication, using username and
+                                                        password or client certificate (PKI) authentication methods, often referred to as “SSO”
+                                                        or Single Sign On). This authentication method is most often used for internal-facing
+                                                        Portals inside of an intranet.
+                                                        <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>

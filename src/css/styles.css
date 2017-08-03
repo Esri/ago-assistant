@@ -185,3 +185,13 @@ body {
 .webScene {
     background:url(../assets/images/webscene16.png);
 }
+
+.removePortalBtn {
+    margin-top: -20px;
+    margin-right: 3px;
+    padding: 0!important;
+}
+
+.itemDetailsDiv {
+    text-align: right;
+}

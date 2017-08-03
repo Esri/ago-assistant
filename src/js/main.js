@@ -41,11 +41,159 @@ require([
         }
     };
 
+    // used for reading portal and appid from url string
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split("&"),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split("=");
+
+            if (sParameterName[0].toLowerCase() === sParam.toLowerCase()) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+
+    // used to store and populate drop down of portals in portal login forms
+    var storedPortals = localStorage.getItem("storedPortals");
+
+    // remove a portal from the stored portals list
+    var removePortal = function(portalUrl) {
+        var foundIndex;
+        portalUrl = portalUrl.trim();
+        storedPortals.some(function(itm, n) {
+            if (itm.portalUrl == portalUrl) {
+                foundIndex = n;
+                return true;
+            }
+        });
+        if (foundIndex >= 0) {
+            storedPortals.splice(foundIndex, 1);
+        }
+        localStorage.setItem("storedPortals", JSON.stringify(storedPortals));
+        jquery("#portalList").children().each(function(n, itm) {
+            var pUrl = jquery(itm).first().text().trim();
+            if (pUrl == portalUrl) {
+                jquery(itm).remove();
+            }
+        });
+        jquery("#portalList2").children().each(function(n, itm) {
+            var pUrl = jquery(itm).first().text().trim();
+            if (pUrl == portalUrl) {
+                jquery(itm).remove();
+            }
+        });
+        if (!jquery("#portalList").children().length) {
+            jquery("#portalListBtn").attr("disabled", true);
+        }
+        if (!jquery("#portalList2").children().length) {
+            jquery("#portalList2Btn").attr("disabled", true);
+        }
+    };
+
+    // add a portal to the stored portals list
+    var storePortal = function(portalItm) {
+        var portalUrl = portalItm.portalUrl;
+        var appId = portalItm.appId;
+        var usePkiIwa = portalItm.usePkiIwa;
+        var useOauth = portalItm.useOauth;
+        var useUserPass = portalItm.useUserPass;
+        var found = false;
+        storedPortals.some(function(itm, n) {
+            if (itm.portalUrl == portalUrl) {
+                itm.appId = appId;
+                found = true;
+                return true;
+            }
+        });
+        if (!found) {
+            storedPortals.push({
+                portalUrl: portalUrl,
+                appId: appId,
+                usePkiIwa: usePkiIwa,
+                useOauth: useOauth,
+                useUserPass: useUserPass
+            });
+        }
+        localStorage.setItem("storedPortals", JSON.stringify(storedPortals));
+        jquery("#portalList").empty();
+        jquery("#portalList2").empty();
+        storedPortals.forEach(function(itm) {
+            jquery("#portalListBtn").removeAttr("disabled");
+            jquery("#portalList2Btn").removeAttr("disabled");
+            var removeBtn = jquery(
+                "<a href=\"#\" class=\"removePortalBtn btn-xs pull-right\">" +
+                "   <span class=\"text-danger glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>" +
+                "</a>"
+            );
+            var removeBtn2 = jquery(
+                "<a href=\"#\" class=\"removePortalBtn btn-xs pull-right\">" +
+                "   <span class=\"text-danger glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>" +
+                "</a>"
+            );
+            var portal = jquery("<a href=\"#\">" + itm.portalUrl + "</a>");
+            var portal2 = jquery("<a href=\"#\">" + itm.portalUrl + "</a>");
+            var li = jquery("<li></li>");
+            var li2 = jquery("<li></li>");
+            li.append(portal);
+            li.append(removeBtn);
+            li2.append(portal2);
+            li2.append(removeBtn2);
+            jquery("#portalList").append(li);
+            jquery("#portalList2").append(li2);
+            portal.on("click", function() {
+                jquery("#portalAppId").val(itm.appId);
+                jquery("#portalUrl").val(itm.portalUrl);
+                if (!app.portals.sourcePortal) {
+                    app.portals.sourcePortal = new portalSelf.Portal();
+                }
+                validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
+                if (itm.appId) {
+                    jquery("#oauthTabBtn").trigger("click");
+                } else {
+                    jquery("#userPassTabBtn").trigger("click");
+                    jquery("#portalUsername").focus();
+                }
+            });
+            portal2.on("click", function() {
+                jquery("#portalAppId2").val(itm.appId);
+                jquery("#destinationUrl").val(itm.portalUrl);
+                if (!app.portals.destinationPortal) {
+                    app.portals.destinationPortal = new portalSelf.Portal();
+                }
+                validateUrl("#destinationUrl", app.portals.destinationPortal, "#destinationLoginBtn");
+                if (itm.appId) {
+                    jquery("#oauthTab2Btn").trigger("click");
+                } else {
+                    jquery("#userPassTab2Btn").trigger("click");
+                    jquery("#destinationUsername").focus();
+                }
+            });
+            removeBtn.on("click", function() {
+                console.log("remove", itm.portalUrl);
+                removePortal(itm.portalUrl);
+            });
+            removeBtn2.on("click", function() {
+                console.log("remove", itm.portalUrl);
+                removePortal(itm.portalUrl);
+            });
+        });
+    };
+
+    storedPortals = storedPortals ? JSON.parse(storedPortals) : [];
+    storedPortals.forEach(function(itm) {
+        storePortal(itm);
+    });
+
     /**
      * Check the url for errors (e.g. no trailing slash)
      * and update it before sending.
      */
-    var validateUrl = function(el, portal) {
+    var validateUrl = function(el, portal, loginBtnEl) {
+        // loginBtnEl is used to disable the login button when portal url is invalid
         "use strict";
         var inputUrl = jquery.trim(jquery(el).val());
         portalSelf.util.fixUrl(inputUrl).then(function(portalUrl) {
@@ -62,6 +210,7 @@ require([
                     console.info("API v" + data.currentVersion);
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery(el).next().addClass("glyphicon-ok");
+                    jquery(loginBtnEl).removeAttr("disabled");
                 })
                 .catch(function() {
                     // Try it again with enterprise auth.
@@ -71,6 +220,7 @@ require([
                             console.info("API v" + data.currentVersion);
                             jquery(".alert-danger.alert-dismissable").remove();
                             jquery(el).next().addClass("glyphicon-ok");
+                            jquery(loginBtnEl).removeAttr("disabled");
                             jquery(checkbox).trigger("click");
                         })
                         .catch(function() {
@@ -82,6 +232,7 @@ require([
                                 console.info("API v" + data.currentVersion);
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).next().addClass("glyphicon-ok");
+                                jquery(loginBtnEl).removeAttr("disabled");
                             }).catch(function() {
                                 // OK, it's really not working.
                                 portal.withCredentials = false;
@@ -89,6 +240,7 @@ require([
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).parent().parent().after(urlError);
                                 jquery(el).parent().addClass("has-error");
+                                jquery(loginBtnEl).attr("disabled", true);
                             });
                         });
                 });
@@ -146,6 +298,26 @@ require([
     };
 
     var loginPortal = function() {
+        // determine which method of login to use (direct, oauth, or pki/iwa)
+        if (jquery("#oauthTab").hasClass("active")) {
+            loginPortalOAuth();
+            return;
+        } else if (jquery("#pkiIwaTab").hasClass("active")) {
+            app.portals.sourcePortal.withCredentials = true;
+        } else {
+            app.portals.sourcePortal.withCredentials = false;
+        }
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: app.portals.sourcePortal.portalUrl,
+                appId: "",
+                usePkiIwa: app.portals.sourcePortal.withCredentials,
+                useOauth: false,
+                useUserPass: !app.portals.sourcePortal.withCredentials
+            };
+            storePortal(portalItm);
+        };
         var username = jquery("#portalUsername").val();
         var password = jquery("#portalPassword").val();
         jquery("#portalLoginBtn").button("loading");
@@ -157,6 +329,7 @@ require([
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
                     startSession();
+                    store();
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
                     jquery(".alert-danger.alert-dismissable").remove();
@@ -169,13 +342,68 @@ require([
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
-            })
-            .then(function() {
-                jquery("#portalLoginBtn").button("reset");
             });
     };
 
+    var loginPortalOAuth = function() {
+        var portalInfo = new arcgisOAuthInfo({
+            appId: jquery("#portalAppId").val(),
+            popup: true,
+            portalUrl: app.portals.sourcePortal.portalUrl
+        });
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: portalInfo.portalUrl,
+                appId: portalInfo.appId,
+                usePkiIwa: false,
+                useOauth: true,
+                useUserPass: false
+            };
+            storePortal(portalItm);
+        };
+        esriId.registerOAuthInfos([portalInfo]);
+        portalSelf.util.fixUrl(portalInfo.portalUrl).then(function(portalUrl) {
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
+            }
+            esriId.checkSignInStatus(sharingUrl)
+                .then(
+                    function(data) {
+                        jquery("#portalLoginModal").modal("hide");
+                        jquery("#splashContainer").css("display", "none");
+                        jquery("#itemsContainer").css("display", "block");
+                        app.portals.sourcePortal.username = data.userId;
+                        app.portals.sourcePortal.token = data.token;
+                        startSession();
+                        store();
+                    })
+                .otherwise(
+                    function() {
+                        esriId.getCredential(portalUrl, {
+                            oAuthPopupConfirmation: false
+                        })
+                        .then(function(data) {
+                            jquery("#portalLoginModal").modal("hide");
+                            jquery("#splashContainer").css("display", "none");
+                            jquery("#itemsContainer").css("display", "block");
+                            app.portals.sourcePortal.username = data.userId;
+                            app.portals.sourcePortal.token = data.token;
+                            startSession();
+                            store();
+                        });
+                    }
+                );
+        });
+    };
+
     var loginDestination = function() {
+        // determine which method of login to use (direct, oauth, or pki/iwa)
+        if (jquery("#oauthTab2").hasClass("active")) {
+            loginDestinationOAuth();
+            return;
+        }
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
         var portalUrl = jquery("#destinationUrl").val();
@@ -185,8 +413,22 @@ require([
                 portalUrl: portalUrl
             });
         }
-
-        jquery("#destinationLoginBtn").button("loading");
+        if (jquery("#pkiIwaTab2").hasClass("active")) {
+            app.portals.destinationPortal.withCredentials = true;
+        } else {
+            app.portals.destinationPortal.withCredentials = false;
+        }
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: app.portals.destinationPortal.portalUrl,
+                appId: "",
+                usePkiIwa: app.portals.destinationPortal.withCredentials,
+                useOauth: false,
+                useUserPass: !app.portals.destinationPortal.withCredentials
+            };
+            storePortal(portalItm);
+        };        jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
         app.portals.destinationPortal.generateToken(username, password)
             .then(function(response) {
@@ -211,7 +453,7 @@ require([
                         NProgress.start();
                         showDestinationFolders();
                         NProgress.done();
-
+                        store();
                     });
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
@@ -227,6 +469,106 @@ require([
             .then(function() {
                 jquery("#destinationLoginBtn").button("reset");
             });
+    };
+
+    var loginDestinationOAuth = function() {
+        var portalInfo = new arcgisOAuthInfo({
+            appId: jquery("#portalAppId2").val(),
+            popup: true,
+            portalUrl: app.portals.destinationPortal.portalUrl
+        });
+        esriId.registerOAuthInfos([portalInfo]);
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: portalInfo.portalUrl,
+                appId: portalInfo.appId,
+                usePkiIwa: false,
+                useOauth: true,
+                useUserPass: false
+            };
+            storePortal(portalItm);
+        };
+        // Save esriId and esriJSAPIOAuth to restore after logging in
+        var appIdJson = esriId.toJson();
+        var esriJSAPIOAuth = sessionStorage.esriJSAPIOAuth;
+
+        // Store backup in case page is refreshed in the middle of logging in
+        sessionStorage.setItem("esriJSAPIOAuthBackup", esriJSAPIOAuth);
+        sessionStorage.setItem("esriIdBackup", JSON.stringify(appIdJson));
+
+        // Destroy credentials and remove esriJSAPIOAuth sessions storage
+        esriId.destroyCredentials();
+        sessionStorage.removeItem("esriJSAPIOAuth");
+
+        portalSelf.util.fixUrl(portalInfo.portalUrl).then(function(portalUrl) {
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
+            }
+            esriId.checkSignInStatus(sharingUrl)
+                .then(
+                    function(data) {
+                        // If there is no destination or the destination is not the same as ArcGIS Online
+                        if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== portalInfo.portalUrl)) {
+                            app.portals.destinationPortal = new portalSelf.Portal({
+                                portalUrl: portalInfo.portalUrl,
+                                username: data.userId,
+                                token: data.token
+                            });
+                        } else {
+                            app.portals.destinationPortal.username = data.userId;
+                            app.portals.destinationPortal.token = data.token;
+                        }
+
+                        // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
+                        esriId.initialize(appIdJson);
+                        sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
+
+                        app.portals.destinationPortal.self().then(function() {
+                            jquery("#copyModal").modal("hide");
+                            highlightCopyableContent();
+                            NProgress.start();
+                            showDestinationFolders();
+                            NProgress.done();
+                            store();
+                        });
+                    })
+                .otherwise(
+                    function() {
+                        esriId.getCredential(portalUrl, {
+                            oAuthPopupConfirmation: false
+                        })
+                        .then(function(data) {
+                            // If there is no destination or the destination is not the same as ArcGIS Online
+                            if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== portalInfo.portalUrl)) {
+                                app.portals.destinationPortal = new portalSelf.Portal({
+                                    portalUrl: portalInfo.portalUrl,
+                                    username: data.userId,
+                                    token: data.token
+                                });
+                            } else {
+                                app.portals.destinationPortal.username = data.userId;
+                                app.portals.destinationPortal.token = data.token;
+                            }
+
+                            // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
+                            esriId.initialize(appIdJson);
+                            sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
+
+                            app.portals.destinationPortal.self().then(function() {
+                                jquery("#copyModal").modal("hide");
+                                highlightCopyableContent();
+                                NProgress.start();
+                                showDestinationFolders();
+                                NProgress.done();
+                                store();
+                            });
+                        });
+                    }
+                );
+        });
+
     };
 
     var logout = function() {
@@ -1470,8 +1812,10 @@ require([
                 title: this.title,
                 type: this.type,
                 icon: portalSelf.itemInfo(this.type).icon,
-                portal: portalUrl
+                portal: portalUrl,
+                user: this.owner
             };
+            window.xxx = this;
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html)
                 .addClass("in");
@@ -1486,6 +1830,21 @@ require([
 
         cleanUp();
         clearResults();
+
+        // display the portal name and user info on the top of #itemsArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        jquery("#itemsArea").append(portalIdDom);
+        jquery("#itemsArea").append(userIdDom);
+        app.portals.sourcePortal.self().then(function(data) {
+            var userData = data.user;
+            var email = userData.email;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalIdDom.text(portalName);
+            userIdDom.text(fullName + " (" + username + ")");
+        });
 
         // Capture item creation times to be displayed in the user heatmap.
         function storeActivity(activityTime) {
@@ -1625,6 +1984,21 @@ require([
         "use strict";
         var portal = app.portals.destinationPortal;
 
+        // display the portal name and user info on the top of #dropArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        jquery("#dropArea").append(portalIdDom);
+        jquery("#dropArea").append(userIdDom);
+        app.portals.destinationPortal.self().then(function(data) {
+            var userData = data.user;
+            var email = userData.email;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalIdDom.text(portalName);
+            userIdDom.text(fullName + " (" + username + ")");
+        });
+
         portal.userContent(portal.username, "/").then(function(content) {
             var folderData;
             var html;
@@ -1746,6 +2120,22 @@ require([
                     function() {
                         jquery("#itemsContainer").css("display", "none");
                         jquery("#splashContainer").css("display", "block");
+
+                        // check url for portal and appid parameters, and show the login form pre-populated (if found)
+                        var portal = getUrlParameter("portal");
+                        var appid = getUrlParameter("appid");
+                        if (portal) {
+                            app.portals.sourcePortal = new portalSelf.Portal({
+                                portalUrl: portal
+                            });
+                            jquery("#portalUrl").val(portal);
+                            validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
+                            jquery("[data-action='login-portal']").trigger("click");
+                            if (appid) {
+                                jquery("#portalAppId").val(appid);
+                                jquery("#oauthTabBtn").trigger("click");
+                            }
+                        }
                     }
                 );
         });
@@ -1793,6 +2183,9 @@ require([
                 value: "https://www.arcgis.com/"
             });
             jquery("#destinationUrl").val("https://www.arcgis.com/");
+            jquery("#portalDestinationGroup").css({
+                display: "none"
+            });
             jquery("#destinationUrl").css({
                 display: "none"
             });
@@ -1821,6 +2214,9 @@ require([
                 value: ""
             });
             jquery("#destinationUrl").val("");
+            jquery("#portalDestinationGroup").css({
+                display: "block"
+            });
             jquery("#destinationUrl").css({
                 display: "block"
             });
@@ -1854,7 +2250,7 @@ require([
 
             // Give the DOM time to update before firing the validation.
             setTimeout(function() {
-                validateUrl("#portalUrl", app.portals.sourcePortal);
+                validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
             }, 500);
         });
 
@@ -1868,12 +2264,14 @@ require([
             // Give the DOM time to update before firing the validation.
             setTimeout(function() {
                 if (jquery("#destinationPortalBtn").hasClass("active")) {
-                    validateUrl("#destinationUrl", app.portals.destinationPortal);
+                    validateUrl("#destinationUrl", app.portals.destinationPortal, "#destinationLoginBtn");
                 }
             }, 500);
         });
 
         // Disable username and password if web tier auth is selected.
+        // TODO: remove this logic, these components don't exist anymore:
+        // sourceAppId, sourceWebTierAuth, destinationWebTierAuth, destWebTierAuthChk
         jquery("#sourceWebTierAuth").click(function(e) {
             var checkboxState = jquery(e.currentTarget).prop("checked");
             if (checkboxState === true) {
@@ -1890,6 +2288,7 @@ require([
         });
 
         // Disable username and password if web tier auth is selected.
+        // TODO: modify this to apply to current dom form elements
         jquery("#destWebTierAuthChk").click(function(e) {
             var checkboxState = jquery(e.currentTarget).prop("checked");
             if (checkboxState === true) {
@@ -1941,7 +2340,7 @@ require([
                 oAuthPopupConfirmation: false
             }).then(function(user) {
                 // If there is no destination or the destination is not the same as ArcGIS Online
-                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUr)) {
+                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUrl)) {
                     app.portals.destinationPortal = new portalSelf.Portal({
                         portalUrl: user.server + "/",
                         username: user.userId,
@@ -2131,6 +2530,33 @@ require([
             cleanUp();
             jquery("#destinationChoice").css("display", "block");
             jquery("#destinationForm").css("display", "none");
+        });
+
+
+        jquery("#currentUrl").text(window.location.origin + window.location.pathname);
+        jquery("[data-toggle='tab']").click(function(evt) {
+            var tgt = jquery(evt.target);
+            var tabId = tgt.attr("aria-controls");
+            switch (tabId) {
+            case "userPassTab":
+                console.log(tabId);
+                break;
+            case "oauthTab":
+                console.log(tabId);
+                break;
+            case "pkiIwaTab":
+                console.log(tabId);
+                break;
+            case "userPassTab2":
+                console.log(tabId);
+                break;
+            case "oauthTab2":
+                console.log(tabId);
+                break;
+            case "pkiIwaTab2":
+                console.log(tabId);
+                break;
+            }
         });
 
     });
