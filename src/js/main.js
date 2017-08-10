@@ -655,10 +655,17 @@ require([
             try {
                 var o = JSON.parse(jsonString);
                 if (o && typeof o === "object" && o !== null) {
-                    return o;
+                    return true;
                 }
-            } catch (e) {}
-
+            } catch (e) {
+                var position = new RegExp(/.*at position (\d+)/).exec(e.message);
+                if (position[1] && typeof (position[1] * 1) == "number") {
+                    position = position[1] * 1;
+                    var lineNo = jsonString.substring(0, position).split("\n").length;
+                    e.message += " (line number " + lineNo + ")";
+                }
+                return e.message;
+            }
             return false;
         };
 
@@ -697,7 +704,7 @@ require([
                     // Validate the JSON as it is edited.
                     jsonValid = validateJson(codeBlock.text());
                     saveButton.tooltip("destroy");
-                    if (jsonValid) {
+                    if (jsonValid === true) {
                         // Valid. Allow saving.
                         saveButton.removeClass("disabled");
                         saveButton.css("color", "green");
@@ -712,7 +719,7 @@ require([
                         saveButton.attr("data-toggle", "tooltip");
                         saveButton.attr("data-placement", "bottom");
                         saveButton.attr("title",
-                            "JSON is invalid. Saving not allowed."
+                            jsonValid
                         );
                     }
 
