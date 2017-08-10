@@ -808,6 +808,8 @@ require([
             var server = jquery(this).attr("data-portal");
             var id = jquery(this).attr("data-id");
             var title = jquery(this).text();
+            // title is only the first part of the text, remove everything starting at "Type: "
+            title = title.substring(0, title.search("Type:")).trim();
             var itemData;
 
             /**
@@ -1655,7 +1657,7 @@ require([
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
         // jquery(".content").attr("disabled", "disabled");
     };
-    window.cleanUp = cleanUp;
+
     var clearResults = function() {
         // Clean up any existing content in the left hand column.
         jquery("#itemsArea").empty();
@@ -1840,7 +1842,6 @@ require([
                 idLink: portalUrl + "home/item.html?id=" + this.id,
                 agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
             };
-            window.xxx = this;
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html)
                 .addClass("in");
