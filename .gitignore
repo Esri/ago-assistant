@@ -2,6 +2,7 @@
 /node_modules
 
 # Build files
+/build
 *.zip
 *.map
 src/js/*.min.js
