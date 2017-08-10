@@ -173,11 +173,9 @@ require([
                 }
             });
             removeBtn.on("click", function() {
-                console.log("remove", itm.portalUrl);
                 removePortal(itm.portalUrl);
             });
             removeBtn2.on("click", function() {
-                console.log("remove", itm.portalUrl);
                 removePortal(itm.portalUrl);
             });
         });
@@ -1313,54 +1311,79 @@ require([
         var description = item[0].description;
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
-        jquery("#" + id + "_clone").addClass("btn-info");
-        jquery("#" + id + "_clone .copyInProgress").css("display", "inline-block");
-        jquery("#" + id + "_clone .itemId a").css("display", "none");
+        var cloneDiv = jquery("#" + id + "_clone");
+        cloneDiv.addClass("btn-info");
+        cloneDiv.find(".copyInProgress").css("display", "inline-block");
+        cloneDiv.find(".itemId a").css("display", "none");
         portal.itemData(id).then(function(data) {
-            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
-                .then(function(response) {
-                    var html,
-                        oldLink,
-                        newLink;
-                    if (response.success === true) {
-                        // Swizzle the portal url and id parameter to reflect the url of new item.
-                        if (description.url.indexOf("id=") > -1) {
-                            var newUrl = destinationPortal.portalUrl + description.url.substring(description.url.indexOf("apps/"));
-                            newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
-                            var folder = response.folder || "";
-                            destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                                .then(function() {
-                                    jquery("#" + id + "_clone").removeClass("btn-info");
-                                    jquery("#" + id + "_clone").addClass("btn-success");
-                                    oldLink = jquery("#" + id + "_clone .itemId a").attr("href");
-                                    newLink = oldLink.replace(description.id, response.id);
-                                    jquery("#" + id + "_clone .copyInProgress").css("display", "none");
-                                    jquery("#" + id + "_clone .itemId a").css("display", "inline-block");
-                                    jquery("#" + id + "_clone .itemId a").attr("href", newLink);
-                                    jquery("#" + id + "_clone .itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
-                                });
-                        } else {
-                            jquery("#" + id + "_clone").removeClass("btn-info");
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                            oldLink = jquery("#" + id + "_clone .itemId a").attr("href");
-                            newLink = oldLink.replace(description.id, response.id);
-                            jquery("#" + id + "_clone .copyInProgress").css("display", "none");
-                            jquery("#" + id + "_clone .itemId a").css("display", "inline-block");
-                            jquery("#" + id + "_clone .itemId a").attr("href", newLink);
-                            jquery("#" + id + "_clone .itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
-                        }
-                    } else if (response.error) {
-                        jquery("#" + id + "_clone").addClass("btn-danger");
+            var thenFunction = function(response) {
+                var html,
+                    oldLink,
+                    newLink;
+                if (response.success === true) {
+                    // Swizzle the portal url and id parameter to reflect the url of new item.
+                    if (description.url.indexOf("id=") > -1) {
+                        var newUrl = destinationPortal.portalUrl + description.url.substring(description.url.indexOf("apps/"));
+                        newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
+                        var folder2 = response.folder || "";
+                        destinationPortal.updateUrl(destinationPortal.username, folder2, response.id, newUrl)
+                            .then(function() {
+                                cloneDiv.removeClass("btn-info");
+                                cloneDiv.addClass("btn-success");
+                                oldLink = cloneDiv.find(".itemId a").attr("href");
+                                newLink = oldLink.replace(description.id, response.id);
+                                cloneDiv.find(".copyInProgress").css("display", "none");
+                                cloneDiv.find(".itemId a").css("display", "inline-block");
+                                cloneDiv.find(".itemId a").attr("href", newLink);
+                                cloneDiv.find(".itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
+                            });
+                    } else {
+                        cloneDiv.removeClass("btn-info");
+                        cloneDiv.addClass("btn-success");
+                        oldLink = cloneDiv.find(".itemId a").attr("href");
+                        newLink = oldLink.replace(description.id, response.id);
+                        cloneDiv.find(".copyInProgress").css("display", "none");
+                        cloneDiv.find(".itemId a").css("display", "inline-block");
+                        cloneDiv.find(".itemId a").attr("href", newLink);
+                        cloneDiv.find(".itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
+                    }
+                } else if (response.error) {
+                    if (response.error.message.search(" already exists.") >= 0) {
+                        description = Object.assign({}, description, {title: description.title + "-Copy"});
+                        cloneDiv.find(".itemTitle").text(description.title);
+                        destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                            .then(thenFunction)
+                            .catch(catchFunction);
+                    } else {
+                        cloneDiv.addClass("btn-danger");
                         html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: response.error.message
                         });
-                        jquery("#" + id + "_clone").before(html);
+                        cloneDiv.before(html);
+                        cloneDiv.fadeOut(2000, function() {
+                            jquery(this).remove();
+                        });
+                        jquery("#" + id + "_alert").fadeOut(3000, function() {
+                            jquery(this).remove();
+                        });
                     }
-                })
-                .catch(function() {
+                }
+            };
+            var catchFunction = function() {
+                if (!jquery("#" + id + "_alert")) {
                     showCopyError(id, "Something went wrong.");
+                }
+                cloneDiv.fadeOut(2000, function() {
+                    jquery(this).remove();
                 });
+                jquery("#" + id + "_alert").fadeOut(3000, function() {
+                    jquery(this).remove();
+                });
+            };
+            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                .then(thenFunction)
+                .catch(catchFunction);
         });
     };
 
@@ -1624,7 +1647,9 @@ require([
                     type: type
                 });
                 jquery("#" + id).before(html);
-                jquery("#" + id + "_alert").fadeOut(6000);
+                jquery("#" + id + "_alert").fadeOut(6000, function() {
+                    jquery(this).remove();
+                });
             }
         };
         /**
@@ -2518,7 +2543,6 @@ require([
         jquery(document).on("click", "li [data-action]", function(e) {
             // Highlight the selected action except for "View My Stats."
             var selectedAction = jquery(e.target).parent().attr("data-action");
-            console.log("clicked on " + selectedAction);
             if (selectedAction !== "stats") {
                 jquery("#actionDropdown li").removeClass("active");
                 jquery(e.target).parent().addClass("active");
@@ -2563,30 +2587,6 @@ require([
 
         jquery("#currentUrl").text(window.location.origin + window.location.pathname);
         jquery("#currentUrl2").text(window.location.origin + window.location.pathname);
-        jquery("[data-toggle='tab']").click(function(evt) {
-            var tgt = jquery(evt.target);
-            var tabId = tgt.attr("aria-controls");
-            switch (tabId) {
-            case "userPassTab":
-                console.log(tabId);
-                break;
-            case "oauthTab":
-                console.log(tabId);
-                break;
-            case "pkiIwaTab":
-                console.log(tabId);
-                break;
-            case "userPassTab2":
-                console.log(tabId);
-                break;
-            case "oauthTab2":
-                console.log(tabId);
-                break;
-            case "pkiIwaTab2":
-                console.log(tabId);
-                break;
-            }
-        });
 
     });
 
