@@ -63,6 +63,12 @@
                                         View My Stats
                                     </a>
                                 </li>
+                                <li data-action="startOver">
+                                    <a>
+                                        <span class="fa fa-lg fa-fast-backward" aria-hidden="true"></span>
+                                        Start Over
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     </ul>
@@ -131,7 +137,7 @@
                                 <p>Enter the URL to your Portal</p>
                                 <div class="form-group has-feedback">
                                     <div class="input-group">
-                                        <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="portalUrl">
+                                        <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://myportal.domain.com/" aria-label="..." id="portalUrl">
                                         <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
                                         <div class="input-group-btn">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalListBtn" disabled><span class="caret"></span></button>
@@ -182,16 +188,12 @@
                                                 <div class="form-group">
                                                     <label for="portalAppId" class="col-sm-2 control-label">App ID</label>
                                                     <div class="col-sm-6">
-                                                        <div class="input-group">
-                                                            <input class="form-control" type="text" placeholder="App ID" id="portalAppId" aria-describedby="ouathMore">
-                                                            <span class="input-group-btn" id="ouathMore">
-                                                                <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo1" aria-expanded="false" aria-controls="collapseInfo1">
-                                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                                                </a>
-                                                            </span>
-                                                        </div>
+                                                        <input class="form-control" type="text" placeholder="App ID" id="portalAppId" aria-describedby="ouathMore">
                                                     </div>
                                                 </div>
+                                                <a data-toggle="collapse" href="#collapseInfo1" aria-expanded="false" aria-controls="collapseInfo1">
+                                                    More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                </a>
                                             </div>
                                             <div class="collapse" id="collapseInfo1">
                                                 <div class="well">
@@ -207,12 +209,11 @@
                                         </div>
                                         <div role="tabpanel" class="tab-pane" id="pkiIwaTab">
                                             <br>
-                                            <div>Secured with PKI or IWA
+                                            <div>
                                                 <a data-toggle="collapse" href="#collapseInfo2" aria-expanded="false" aria-controls="collapseInfo2">
-                                                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                   More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                                                 </a>
                                             </div>
-                                            <br>
                                             <div class="collapse" id="collapseInfo2">
                                                 <div class="well">
                                                 This login method is used for Portals with web-tier authentication, using username and
@@ -267,7 +268,7 @@
                                         <p>Enter the URL to your Portal</p>
                                         <div class="form-group has-feedback">
                                             <div class="input-group">
-                                                <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://www.myserver.com/portal" aria-label="..." id="destinationUrl">
+                                                <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://myportal.domain.com/" aria-label="..." id="destinationUrl">
                                                 <i class="glyphicon form-control-feedback" style="right:30px;" aria-hidden="true"></i>
                                                 <div class="input-group-btn">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="portalList2Btn" disabled><span class="caret"></span></button>
@@ -319,16 +320,12 @@
                                                         <div class="form-group">
                                                             <label for="portalAppId2" class="col-sm-2 control-label">App ID</label>
                                                             <div class="col-sm-6">
-                                                                <div class="input-group">
-                                                                    <input class="form-control" type="text" placeholder="App ID" id="portalAppId2" aria-describedby="ouathMore">
-                                                                    <span class="input-group-btn" id="ouathMore">
-                                                                        <a class="btn btn-default" role="button" data-toggle="collapse" href="#collapseInfo4" aria-expanded="false" aria-controls="collapseInfo4">
-                                                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                                                        </a>
-                                                                    </span>
-                                                                </div>
+                                                                <input class="form-control" type="text" placeholder="App ID" id="portalAppId2" aria-describedby="ouathMore">
                                                             </div>
                                                         </div>
+                                                        <a data-toggle="collapse" href="#collapseInfo4" aria-expanded="false" aria-controls="collapseInfo4">
+                                                            More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                        </a>
                                                     </div>
                                                     <div class="collapse" id="collapseInfo4">
                                                         <div class="well">
@@ -337,7 +334,7 @@
                                                         AppID that can identify this app as an allowed client of the Portal. To do so, follow the
                                                         instructions
                                                         <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
-                                                        using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
+                                                        using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl2"></span></mark> as the
                                                         Redirect URI.
                                                         </div>
                                                     </div>
@@ -346,10 +343,9 @@
                                                     <br>
                                                     <div>
                                                         <a data-toggle="collapse" href="#collapseInfo5" aria-expanded="false" aria-controls="collapseInfo5">
-                                                            Secured with PKI or IWA <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                                            More info <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                                                         </a>
                                                     </div>
-                                                    <br>
                                                     <div class="collapse" id="collapseInfo5">
                                                         <div class="well">
                                                         This login method is used for Portals with web-tier authentication, using username and

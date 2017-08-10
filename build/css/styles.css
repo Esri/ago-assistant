@@ -1,6 +1,7 @@
 body {
     background: #fff;
     padding-top: 50px;
+    overflow-y: hidden;
 }
 
 .dropArea {
@@ -28,7 +29,6 @@ body {
     background: #fff;
     overflow-y: auto;
     padding-top: 10px;
-    min-height: 400px;
 }
 
 .accordion-inner {
@@ -126,6 +126,10 @@ body {
     width: 20px;
 }
 
+.harvestCopier {
+    height: 1em;
+}
+
 .apps {
     background:url(../assets/images/apps16.png);
 }
@@ -193,5 +197,17 @@ body {
 }
 
 .itemDetailsDiv {
-    text-align: right;
+    position: relative;
+    margin-left: 15px;
+    font-size: 0.8em;
+}
+
+.itemId abbr {
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dropdown-menu li {
+    cursor: pointer;
 }

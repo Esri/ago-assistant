@@ -1295,10 +1295,15 @@ require([
         var description = item[0].description;
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
+        jquery("#" + id + "_clone").addClass("btn-info");
+        jquery("#" + id + "_clone .copyInProgress").css("display", "inline-block");
+        jquery("#" + id + "_clone .itemId a").css("display", "none");
         portal.itemData(id).then(function(data) {
             destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
                 .then(function(response) {
-                    var html;
+                    var html,
+                        oldLink,
+                        newLink;
                     if (response.success === true) {
                         // Swizzle the portal url and id parameter to reflect the url of new item.
                         if (description.url.indexOf("id=") > -1) {
@@ -1307,10 +1312,24 @@ require([
                             var folder = response.folder || "";
                             destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
                                 .then(function() {
+                                    jquery("#" + id + "_clone").removeClass("btn-info");
                                     jquery("#" + id + "_clone").addClass("btn-success");
+                                    oldLink = jquery("#" + id + "_clone .itemId a").attr("href");
+                                    newLink = oldLink.replace(description.id, response.id);
+                                    jquery("#" + id + "_clone .copyInProgress").css("display", "none");
+                                    jquery("#" + id + "_clone .itemId a").css("display", "inline-block");
+                                    jquery("#" + id + "_clone .itemId a").attr("href", newLink);
+                                    jquery("#" + id + "_clone .itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
                                 });
                         } else {
+                            jquery("#" + id + "_clone").removeClass("btn-info");
                             jquery("#" + id + "_clone").addClass("btn-success");
+                            oldLink = jquery("#" + id + "_clone .itemId a").attr("href");
+                            newLink = oldLink.replace(description.id, response.id);
+                            jquery("#" + id + "_clone .copyInProgress").css("display", "none");
+                            jquery("#" + id + "_clone .itemId a").css("display", "inline-block");
+                            jquery("#" + id + "_clone .itemId a").attr("href", newLink);
+                            jquery("#" + id + "_clone .itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
                         }
                     } else if (response.error) {
                         jquery("#" + id + "_clone").addClass("btn-danger");
@@ -1634,9 +1653,9 @@ require([
         jquery("#dropArea").empty(); // Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
-        jquery(".content").attr("disabled", "disabled");
+        // jquery(".content").attr("disabled", "disabled");
     };
-
+    window.cleanUp = cleanUp;
     var clearResults = function() {
         // Clean up any existing content in the left hand column.
         jquery("#itemsArea").empty();
@@ -1646,7 +1665,7 @@ require([
 
         var setMaxWidth = function(el) {
             // Set the max-width of folder items so they don't fill the body when dragging.
-            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : (jquery("#itemsArea").width() ? $("#itemsArea").width() - 49 : 400);
             jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
         };
 
@@ -1675,6 +1694,9 @@ require([
     var highlightSupportedContent = function() {
         // Highlight content supported by the currently selected action.
         switch (jquery("#actionDropdown li.active").attr("data-action")) {
+        case "startOver":
+            cleanUp();
+            break;
         case "copyContent":
             highlightCopyableContent();
             break;
@@ -1813,7 +1835,10 @@ require([
                 type: this.type,
                 icon: portalSelf.itemInfo(this.type).icon,
                 portal: portalUrl,
-                user: this.owner
+                user: this.owner,
+                idAbbrev: this.id.substring(0, 6),
+                idLink: portalUrl + "home/item.html?id=" + this.id,
+                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
             };
             window.xxx = this;
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
@@ -1834,6 +1859,8 @@ require([
         // display the portal name and user info on the top of #itemsArea column
         var portalIdDom = jquery("<h4></h4>");
         var userIdDom = jquery("<h6></h6>");
+        var refreshBtn = jquery("<a class=\"pull-right\" href=\"#\">Refresh <span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span>");
+        refreshBtn.on("click", listUserItems);
         jquery("#itemsArea").append(portalIdDom);
         jquery("#itemsArea").append(userIdDom);
         app.portals.sourcePortal.self().then(function(data) {
@@ -1842,8 +1869,10 @@ require([
             var fullName = userData.fullName;
             var username = userData.username;
             var portalName = data.name || data.portalName;
-            portalIdDom.text(portalName);
-            userIdDom.text(fullName + " (" + username + ")");
+            portalName += " - <a href=\"" + app.portals.sourcePortal.portalUrl + "\" target=\"_blank\">" + app.portals.sourcePortal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
+            userIdDom.append(refreshBtn);
         });
 
         // Capture item creation times to be displayed in the user heatmap.
@@ -1872,7 +1901,10 @@ require([
                     title: this.title,
                     type: this.type,
                     icon: portalSelf.itemInfo(this.type).icon,
-                    portal: portal.portalUrl
+                    portal: portal.portalUrl,
+                    idAbbrev: this.id.substring(0, 6),
+                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
@@ -1909,7 +1941,10 @@ require([
                                 title: this.title,
                                 type: this.type,
                                 icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
+                                portal: portal.portalUrl,
+                                idAbbrev: this.id.substring(0, 6),
+                                idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                             jquery("#collapse_" + this.ownerFolder).append(html);
@@ -1932,51 +1967,70 @@ require([
         cleanUp();
         clearResults();
 
-        portal.userProfile(portal.username).then(function(user) {
+        // display the portal name and user info on the top of #itemsArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        jquery("#itemsArea").append(portalIdDom);
+        jquery("#itemsArea").append(userIdDom);
+        portal.self().then(function(data) {
+            var userData = data.user;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalName += " - <a href=\"" + portal.portalUrl + "\" target=\"_blank\">" + portal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
 
-            // Sort the groups alphabetically.
-            sortArrayAlpha(user.groups, "title");
+            portal.userProfile(portal.username).then(function(user) {
 
-            // Add the groups.
-            jquery.each(user.groups, function() {
-                var group = this;
-                var query = "group:" + this.id;
-                var folderData = {
-                    title: this.title,
-                    id: this.id,
-                    count: 0
-                };
+                // Sort the groups alphabetically.
+                sortArrayAlpha(user.groups, "title");
 
-                // Append an accordion for the folder.
-                var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                jquery("#itemsArea").append(html);
+                // Add the groups.
+                jquery.each(user.groups, function() {
+                    var group = this;
+                    var query = "group:" + this.id;
+                    var folderData = {
+                        title: this.title,
+                        id: this.id,
+                        count: 0
+                    };
 
-                // Get the items in the group (sorted alphabetically).
-                portal.search(query, 100, "title", "asc")
-                    .then(function(search) {
+                    // Append an accordion for the folder.
+                    var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                    jquery("#itemsArea").append(html);
 
-                        // Update the folder count.
-                        jquery("#collapse_" + group.id).parent().find("span.badge")[0].innerHTML = search.total;
+                    // Get the items in the group (sorted alphabetically).
+                    portal.search(query, 100, "title", "asc")
+                        .then(function(search) {
 
-                        // Append the items to the folder.
-                        jquery.each(search.results, function() {
-                            var templateData = {
-                                id: this.id,
-                                title: this.title,
-                                type: this.type,
-                                icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
-                            };
-                            var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
-                            jquery("#collapse_" + group.id).append(html);
+                            // Update the folder count.
+                            jquery("#collapse_" + group.id).parent().find("span.badge")[0].innerHTML = search.total;
+
+                            // Append the items to the folder.
+                            jquery.each(search.results, function() {
+                                var templateData = {
+                                    id: this.id,
+                                    title: this.title,
+                                    type: this.type,
+                                    icon: portalSelf.itemInfo(this.type).icon,
+                                    portal: portal.portalUrl,
+                                    user: this.owner,
+                                    idAbbrev: this.id.substring(0, 6),
+                                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
+                                };
+                                var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                                jquery("#collapse_" + group.id).append(html);
+                            });
                         });
-                    });
-            });
+                });
 
-            setTimeout(function() {
-                // Wait a second to let all of the items populate before highlighting them.
-                highlightSupportedContent();
-            }, 1000);
+                setTimeout(function() {
+                    // Wait a second to let all of the items populate before highlighting them.
+                    highlightSupportedContent();
+                }, 1000);
+            });
         });
     };
 
@@ -1995,8 +2049,9 @@ require([
             var fullName = userData.fullName;
             var username = userData.username;
             var portalName = data.name || data.portalName;
-            portalIdDom.text(portalName);
-            userIdDom.text(fullName + " (" + username + ")");
+            portalName += " - <a href=\"" + app.portals.destinationPortal.portalUrl + "\" target=\"_blank\">" + app.portals.destinationPortal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
         });
 
         portal.userContent(portal.username, "/").then(function(content) {
@@ -2024,7 +2079,10 @@ require([
                     title: this.title,
                     type: this.type,
                     icon: portalSelf.itemInfo(this.type).icon,
-                    portal: portal.portalUrl
+                    portal: portal.portalUrl,
+                    idAbbrev: this.id.substring(0, 6),
+                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), itemData);
                 jquery("#collapseDest_").append(html);
@@ -2061,7 +2119,10 @@ require([
                                 title: this.title,
                                 type: this.type,
                                 icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
+                                portal: portal.portalUrl,
+                                idAbbrev: this.id.substring(0, 6),
+                                idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                             jquery("#collapseDest_" + content.currentFolder.id).append(html);
@@ -2143,7 +2204,7 @@ require([
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
             "use strict";
-            jquery(".itemArea").height(jquery(window).height() - 50);
+            jquery(".itemArea").height(jquery(window).height() - 60);
         };
 
         resizeContentAreas();
@@ -2163,13 +2224,7 @@ require([
         disableEnterKey();
 
         // Preformat the copy login screen.
-        jquery("#destinationUrl").css({
-            display: "none"
-        });
-        jquery("#destinationWebTierAuth").css({
-            display: "none"
-        });
-        jquery("#destinationLoginForm").css({
+        jquery("#portalDestinationGroup").css({
             display: "none"
         });
 
@@ -2184,15 +2239,6 @@ require([
             });
             jquery("#destinationUrl").val("https://www.arcgis.com/");
             jquery("#portalDestinationGroup").css({
-                display: "none"
-            });
-            jquery("#destinationUrl").css({
-                display: "none"
-            });
-            jquery("#destinationWebTierAuth").css({
-                display: "none"
-            });
-            jquery("#destinationLoginForm").css({
                 display: "none"
             });
             jquery("#destinationLoginBtn").css({
@@ -2210,20 +2256,12 @@ require([
 
         jquery("#destinationPortalBtn").click(function() {
             jquery("#destinationUrl").attr({
-                placeholder: "https://myportal.com/",
+                placeholder: "https://myportal.domain.com/",
                 value: ""
             });
+            jquery("#portalAppId2").val("");
             jquery("#destinationUrl").val("");
             jquery("#portalDestinationGroup").css({
-                display: "block"
-            });
-            jquery("#destinationUrl").css({
-                display: "block"
-            });
-            jquery("#destinationWebTierAuth").css({
-                display: "block"
-            });
-            jquery("#destinationLoginForm").css({
                 display: "block"
             });
             jquery("#destinationLoginBtn").css({
@@ -2234,6 +2272,7 @@ require([
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
             jquery("#destinationAgolBtn").removeClass("btn-primary active");
+            jquery("#userPassTab2Btn").trigger("click");
         });
 
         // Make DOM adjustments when the browser is resized.
@@ -2267,41 +2306,6 @@ require([
                     validateUrl("#destinationUrl", app.portals.destinationPortal, "#destinationLoginBtn");
                 }
             }, 500);
-        });
-
-        // Disable username and password if web tier auth is selected.
-        // TODO: remove this logic, these components don't exist anymore:
-        // sourceAppId, sourceWebTierAuth, destinationWebTierAuth, destWebTierAuthChk
-        jquery("#sourceWebTierAuth").click(function(e) {
-            var checkboxState = jquery(e.currentTarget).prop("checked");
-            if (checkboxState === true) {
-                jquery("#portalUsername").attr("disabled", true);
-                jquery("#portalPassword").attr("disabled", true);
-                jquery("#portalLoginBtn").text("Proceed");
-                app.portals.sourcePortal.withCredentials = true;
-            } else {
-                jquery("#portalUsername").removeAttr("disabled");
-                jquery("#portalPassword").removeAttr("disabled");
-                jquery("#portalLoginBtn").text("Log in");
-                app.portals.sourcePortal.withCredentials = false;
-            }
-        });
-
-        // Disable username and password if web tier auth is selected.
-        // TODO: modify this to apply to current dom form elements
-        jquery("#destWebTierAuthChk").click(function(e) {
-            var checkboxState = jquery(e.currentTarget).prop("checked");
-            if (checkboxState === true) {
-                jquery("#destinationUsername").attr("disabled", true);
-                jquery("#destinationPassword").attr("disabled", true);
-                jquery("#destinationLoginBtn").text("Proceed");
-                app.portals.destinationPortal.withCredentials = true;
-            } else {
-                jquery("#destinationUsername").removeAttr("disabled");
-                jquery("#destinationPassword").removeAttr("disabled");
-                jquery("#destinationLoginBtn").text("Log in");
-                app.portals.destinationPortal.withCredentials = false;
-            }
         });
 
         // Login.
@@ -2435,11 +2439,13 @@ require([
             } else if (selectedAction == "viewMyGroups") {
                 // View My Groups.
                 NProgress.start();
+                jquery("#actionDropdown li").removeClass("active");
                 listUserGroups();
                 NProgress.done();
             } else {
                 // View My Content.
                 NProgress.start();
+                jquery("#actionDropdown li").removeClass("active");
                 listUserItems();
                 NProgress.done();
             }
@@ -2495,6 +2501,7 @@ require([
         jquery(document).on("click", "li [data-action]", function(e) {
             // Highlight the selected action except for "View My Stats."
             var selectedAction = jquery(e.target).parent().attr("data-action");
+            console.log("clicked on " + selectedAction);
             if (selectedAction !== "stats") {
                 jquery("#actionDropdown li").removeClass("active");
                 jquery(e.target).parent().addClass("active");
@@ -2502,8 +2509,12 @@ require([
 
             // Choose what to do based on the selection.
             switch (selectedAction) {
+            case "startOver":
+                cleanUp();
+                jquery("#searchText").val("");
+                listUserItems();
+                break;
             case "inspectContent":
-
                 // Enable inspecting of content.
                 cleanUp();
                 inspectContent();
@@ -2534,6 +2545,7 @@ require([
 
 
         jquery("#currentUrl").text(window.location.origin + window.location.pathname);
+        jquery("#currentUrl2").text(window.location.origin + window.location.pathname);
         jquery("[data-toggle='tab']").click(function(evt) {
             var tgt = jquery(evt.target);
             var tabId = tgt.attr("aria-controls");
