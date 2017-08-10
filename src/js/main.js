@@ -651,7 +651,12 @@ require([
             e.clearSelection();
         });
 
-        var validateJson = function(jsonString) {
+        var validateJson = function(elId) {
+            $("#" + elId + " tr").removeClass("jsonError");
+            var jsonString = "";
+            $("#" + elId + " td:nth-child(2)").each(function(i, el) {
+                jsonString += $(el).text() + "\n";
+            });
             try {
                 var o = JSON.parse(jsonString);
                 if (o && typeof o === "object" && o !== null) {
@@ -663,6 +668,7 @@ require([
                     position = position[1] * 1;
                     var lineNo = jsonString.substring(0, position).split("\n").length;
                     e.message += " (line number " + lineNo + ")";
+                    $("#" + elId + " tr:nth-child(" + lineNo + ")").addClass("jsonError");
                 }
                 return e.message;
             }
@@ -696,13 +702,14 @@ require([
                 editButton.attr("data-placement", "bottom");
                 editButton.attr("title", "Discard your edits");
                 editButton.tooltip();
-                jsonBackup = codeBlock.text();
+                jsonBackup = codeBlock.html();
                 codeBlock.attr("contentEditable", "true");
+                $("#" + codeBlock[0].id + " td:nth-child(1)").attr("contentEditable", "false");
                 // Check for IE ('Trident') which does not fire an `input` event in anything other than input.
                 var eventType = /Trident/.test(navigator.userAgent) ? "paste cut keyup" : "input";
                 codeBlock.bind(eventType, function() {
                     // Validate the JSON as it is edited.
-                    jsonValid = validateJson(codeBlock.text());
+                    jsonValid = validateJson(codeBlock[0].id);
                     saveButton.tooltip("destroy");
                     if (jsonValid === true) {
                         // Valid. Allow saving.
@@ -734,9 +741,10 @@ require([
                 // Let the user back out of editing without saving.
                 // End editing and restore the original json.
                 codeBlock.attr("contentEditable", "false");
-                codeBlock.text(jsonBackup);
+                codeBlock.html(jsonBackup);
                 codeBlock.each(function(i, e) {
                     hljs.highlightBlock(e);
+                    hljs.lineNumbersBlock(e);
                 });
 
                 editButton.attr("class", "btn btn-default");
@@ -879,6 +887,7 @@ require([
                              */
                             jquery("pre").each(function(i, e) {
                                 hljs.highlightBlock(e);
+                                hljs.lineNumbersBlock(e);
                             });
 
                             jquery(".btn-default[data-action='startEdits']").click(function(e) {

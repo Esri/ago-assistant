@@ -215,3 +215,7 @@ body {
 .panel-title {
     display: block;
 }
+
+.jsonError .hljs-ln-code {
+   background-color: lightpink;
+}
