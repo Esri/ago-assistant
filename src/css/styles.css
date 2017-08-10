@@ -211,3 +211,7 @@ body {
 .dropdown-menu li {
     cursor: pointer;
 }
+
+.panel-title {
+    display: block;
+}
