@@ -625,7 +625,7 @@ require([
     var inspectContent = function() {
 
         var portal;
-        var jsonBackup;
+        var jsonBackup = {};
         var jsonValid;
 
         // Copy JSON with clipboard.js.
@@ -700,7 +700,8 @@ require([
                 editButton.attr("data-placement", "bottom");
                 editButton.attr("title", "Discard your edits");
                 editButton.tooltip();
-                jsonBackup = codeBlock.html();
+                jsonBackup[codeBlock[0].id] = codeBlock.html();
+                window.jsonBackup = jsonBackup;
                 codeBlock.attr("contentEditable", "true");
                 $("#" + codeBlock[0].id + " td:nth-child(1)").attr("contentEditable", "false");
                 // Check for IE ('Trident') which does not fire an `input` event in anything other than input.
@@ -739,11 +740,7 @@ require([
                 // Let the user back out of editing without saving.
                 // End editing and restore the original json.
                 codeBlock.attr("contentEditable", "false");
-                codeBlock.html(jsonBackup);
-                codeBlock.each(function(i, e) {
-                    hljs.highlightBlock(e);
-                    hljs.lineNumbersBlock(e);
-                });
+                codeBlock.html(jsonBackup[codeBlock[0].id]);
 
                 editButton.attr("class", "btn btn-default");
                 editButton.children("span")
