@@ -223,3 +223,7 @@ body {
 .dropBorder.ui-state-active {
     border: #4cae4c 2px dashed;
 }
+
+table.hljs-ln {
+    width: 100%;
+}
