@@ -27,25 +27,36 @@
     }
   ],
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-polyfill": "^6.16.0",
+    "babel-preset-env": "^1.6.0",
     "babel-preset-es2015": "^6.14.0",
+    "concat-cli": "^4.0.0",
+    "copyfiles": "^1.2.0",
+    "del-cli": "^1.1.0",
+    "eslint": "^4.5.0",
     "grunt": "^1.0.1",
     "grunt-aws-s3": "^0.14.5",
+    "grunt-babel": "^7.0.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-connect": "^1.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-uglify": "^2.0.0",
-    "grunt-contrib-watch":"^1.0.0",
-    "grunt-contrib-connect": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
     "grunt-eslint": "^19.0.0",
     "grunt-shell": "^1.3.1",
     "grunt-string-replace": "^1.3.0",
-    "rollup": "^0.34.10",
+    "rexreplace": "^2.4.1",
+    "rollup": "^0.34.13",
     "rollup-plugin-babel": "^2.6.1",
     "rollup-plugin-json": "^2.0.2",
     "rollup-plugin-node-resolve": "^2.0.0",
-    "rollup-plugin-uglify": "^1.0.1"
+    "rollup-plugin-uglify": "^1.0.1",
+    "serve": "^6.0.6",
+    "uglify-js": "^3.0.28"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -61,8 +72,20 @@
     "type": "git",
     "url": "https://github.com/Esri/ago-assistant.git"
   },
+  "config": {
+    "appId": "4E1s0Mv5r0c2l6W8",
+    "portalUrl": "https://www.arcgis.com/"
+  },
   "scripts": {
-    "build": "grunt",
-    "rollup": "rollup -c"
+    "grunt": "grunt",
+    "build": "npm run clean:build && npm run rollup && npm run copy && npm run build:html && npm run build:js && npm run clean:files",
+    "rollup": "rollup -c",
+    "clean:build": "del build/ && mkdir build",
+    "clean:files": "del src/js/main.min* src/js/lib/portal.min*",
+    "build:html": "concat-cli -f src/index.html src/templates.html -o build/index.html | rexreplace '<package.version>' $npm_package_version build/index.html",
+    "build:js": "babel src/js/main.js | rexreplace '<config.appId>' $npm_package_config_appId | rexreplace '<config.portalUrl>' $npm_package_config_portalUrl | uglifyjs -c -o build/js/main.min.js",
+    "copy": "copyfiles -u 1 src/oauth-callback.html 'src/assets/**' 'src/css/**' 'src/js/lib/**' build/",
+    "lint": "eslint src/js/*.js src/js/portal/*.js",
+    "serve": "serve --port 8080 --open ./build"
   }
 }
