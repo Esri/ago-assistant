@@ -65,8 +65,8 @@
     "portalUrl": "https://www.arcgis.com/"
   },
   "scripts": {
-    "build": "npm run clean:build && npm run rollup && npm run copy && npm run build:html && npm run build:js && npm run clean:files",
-    "rollup": "rollup -c",
+    "build": "npm run clean:build && npm run copy && npm run rollup && npm run build:html && npm run build:js && npm run clean:files",
+    "rollup": "rollup -c && concat-cli -f node_modules/babel-polyfill/dist/polyfill.min.js src/js/lib/portal.min.js -o build/js/lib/portal.min.js",
     "clean:build": "del build/ && mkdir build",
     "clean:files": "del src/js/main.min* src/js/lib/portal.min*",
     "build:html": "concat-cli -f src/index.html src/templates.html -o build/index.html | rexreplace '<package.version>' $npm_package_version build/index.html",
