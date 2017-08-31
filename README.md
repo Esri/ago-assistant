@@ -38,13 +38,10 @@ This project uses npm scripts to automate building and optimizing the applicatio
 ## Resources
 
 * [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/)
-* [ArcGIS Online](http://www.arcgis.com/home/)
-* [ArcGIS Blog](http://blogs.esri.com/esri/arcgis/)
-* [twitter@esri](http://twitter.com/esri)
 
 ## Issues
 
-Find a bug or want to request a new feature?  Please let us know by submitting an issue.
+Find a bug or want to request a new feature?  Please let us know by [submitting an issue](https://github.com/Esri/ago-assistant/issues/new).
 
 ## Contributing
 
