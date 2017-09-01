@@ -69,9 +69,9 @@
     "rollup": "rollup -c && concat-cli -f node_modules/babel-polyfill/dist/polyfill.min.js src/js/lib/portal.min.js -o build/js/lib/portal.min.js",
     "clean:build": "rimraf build/ && mkdir build",
     "clean:files": "rimraf src/js/main.min* src/js/lib/portal.min*",
-    "build:html": "concat-cli -f src/index.html src/templates.html -o build/index.html | rexreplace '<package.version>' $npm_package_version build/index.html",
-    "build:js": "babel src/js/main.js | rexreplace '<config.appId>' $npm_package_config_appId | rexreplace '<config.portalUrl>' $npm_package_config_portalUrl | uglifyjs -c -o build/js/main.min.js",
-    "copy": "copyfiles -u 1 src/oauth-callback.html 'src/assets/**' 'src/css/**' 'src/js/lib/**' build/",
+    "build:html": "concat-cli -f src/index.html src/templates.html -o build/index.html | rexreplace \"<package.version>\" $npm_package_version build/index.html",
+    "build:js": "babel src/js/main.js | rexreplace \"<config.appId>\" $npm_package_config_appId | rexreplace \"<config.portalUrl>\" $npm_package_config_portalUrl | uglifyjs -c -o build/js/main.min.js",
+    "copy": "copyfiles -u 1 src/oauth-callback.html \"src/assets/**\" \"src/css/**\" \"src/js/lib/**\" build/",
     "lint": "eslint src/js/*.js src/js/portal/*.js",
     "serve": "serve --port 8080 --open ./build"
   }
