@@ -485,9 +485,25 @@ require([
             jquery(".content").removeClass("btn-primary");
             jquery(this).addClass("btn-primary");
             jquery(this).removeClass("btn-info");
+
+            /*
+             * Determine if /data should be returned for an item
+             *  based on the Sharing API name key value for that
+             *  item.  Looks for a period in the name to indicate
+             *  that it is a file based item, e.g. roads.kmz.
+             */
+            var checkData = function(id, name){
+                return new Promise(function(resolve, reject) {
+                    if ((!name) || ((name) && (name.indexOf('.') < 0))) {
+                        resolve(portal.itemData(id));
+                    }
+                    else { resolve(null); }
+                });
+            };
+
             portal.itemDescription(id)
                 .then(function(description) {
-                    portal.itemData(id)
+                    checkData(id, description.name)
                         .then(function(data) {
                             if (data) {
                                 itemData = data;
