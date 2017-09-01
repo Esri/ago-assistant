@@ -18,43 +18,30 @@ This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to prov
 1. Fork and then clone the repo -OR- [download a recent release](https://github.com/Esri/ago-assistant/releases).
 2. Run and try the samples.
 
-#### Using Grunt
-This project uses [Grunt](http://gruntjs.com/) to automate building the application for deployment on a web server. It does a handful of things for you that will make life easier when setting up this application.
+#### Building the app
+This project uses npm scripts to automate building and optimizing the application. It does a handful of things for you that will make it easier to configure and deploy this application to your own web server.
 
   * Download and install [node.js](http://nodejs.org/).
   * Download or clone this project to your machine.
-  * In your terminal or command prompt run `npm install -g rollup` to install the global rollup.js dependency.
   * Go to the project folder in your terminal or command prompt and run `npm install` to install the project dependencies.
   * [Register the app in your portal](http://server.arcgis.com/en/server/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B) to obtain an `appId` for using the OAuth dialog to log in. Be sure to add the correct redirect URI (the location where your app will be hosted).
-  * Update [`config.json`](config.json) with your portal's url and new `appId`.
-  * Run `grunt dev` from the command line to run the app locally at `127.0.0.1:8080` for development and testing. This build includes intermediate build files and source maps.
-  * Run `grunt` from the command line to generate an optimized build in the `build` folder for deploying the app to a web server.
+  * Update the config section in [`package.json`](package.json) with your portal's url and new `appId`.
+  * Run `npm run build` to generate an optimized build in the `build` folder.
+    * You can run the app locally for development and testing with the command `npm run serve`. Your browser should automatically open to `localhost:8080`. 
+    * Deploy the contents of the `build` folder to your own web server to distribute the app throughout your organization.
 
 ## Requirements
 
 * Notepad or your favorite HTML editor
 * Web browser with access to the Internet
 
-## Third Party Libraries Used
-* [jQuery](http://jquery.com/)
-* [Bootstrap](http://getbootstrap.com/)
-* [jQuery-UI](http://jqueryui.com/)
-* [D3](http://d3js.org/)
-* [mustache.js](https://github.com/janl/mustache.js)
-* [Cal-Heatmap.js](http://kamisama.github.io/cal-heatmap/)
-* [NProgress.js](http://ricostacruz.com/nprogress/)
-* [highlight.js](http://highlightjs.org/)
-
 ## Resources
 
 * [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/)
-* [ArcGIS Online](http://www.arcgis.com/home/)
-* [ArcGIS Blog](http://blogs.esri.com/esri/arcgis/)
-* [twitter@esri](http://twitter.com/esri)
 
 ## Issues
 
-Find a bug or want to request a new feature?  Please let us know by submitting an issue.
+Find a bug or want to request a new feature?  Please let us know by [submitting an issue](https://github.com/Esri/ago-assistant/issues/new).
 
 ## Contributing
 
