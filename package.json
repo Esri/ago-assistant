@@ -26,11 +26,13 @@
       "name": "Bjorn  Svensson"
     }
   ],
+  "dependencies": {
+    "babel-polyfill": "^6.26.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.8.0",
-    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-es2015": "^6.24.1",
     "concat-cli": "^4.0.0",
@@ -48,7 +50,7 @@
     "uglify-js": "^3.0.28"
   },
   "engines": {
-    "node": ">= 0.10.0"
+    "node": ">= 6.9.5"
   },
   "homepage": "https://github.com/Esri/ago-assistant",
   "keywords": [
