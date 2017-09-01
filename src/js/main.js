@@ -41,11 +41,157 @@ require([
         }
     };
 
+    // used for reading portal and appid from url string
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split("&"),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split("=");
+
+            if (sParameterName[0].toLowerCase() === sParam.toLowerCase()) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+
+    // used to store and populate drop down of portals in portal login forms
+    var storedPortals = localStorage.getItem("storedPortals");
+
+    // remove a portal from the stored portals list
+    var removePortal = function(portalUrl) {
+        var foundIndex;
+        portalUrl = portalUrl.trim();
+        storedPortals.some(function(itm, n) {
+            if (itm.portalUrl == portalUrl) {
+                foundIndex = n;
+                return true;
+            }
+        });
+        if (foundIndex >= 0) {
+            storedPortals.splice(foundIndex, 1);
+        }
+        localStorage.setItem("storedPortals", JSON.stringify(storedPortals));
+        jquery("#portalList").children().each(function(n, itm) {
+            var pUrl = jquery(itm).first().text().trim();
+            if (pUrl == portalUrl) {
+                jquery(itm).remove();
+            }
+        });
+        jquery("#portalList2").children().each(function(n, itm) {
+            var pUrl = jquery(itm).first().text().trim();
+            if (pUrl == portalUrl) {
+                jquery(itm).remove();
+            }
+        });
+        if (!jquery("#portalList").children().length) {
+            jquery("#portalListBtn").attr("disabled", true);
+        }
+        if (!jquery("#portalList2").children().length) {
+            jquery("#portalList2Btn").attr("disabled", true);
+        }
+    };
+
+    // add a portal to the stored portals list
+    var storePortal = function(portalItm) {
+        var portalUrl = portalItm.portalUrl;
+        var appId = portalItm.appId;
+        var usePkiIwa = portalItm.usePkiIwa;
+        var useOauth = portalItm.useOauth;
+        var useUserPass = portalItm.useUserPass;
+        var found = false;
+        storedPortals.some(function(itm, n) {
+            if (itm.portalUrl == portalUrl) {
+                itm.appId = appId;
+                found = true;
+                return true;
+            }
+        });
+        if (!found) {
+            storedPortals.push({
+                portalUrl: portalUrl,
+                appId: appId,
+                usePkiIwa: usePkiIwa,
+                useOauth: useOauth,
+                useUserPass: useUserPass
+            });
+        }
+        localStorage.setItem("storedPortals", JSON.stringify(storedPortals));
+        jquery("#portalList").empty();
+        jquery("#portalList2").empty();
+        storedPortals.forEach(function(itm) {
+            jquery("#portalListBtn").removeAttr("disabled");
+            jquery("#portalList2Btn").removeAttr("disabled");
+            var removeBtn = jquery(
+                "<a href=\"#\" class=\"removePortalBtn btn-xs pull-right\">" +
+                "   <span class=\"text-danger glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>" +
+                "</a>"
+            );
+            var removeBtn2 = jquery(
+                "<a href=\"#\" class=\"removePortalBtn btn-xs pull-right\">" +
+                "   <span class=\"text-danger glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>" +
+                "</a>"
+            );
+            var portal = jquery("<a href=\"#\">" + itm.portalUrl + "</a>");
+            var portal2 = jquery("<a href=\"#\">" + itm.portalUrl + "</a>");
+            var li = jquery("<li></li>");
+            var li2 = jquery("<li></li>");
+            li.append(portal);
+            li.append(removeBtn);
+            li2.append(portal2);
+            li2.append(removeBtn2);
+            jquery("#portalList").append(li);
+            jquery("#portalList2").append(li2);
+            portal.on("click", function() {
+                jquery("#portalAppId").val(itm.appId);
+                jquery("#portalUrl").val(itm.portalUrl);
+                if (!app.portals.sourcePortal) {
+                    app.portals.sourcePortal = new portalSelf.Portal();
+                }
+                validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
+                if (itm.appId) {
+                    jquery("#oauthTabBtn").trigger("click");
+                } else {
+                    jquery("#userPassTabBtn").trigger("click");
+                    jquery("#portalUsername").focus();
+                }
+            });
+            portal2.on("click", function() {
+                jquery("#portalAppId2").val(itm.appId);
+                jquery("#destinationUrl").val(itm.portalUrl);
+                if (!app.portals.destinationPortal) {
+                    app.portals.destinationPortal = new portalSelf.Portal();
+                }
+                validateUrl("#destinationUrl", app.portals.destinationPortal, "#destinationLoginBtn");
+                if (itm.appId) {
+                    jquery("#oauthTab2Btn").trigger("click");
+                } else {
+                    jquery("#userPassTab2Btn").trigger("click");
+                    jquery("#destinationUsername").focus();
+                }
+            });
+            removeBtn.on("click", function() {
+                removePortal(itm.portalUrl);
+            });
+            removeBtn2.on("click", function() {
+                removePortal(itm.portalUrl);
+            });
+        });
+    };
+
+    storedPortals = storedPortals ? JSON.parse(storedPortals) : [];
+    storedPortals.forEach(function(itm) {
+        storePortal(itm);
+    });
+
     /**
      * Check the url for errors (e.g. no trailing slash)
      * and update it before sending.
      */
-    var validateUrl = function(el, portal) {
+    var validateUrl = function(el, portal, loginBtnEl) {
+        // loginBtnEl is used to disable the login button when portal url is invalid
         "use strict";
         var inputUrl = jquery.trim(jquery(el).val());
         portalSelf.util.fixUrl(inputUrl).then(function(portalUrl) {
@@ -62,6 +208,7 @@ require([
                     console.info("API v" + data.currentVersion);
                     jquery(".alert-danger.alert-dismissable").remove();
                     jquery(el).next().addClass("glyphicon-ok");
+                    jquery(loginBtnEl).removeAttr("disabled");
                 })
                 .catch(function() {
                     // Try it again with enterprise auth.
@@ -71,6 +218,7 @@ require([
                             console.info("API v" + data.currentVersion);
                             jquery(".alert-danger.alert-dismissable").remove();
                             jquery(el).next().addClass("glyphicon-ok");
+                            jquery(loginBtnEl).removeAttr("disabled");
                             jquery(checkbox).trigger("click");
                         })
                         .catch(function() {
@@ -82,6 +230,7 @@ require([
                                 console.info("API v" + data.currentVersion);
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).next().addClass("glyphicon-ok");
+                                jquery(loginBtnEl).removeAttr("disabled");
                             }).catch(function() {
                                 // OK, it's really not working.
                                 portal.withCredentials = false;
@@ -89,6 +238,7 @@ require([
                                 jquery(".alert-danger.alert-dismissable").remove();
                                 jquery(el).parent().parent().after(urlError);
                                 jquery(el).parent().addClass("has-error");
+                                jquery(loginBtnEl).attr("disabled", true);
                             });
                         });
                 });
@@ -146,6 +296,26 @@ require([
     };
 
     var loginPortal = function() {
+        // determine which method of login to use (direct, oauth, or pki/iwa)
+        if (jquery("#oauthTab").hasClass("active")) {
+            loginPortalOAuth();
+            return;
+        } else if (jquery("#pkiIwaTab").hasClass("active")) {
+            app.portals.sourcePortal.withCredentials = true;
+        } else {
+            app.portals.sourcePortal.withCredentials = false;
+        }
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: app.portals.sourcePortal.portalUrl,
+                appId: "",
+                usePkiIwa: app.portals.sourcePortal.withCredentials,
+                useOauth: false,
+                useUserPass: !app.portals.sourcePortal.withCredentials
+            };
+            storePortal(portalItm);
+        };
         var username = jquery("#portalUsername").val();
         var password = jquery("#portalPassword").val();
         jquery("#portalLoginBtn").button("loading");
@@ -157,6 +327,7 @@ require([
                     jquery("#splashContainer").css("display", "none");
                     jquery("#itemsContainer").css("display", "block");
                     startSession();
+                    store();
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
                     jquery(".alert-danger.alert-dismissable").remove();
@@ -169,13 +340,68 @@ require([
                 var html = jquery("#loginErrorTemplate").html();
                 jquery(".alert-danger.alert-dismissable").remove();
                 jquery("#portalLoginForm").before(html);
-            })
-            .then(function() {
-                jquery("#portalLoginBtn").button("reset");
             });
     };
 
+    var loginPortalOAuth = function() {
+        var portalInfo = new arcgisOAuthInfo({
+            appId: jquery("#portalAppId").val(),
+            popup: true,
+            portalUrl: app.portals.sourcePortal.portalUrl
+        });
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: portalInfo.portalUrl,
+                appId: portalInfo.appId,
+                usePkiIwa: false,
+                useOauth: true,
+                useUserPass: false
+            };
+            storePortal(portalItm);
+        };
+        esriId.registerOAuthInfos([portalInfo]);
+        portalSelf.util.fixUrl(portalInfo.portalUrl).then(function(portalUrl) {
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
+            }
+            esriId.checkSignInStatus(sharingUrl)
+                .then(
+                    function(data) {
+                        jquery("#portalLoginModal").modal("hide");
+                        jquery("#splashContainer").css("display", "none");
+                        jquery("#itemsContainer").css("display", "block");
+                        app.portals.sourcePortal.username = data.userId;
+                        app.portals.sourcePortal.token = data.token;
+                        startSession();
+                        store();
+                    })
+                .otherwise(
+                    function() {
+                        esriId.getCredential(portalUrl, {
+                            oAuthPopupConfirmation: false
+                        })
+                        .then(function(data) {
+                            jquery("#portalLoginModal").modal("hide");
+                            jquery("#splashContainer").css("display", "none");
+                            jquery("#itemsContainer").css("display", "block");
+                            app.portals.sourcePortal.username = data.userId;
+                            app.portals.sourcePortal.token = data.token;
+                            startSession();
+                            store();
+                        });
+                    }
+                );
+        });
+    };
+
     var loginDestination = function() {
+        // determine which method of login to use (direct, oauth, or pki/iwa)
+        if (jquery("#oauthTab2").hasClass("active")) {
+            loginDestinationOAuth();
+            return;
+        }
         var username = jquery("#destinationUsername").val();
         var password = jquery("#destinationPassword").val();
         var portalUrl = jquery("#destinationUrl").val();
@@ -185,8 +411,22 @@ require([
                 portalUrl: portalUrl
             });
         }
-
-        jquery("#destinationLoginBtn").button("loading");
+        if (jquery("#pkiIwaTab2").hasClass("active")) {
+            app.portals.destinationPortal.withCredentials = true;
+        } else {
+            app.portals.destinationPortal.withCredentials = false;
+        }
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: app.portals.destinationPortal.portalUrl,
+                appId: "",
+                usePkiIwa: app.portals.destinationPortal.withCredentials,
+                useOauth: false,
+                useUserPass: !app.portals.destinationPortal.withCredentials
+            };
+            storePortal(portalItm);
+        };        jquery("#destinationLoginBtn").button("loading");
         jquery("#dropArea").empty();
         app.portals.destinationPortal.generateToken(username, password)
             .then(function(response) {
@@ -211,7 +451,7 @@ require([
                         NProgress.start();
                         showDestinationFolders();
                         NProgress.done();
-
+                        store();
                     });
                 } else if (response.error.code === 400) {
                     var html = jquery("#loginErrorTemplate").html();
@@ -227,6 +467,106 @@ require([
             .then(function() {
                 jquery("#destinationLoginBtn").button("reset");
             });
+    };
+
+    var loginDestinationOAuth = function() {
+        var portalInfo = new arcgisOAuthInfo({
+            appId: jquery("#portalAppId2").val(),
+            popup: true,
+            portalUrl: app.portals.destinationPortal.portalUrl
+        });
+        esriId.registerOAuthInfos([portalInfo]);
+        // if login is successful, this method will be used to store the portal info
+        var store = function() {
+            var portalItm = {
+                portalUrl: portalInfo.portalUrl,
+                appId: portalInfo.appId,
+                usePkiIwa: false,
+                useOauth: true,
+                useUserPass: false
+            };
+            storePortal(portalItm);
+        };
+        // Save esriId and esriJSAPIOAuth to restore after logging in
+        var appIdJson = esriId.toJson();
+        var esriJSAPIOAuth = sessionStorage.esriJSAPIOAuth;
+
+        // Store backup in case page is refreshed in the middle of logging in
+        sessionStorage.setItem("esriJSAPIOAuthBackup", esriJSAPIOAuth);
+        sessionStorage.setItem("esriIdBackup", JSON.stringify(appIdJson));
+
+        // Destroy credentials and remove esriJSAPIOAuth sessions storage
+        esriId.destroyCredentials();
+        sessionStorage.removeItem("esriJSAPIOAuth");
+
+        portalSelf.util.fixUrl(portalInfo.portalUrl).then(function(portalUrl) {
+            var sharingUrl = portalUrl;
+            if (sharingUrl.indexOf("arcgis.com") === -1) {
+                sharingUrl += "sharing/";
+            }
+            esriId.checkSignInStatus(sharingUrl)
+                .then(
+                    function(data) {
+                        // If there is no destination or the destination is not the same as ArcGIS Online
+                        if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== portalInfo.portalUrl)) {
+                            app.portals.destinationPortal = new portalSelf.Portal({
+                                portalUrl: portalInfo.portalUrl,
+                                username: data.userId,
+                                token: data.token
+                            });
+                        } else {
+                            app.portals.destinationPortal.username = data.userId;
+                            app.portals.destinationPortal.token = data.token;
+                        }
+
+                        // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
+                        esriId.initialize(appIdJson);
+                        sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
+
+                        app.portals.destinationPortal.self().then(function() {
+                            jquery("#copyModal").modal("hide");
+                            highlightCopyableContent();
+                            NProgress.start();
+                            showDestinationFolders();
+                            NProgress.done();
+                            store();
+                        });
+                    })
+                .otherwise(
+                    function() {
+                        esriId.getCredential(portalUrl, {
+                            oAuthPopupConfirmation: false
+                        })
+                        .then(function(data) {
+                            // If there is no destination or the destination is not the same as ArcGIS Online
+                            if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== portalInfo.portalUrl)) {
+                                app.portals.destinationPortal = new portalSelf.Portal({
+                                    portalUrl: portalInfo.portalUrl,
+                                    username: data.userId,
+                                    token: data.token
+                                });
+                            } else {
+                                app.portals.destinationPortal.username = data.userId;
+                                app.portals.destinationPortal.token = data.token;
+                            }
+
+                            // Re-hydrate identify manager and restore session storage of esriJSAPIOAuth
+                            esriId.initialize(appIdJson);
+                            sessionStorage.setItem("esriJSAPIOAuth", esriJSAPIOAuth);
+
+                            app.portals.destinationPortal.self().then(function() {
+                                jquery("#copyModal").modal("hide");
+                                highlightCopyableContent();
+                                NProgress.start();
+                                showDestinationFolders();
+                                NProgress.done();
+                                store();
+                            });
+                        });
+                    }
+                );
+        });
+
     };
 
     var logout = function() {
@@ -285,7 +625,7 @@ require([
     var inspectContent = function() {
 
         var portal;
-        var jsonBackup;
+        var jsonBackup = {};
         var jsonValid;
 
         // Copy JSON with clipboard.js.
@@ -309,14 +649,27 @@ require([
             e.clearSelection();
         });
 
-        var validateJson = function(jsonString) {
+        var validateJson = function(elId) {
+            $("#" + elId + " tr").removeClass("jsonError");
+            var jsonString = "";
+            $("#" + elId + " td:nth-child(2)").each(function(i, el) {
+                jsonString += $(el).text() + "\n";
+            });
             try {
                 var o = JSON.parse(jsonString);
                 if (o && typeof o === "object" && o !== null) {
-                    return o;
+                    return true;
                 }
-            } catch (e) {}
-
+            } catch (e) {
+                var position = new RegExp(/.*at position (\d+)/).exec(e.message);
+                if (position[1] && typeof (position[1] * 1) == "number") {
+                    position = position[1] * 1;
+                    var lineNo = jsonString.substring(0, position).split("\n").length;
+                    e.message += " (line number " + lineNo + ")";
+                    $("#" + elId + " tr:nth-child(" + lineNo + ")").addClass("jsonError");
+                }
+                return e.message;
+            }
             return false;
         };
 
@@ -347,15 +700,17 @@ require([
                 editButton.attr("data-placement", "bottom");
                 editButton.attr("title", "Discard your edits");
                 editButton.tooltip();
-                jsonBackup = codeBlock.text();
+                jsonBackup[codeBlock[0].id] = codeBlock.html();
+                window.jsonBackup = jsonBackup;
                 codeBlock.attr("contentEditable", "true");
+                $("#" + codeBlock[0].id + " td:nth-child(1)").attr("contentEditable", "false");
                 // Check for IE ('Trident') which does not fire an `input` event in anything other than input.
                 var eventType = /Trident/.test(navigator.userAgent) ? "paste cut keyup" : "input";
                 codeBlock.bind(eventType, function() {
                     // Validate the JSON as it is edited.
-                    jsonValid = validateJson(codeBlock.text());
+                    jsonValid = validateJson(codeBlock[0].id);
                     saveButton.tooltip("destroy");
-                    if (jsonValid) {
+                    if (jsonValid === true) {
                         // Valid. Allow saving.
                         saveButton.removeClass("disabled");
                         saveButton.css("color", "green");
@@ -370,7 +725,7 @@ require([
                         saveButton.attr("data-toggle", "tooltip");
                         saveButton.attr("data-placement", "bottom");
                         saveButton.attr("title",
-                            "JSON is invalid. Saving not allowed."
+                            jsonValid
                         );
                     }
 
@@ -385,10 +740,7 @@ require([
                 // Let the user back out of editing without saving.
                 // End editing and restore the original json.
                 codeBlock.attr("contentEditable", "false");
-                codeBlock.text(jsonBackup);
-                codeBlock.each(function(i, e) {
-                    hljs.highlightBlock(e);
-                });
+                codeBlock.html(jsonBackup[codeBlock[0].id]);
 
                 editButton.attr("class", "btn btn-default");
                 editButton.children("span")
@@ -466,6 +818,8 @@ require([
             var server = jquery(this).attr("data-portal");
             var id = jquery(this).attr("data-id");
             var title = jquery(this).text();
+            // title is only the first part of the text, remove everything starting at "Type: "
+            title = title.substring(0, title.search("Type:")).trim();
             var itemData;
 
             /**
@@ -544,6 +898,7 @@ require([
                              */
                             jquery("pre").each(function(i, e) {
                                 hljs.highlightBlock(e);
+                                hljs.lineNumbersBlock(e);
                             });
 
                             jquery(".btn-default[data-action='startEdits']").click(function(e) {
@@ -969,35 +1324,79 @@ require([
         var description = item[0].description;
         var thumbnailUrl = portal.portalUrl + "sharing/rest/content/items/" + id + "/info/" +
             description.thumbnail + "?token=" + portal.token;
+        var cloneDiv = jquery("#" + id + "_clone");
+        cloneDiv.addClass("btn-info");
+        cloneDiv.find(".copyInProgress").css("display", "inline-block");
+        cloneDiv.find(".itemId a").css("display", "none");
         portal.itemData(id).then(function(data) {
-            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
-                .then(function(response) {
-                    var html;
-                    if (response.success === true) {
-                        // Swizzle the portal url and id parameter to reflect the url of new item.
-                        if (description.url.indexOf("id=") > -1) {
-                            var newUrl = destinationPortal.portalUrl + description.url.substring(description.url.indexOf("apps/"));
-                            newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
-                            var folder = response.folder || "";
-                            destinationPortal.updateUrl(destinationPortal.username, folder, response.id, newUrl)
-                                .then(function() {
-                                    jquery("#" + id + "_clone").addClass("btn-success");
-                                });
-                        } else {
-                            jquery("#" + id + "_clone").addClass("btn-success");
-                        }
-                    } else if (response.error) {
-                        jquery("#" + id + "_clone").addClass("btn-danger");
+            var thenFunction = function(response) {
+                var html,
+                    oldLink,
+                    newLink;
+                if (response.success === true) {
+                    // Swizzle the portal url and id parameter to reflect the url of new item.
+                    if (description.url.indexOf("id=") > -1) {
+                        var newUrl = destinationPortal.portalUrl + description.url.substring(description.url.indexOf("apps/"));
+                        newUrl = newUrl.replace("id=" + description.id, "id=" + response.id);
+                        var folder2 = response.folder || "";
+                        destinationPortal.updateUrl(destinationPortal.username, folder2, response.id, newUrl)
+                            .then(function() {
+                                cloneDiv.removeClass("btn-info");
+                                cloneDiv.addClass("btn-success");
+                                oldLink = cloneDiv.find(".itemId a").attr("href");
+                                newLink = oldLink.replace(description.id, response.id);
+                                cloneDiv.find(".copyInProgress").css("display", "none");
+                                cloneDiv.find(".itemId a").css("display", "inline-block");
+                                cloneDiv.find(".itemId a").attr("href", newLink);
+                                cloneDiv.find(".itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
+                            });
+                    } else {
+                        cloneDiv.removeClass("btn-info");
+                        cloneDiv.addClass("btn-success");
+                        oldLink = cloneDiv.find(".itemId a").attr("href");
+                        newLink = oldLink.replace(description.id, response.id);
+                        cloneDiv.find(".copyInProgress").css("display", "none");
+                        cloneDiv.find(".itemId a").css("display", "inline-block");
+                        cloneDiv.find(".itemId a").attr("href", newLink);
+                        cloneDiv.find(".itemId a").html("<abbr title=\"" + response.id + "\">" + response.id.substring(0, 6) + "</abbr>");
+                    }
+                } else if (response.error) {
+                    if (response.error.message.search(" already exists.") >= 0) {
+                        description = Object.assign({}, description, {title: description.title + "-Copy"});
+                        cloneDiv.find(".itemTitle").text(description.title);
+                        destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                            .then(thenFunction)
+                            .catch(catchFunction);
+                    } else {
+                        cloneDiv.addClass("btn-danger");
                         html = mustache.to_html(jquery("#contentCopyErrorTemplate").html(), {
                             id: id,
                             message: response.error.message
                         });
-                        jquery("#" + id + "_clone").before(html);
+                        cloneDiv.before(html);
+                        cloneDiv.fadeOut(2000, function() {
+                            jquery(this).remove();
+                        });
+                        jquery("#" + id + "_alert").fadeOut(3000, function() {
+                            jquery(this).remove();
+                        });
                     }
-                })
-                .catch(function() {
+                }
+            };
+            var catchFunction = function() {
+                if (!jquery("#" + id + "_alert")) {
                     showCopyError(id, "Something went wrong.");
+                }
+                cloneDiv.fadeOut(2000, function() {
+                    jquery(this).remove();
                 });
+                jquery("#" + id + "_alert").fadeOut(3000, function() {
+                    jquery(this).remove();
+                });
+            };
+            destinationPortal.addItem(destinationPortal.username, folder, description, data, thumbnailUrl)
+                .then(thenFunction)
+                .catch(catchFunction);
         });
     };
 
@@ -1261,7 +1660,9 @@ require([
                     type: type
                 });
                 jquery("#" + id).before(html);
-                jquery("#" + id + "_alert").fadeOut(6000);
+                jquery("#" + id + "_alert").fadeOut(6000, function() {
+                    jquery(this).remove();
+                });
             }
         };
         /**
@@ -1308,7 +1709,7 @@ require([
         jquery("#dropArea").empty(); // Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
-        jquery(".content").attr("disabled", "disabled");
+        // jquery(".content").attr("disabled", "disabled");
     };
 
     var clearResults = function() {
@@ -1320,7 +1721,7 @@ require([
 
         var setMaxWidth = function(el) {
             // Set the max-width of folder items so they don't fill the body when dragging.
-            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : 400;
+            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : (jquery("#itemsArea").width() ? $("#itemsArea").width() - 49 : 400);
             jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
         };
 
@@ -1349,6 +1750,9 @@ require([
     var highlightSupportedContent = function() {
         // Highlight content supported by the currently selected action.
         switch (jquery("#actionDropdown li.active").attr("data-action")) {
+        case "startOver":
+            cleanUp();
+            break;
         case "copyContent":
             highlightCopyableContent();
             break;
@@ -1486,7 +1890,11 @@ require([
                 title: this.title,
                 type: this.type,
                 icon: portalSelf.itemInfo(this.type).icon,
-                portal: portalUrl
+                portal: portalUrl,
+                user: this.owner,
+                idAbbrev: this.id.substring(0, 6),
+                idLink: portalUrl + "home/item.html?id=" + this.id,
+                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
             };
             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
             jquery("#collapse_search").append(html)
@@ -1502,6 +1910,25 @@ require([
 
         cleanUp();
         clearResults();
+
+        // display the portal name and user info on the top of #itemsArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        var refreshBtn = jquery("<a class=\"pull-right\" href=\"#\">Refresh <span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span>");
+        refreshBtn.on("click", listUserItems);
+        jquery("#itemsArea").append(portalIdDom);
+        jquery("#itemsArea").append(userIdDom);
+        app.portals.sourcePortal.self().then(function(data) {
+            var userData = data.user;
+            var email = userData.email;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalName += " - <a href=\"" + app.portals.sourcePortal.portalUrl + "\" target=\"_blank\">" + app.portals.sourcePortal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
+            userIdDom.append(refreshBtn);
+        });
 
         // Capture item creation times to be displayed in the user heatmap.
         function storeActivity(activityTime) {
@@ -1529,7 +1956,10 @@ require([
                     title: this.title,
                     type: this.type,
                     icon: portalSelf.itemInfo(this.type).icon,
-                    portal: portal.portalUrl
+                    portal: portal.portalUrl,
+                    idAbbrev: this.id.substring(0, 6),
+                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                 jquery("#collapse_").append(html);
@@ -1566,7 +1996,10 @@ require([
                                 title: this.title,
                                 type: this.type,
                                 icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
+                                portal: portal.portalUrl,
+                                idAbbrev: this.id.substring(0, 6),
+                                idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                             jquery("#collapse_" + this.ownerFolder).append(html);
@@ -1589,57 +2022,92 @@ require([
         cleanUp();
         clearResults();
 
-        portal.userProfile(portal.username).then(function(user) {
+        // display the portal name and user info on the top of #itemsArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        jquery("#itemsArea").append(portalIdDom);
+        jquery("#itemsArea").append(userIdDom);
+        portal.self().then(function(data) {
+            var userData = data.user;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalName += " - <a href=\"" + portal.portalUrl + "\" target=\"_blank\">" + portal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
 
-            // Sort the groups alphabetically.
-            sortArrayAlpha(user.groups, "title");
+            portal.userProfile(portal.username).then(function(user) {
 
-            // Add the groups.
-            jquery.each(user.groups, function() {
-                var group = this;
-                var query = "group:" + this.id;
-                var folderData = {
-                    title: this.title,
-                    id: this.id,
-                    count: 0
-                };
+                // Sort the groups alphabetically.
+                sortArrayAlpha(user.groups, "title");
 
-                // Append an accordion for the folder.
-                var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
-                jquery("#itemsArea").append(html);
+                // Add the groups.
+                jquery.each(user.groups, function() {
+                    var group = this;
+                    var query = "group:" + this.id;
+                    var folderData = {
+                        title: this.title,
+                        id: this.id,
+                        count: 0
+                    };
 
-                // Get the items in the group (sorted alphabetically).
-                portal.search(query, 100, "title", "asc")
-                    .then(function(search) {
+                    // Append an accordion for the folder.
+                    var html = mustache.to_html(jquery("#folderTemplate").html(), folderData);
+                    jquery("#itemsArea").append(html);
 
-                        // Update the folder count.
-                        jquery("#collapse_" + group.id).parent().find("span.badge")[0].innerHTML = search.total;
+                    // Get the items in the group (sorted alphabetically).
+                    portal.search(query, 100, "title", "asc")
+                        .then(function(search) {
 
-                        // Append the items to the folder.
-                        jquery.each(search.results, function() {
-                            var templateData = {
-                                id: this.id,
-                                title: this.title,
-                                type: this.type,
-                                icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
-                            };
-                            var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
-                            jquery("#collapse_" + group.id).append(html);
+                            // Update the folder count.
+                            jquery("#collapse_" + group.id).parent().find("span.badge")[0].innerHTML = search.total;
+
+                            // Append the items to the folder.
+                            jquery.each(search.results, function() {
+                                var templateData = {
+                                    id: this.id,
+                                    title: this.title,
+                                    type: this.type,
+                                    icon: portalSelf.itemInfo(this.type).icon,
+                                    portal: portal.portalUrl,
+                                    user: this.owner,
+                                    idAbbrev: this.id.substring(0, 6),
+                                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
+                                };
+                                var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
+                                jquery("#collapse_" + group.id).append(html);
+                            });
                         });
-                    });
-            });
+                });
 
-            setTimeout(function() {
-                // Wait a second to let all of the items populate before highlighting them.
-                highlightSupportedContent();
-            }, 1000);
+                setTimeout(function() {
+                    // Wait a second to let all of the items populate before highlighting them.
+                    highlightSupportedContent();
+                }, 1000);
+            });
         });
     };
 
     var showDestinationFolders = function() {
         "use strict";
         var portal = app.portals.destinationPortal;
+
+        // display the portal name and user info on the top of #dropArea column
+        var portalIdDom = jquery("<h4></h4>");
+        var userIdDom = jquery("<h6></h6>");
+        jquery("#dropArea").append(portalIdDom);
+        jquery("#dropArea").append(userIdDom);
+        app.portals.destinationPortal.self().then(function(data) {
+            var userData = data.user;
+            var email = userData.email;
+            var fullName = userData.fullName;
+            var username = userData.username;
+            var portalName = data.name || data.portalName;
+            portalName += " - <a href=\"" + app.portals.destinationPortal.portalUrl + "\" target=\"_blank\">" + app.portals.destinationPortal.portalUrl + "</a>";
+            portalIdDom.html(portalName);
+            userIdDom.text("Current User: " + fullName + " (" + username + ")");
+        });
 
         portal.userContent(portal.username, "/").then(function(content) {
             var folderData;
@@ -1666,7 +2134,10 @@ require([
                     title: this.title,
                     type: this.type,
                     icon: portalSelf.itemInfo(this.type).icon,
-                    portal: portal.portalUrl
+                    portal: portal.portalUrl,
+                    idAbbrev: this.id.substring(0, 6),
+                    idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                    agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                 };
                 var html = mustache.to_html(jquery("#contentTemplate").html(), itemData);
                 jquery("#collapseDest_").append(html);
@@ -1703,7 +2174,10 @@ require([
                                 title: this.title,
                                 type: this.type,
                                 icon: portalSelf.itemInfo(this.type).icon,
-                                portal: portal.portalUrl
+                                portal: portal.portalUrl,
+                                idAbbrev: this.id.substring(0, 6),
+                                idLink: portal.portalUrl + "home/item.html?id=" + this.id,
+                                agoType: this.type + (this.typeKeywords.indexOf("Hosted Service") >= 0 ? " (Hosted)" : "")
                             };
                             var html = mustache.to_html(jquery("#contentTemplate").html(), templateData);
                             jquery("#collapseDest_" + content.currentFolder.id).append(html);
@@ -1762,6 +2236,22 @@ require([
                     function() {
                         jquery("#itemsContainer").css("display", "none");
                         jquery("#splashContainer").css("display", "block");
+
+                        // check url for portal and appid parameters, and show the login form pre-populated (if found)
+                        var portal = getUrlParameter("portal");
+                        var appid = getUrlParameter("appid");
+                        if (portal) {
+                            app.portals.sourcePortal = new portalSelf.Portal({
+                                portalUrl: portal
+                            });
+                            jquery("#portalUrl").val(portal);
+                            validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
+                            jquery("[data-action='login-portal']").trigger("click");
+                            if (appid) {
+                                jquery("#portalAppId").val(appid);
+                                jquery("#oauthTabBtn").trigger("click");
+                            }
+                        }
                     }
                 );
         });
@@ -1769,7 +2259,7 @@ require([
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
             "use strict";
-            jquery(".itemArea").height(jquery(window).height() - 50);
+            jquery(".itemArea").height(jquery(window).height() - 60);
         };
 
         resizeContentAreas();
@@ -1789,13 +2279,7 @@ require([
         disableEnterKey();
 
         // Preformat the copy login screen.
-        jquery("#destinationUrl").css({
-            display: "none"
-        });
-        jquery("#destinationWebTierAuth").css({
-            display: "none"
-        });
-        jquery("#destinationLoginForm").css({
+        jquery("#portalDestinationGroup").css({
             display: "none"
         });
 
@@ -1809,13 +2293,7 @@ require([
                 value: "https://www.arcgis.com/"
             });
             jquery("#destinationUrl").val("https://www.arcgis.com/");
-            jquery("#destinationUrl").css({
-                display: "none"
-            });
-            jquery("#destinationWebTierAuth").css({
-                display: "none"
-            });
-            jquery("#destinationLoginForm").css({
+            jquery("#portalDestinationGroup").css({
                 display: "none"
             });
             jquery("#destinationLoginBtn").css({
@@ -1833,17 +2311,12 @@ require([
 
         jquery("#destinationPortalBtn").click(function() {
             jquery("#destinationUrl").attr({
-                placeholder: "https://myportal.com/",
+                placeholder: "https://myportal.domain.com/",
                 value: ""
             });
+            jquery("#portalAppId2").val("");
             jquery("#destinationUrl").val("");
-            jquery("#destinationUrl").css({
-                display: "block"
-            });
-            jquery("#destinationWebTierAuth").css({
-                display: "block"
-            });
-            jquery("#destinationLoginForm").css({
+            jquery("#portalDestinationGroup").css({
                 display: "block"
             });
             jquery("#destinationLoginBtn").css({
@@ -1854,6 +2327,7 @@ require([
             });
             jquery("#destinationPortalBtn").addClass("btn-primary active");
             jquery("#destinationAgolBtn").removeClass("btn-primary active");
+            jquery("#userPassTab2Btn").trigger("click");
         });
 
         // Make DOM adjustments when the browser is resized.
@@ -1870,7 +2344,7 @@ require([
 
             // Give the DOM time to update before firing the validation.
             setTimeout(function() {
-                validateUrl("#portalUrl", app.portals.sourcePortal);
+                validateUrl("#portalUrl", app.portals.sourcePortal, "#portalLoginBtn");
             }, 500);
         });
 
@@ -1884,41 +2358,9 @@ require([
             // Give the DOM time to update before firing the validation.
             setTimeout(function() {
                 if (jquery("#destinationPortalBtn").hasClass("active")) {
-                    validateUrl("#destinationUrl", app.portals.destinationPortal);
+                    validateUrl("#destinationUrl", app.portals.destinationPortal, "#destinationLoginBtn");
                 }
             }, 500);
-        });
-
-        // Disable username and password if web tier auth is selected.
-        jquery("#sourceWebTierAuth").click(function(e) {
-            var checkboxState = jquery(e.currentTarget).prop("checked");
-            if (checkboxState === true) {
-                jquery("#portalUsername").attr("disabled", true);
-                jquery("#portalPassword").attr("disabled", true);
-                jquery("#portalLoginBtn").text("Proceed");
-                app.portals.sourcePortal.withCredentials = true;
-            } else {
-                jquery("#portalUsername").removeAttr("disabled");
-                jquery("#portalPassword").removeAttr("disabled");
-                jquery("#portalLoginBtn").text("Log in");
-                app.portals.sourcePortal.withCredentials = false;
-            }
-        });
-
-        // Disable username and password if web tier auth is selected.
-        jquery("#destWebTierAuthChk").click(function(e) {
-            var checkboxState = jquery(e.currentTarget).prop("checked");
-            if (checkboxState === true) {
-                jquery("#destinationUsername").attr("disabled", true);
-                jquery("#destinationPassword").attr("disabled", true);
-                jquery("#destinationLoginBtn").text("Proceed");
-                app.portals.destinationPortal.withCredentials = true;
-            } else {
-                jquery("#destinationUsername").removeAttr("disabled");
-                jquery("#destinationPassword").removeAttr("disabled");
-                jquery("#destinationLoginBtn").text("Log in");
-                app.portals.destinationPortal.withCredentials = false;
-            }
         });
 
         // Login.
@@ -1957,7 +2399,7 @@ require([
                 oAuthPopupConfirmation: false
             }).then(function(user) {
                 // If there is no destination or the destination is not the same as ArcGIS Online
-                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUr)) {
+                if (!app.portals.destinationPortal || (app.portals.destinationPortal.portalUrl !== appInfo.portalUrl)) {
                     app.portals.destinationPortal = new portalSelf.Portal({
                         portalUrl: user.server + "/",
                         username: user.userId,
@@ -2052,11 +2494,13 @@ require([
             } else if (selectedAction == "viewMyGroups") {
                 // View My Groups.
                 NProgress.start();
+                jquery("#actionDropdown li").removeClass("active");
                 listUserGroups();
                 NProgress.done();
             } else {
                 // View My Content.
                 NProgress.start();
+                jquery("#actionDropdown li").removeClass("active");
                 listUserItems();
                 NProgress.done();
             }
@@ -2119,8 +2563,12 @@ require([
 
             // Choose what to do based on the selection.
             switch (selectedAction) {
+            case "startOver":
+                cleanUp();
+                jquery("#searchText").val("");
+                listUserItems();
+                break;
             case "inspectContent":
-
                 // Enable inspecting of content.
                 cleanUp();
                 inspectContent();
@@ -2148,6 +2596,10 @@ require([
             jquery("#destinationChoice").css("display", "block");
             jquery("#destinationForm").css("display", "none");
         });
+
+
+        jquery("#currentUrl").text(window.location.origin + window.location.pathname);
+        jquery("#currentUrl2").text(window.location.origin + window.location.pathname);
 
     });
 

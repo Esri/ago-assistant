@@ -4,7 +4,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 {{#user}}
-                    {{username}}
+                    {{fullName}} ({{username}})
                 {{/user}}
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
@@ -112,10 +112,23 @@
 
 <script type="text/template" id="contentTemplate">
 
-    <button id="{{ id }}" class="btn btn-default btn-block content" disabled="disabled" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-portal="{{ portal }}">
+    <div id="{{ id }}" class="btn btn-default btn-block content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-portal="{{ portal }}">
         <span class="icon {{ icon }}"></span>
-        {{ title }}
-    </button>
+        <span class="itemTitle">{{ title }}</span>
+        <div class="itemDetailsDiv">
+            <span class="itemType">
+                <strong>Type:</strong> {{ agoType }}
+            </span>
+            <span class="itemOwner">
+                {{ #user }} | <strong>Owner:</strong> {{ user }} {{ /user }}
+            </span>
+            <span class="itemId">
+                | <strong>Item ID:</strong>
+                <a href="{{ idLink }}" target="_blank"><abbr title="{{ id }}">{{ idAbbrev }}</abbr></a>
+                <div class="copyInProgress" style="display:none;"><em>Copying</em> <img src='css/grid.svg' class='harvestCopier'/></div>
+            </span>
+        </div>
+    </div>
 
 </script>
 
