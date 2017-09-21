@@ -65,7 +65,7 @@
   },
   "config": {
     "appId": "4E1s0Mv5r0c2l6W8",
-    "portalUrl": "https://www.arcgis.com/"
+    "portalUrl": "https://www.arcgis.com"
   },
   "scripts": {
     "build": "npm run clean:build && npm run copy && npm run rollup && npm run build:html && npm run build:js && npm run clean:files",
