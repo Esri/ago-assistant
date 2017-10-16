@@ -7,7 +7,6 @@ require([
     "esri/arcgis/OAuthInfo",
     "esri/IdentityManager",
     "clipboard",
-    "highlight",
     "jquery.ui",
     "bootstrap-shim"
 ], function(
@@ -18,8 +17,7 @@ require([
     arcgisPortal,
     arcgisOAuthInfo,
     esriId,
-    Clipboard,
-    hljs
+    Clipboard
 ) {
 
     // *** ArcGIS OAuth ***
@@ -627,50 +625,47 @@ require([
         var portal;
         var jsonBackup = {};
         var jsonValid;
+        var descEditor;
+        var dataEditor;
 
         // Copy JSON with clipboard.js.
-        var clipboard = new Clipboard(".btn");
+        var clipboard = new Clipboard(".btn", {
+            text: function(trigger) {
+                // explicitly set the text to be copied, by getting the ACE editor's JSON value
+                var targetId = jquery(trigger).attr("data-clipboard-target");
+                if (targetId == "#descriptionJson") {
+                    // description was edited
+                    return descEditor.getValue();
+                } else if (targetId == "#dataJson") {
+                    // data was edited
+                    return dataEditor.getValue();
+                }
+                return "";
+            }
+        });
         clipboard.on("success", function(e) {
 
             var el = jquery(e.trigger);
-
-            el.tooltip({
-                title: "Copied!",
-                placement: "left",
-                container: "body"
-            });
-            el.tooltip("show");
-
-            // Destroy the tooltip so it doesn't keep popping up.
-            el.mouseleave(function() {
-                el.tooltip("destroy");
-            });
-
+            setTimeout(function() {
+                // update the tooltip, uses setTimeout to ensure tooltip does "show"
+                el.attr("title", "Copied!").tooltip("fixTitle").tooltip("show");
+                setTimeout(function() {
+                    // update the tooltip, uses setTimeout to allow tooltip to reset after short delay
+                    el.attr("title", "Copy JSON").tooltip("fixTitle").tooltip("hide");
+                }, 1000);
+            }, 300);
             e.clearSelection();
         });
 
         var validateJson = function(elId) {
-            $("#" + elId + " tr").removeClass("jsonError");
-            var jsonString = "";
-            $("#" + elId + " td:nth-child(2)").each(function(i, el) {
-                jsonString += $(el).text() + "\n";
-            });
-            try {
-                var o = JSON.parse(jsonString);
-                if (o && typeof o === "object" && o !== null) {
-                    return true;
-                }
-            } catch (e) {
-                var position = new RegExp(/.*at position (\d+)/).exec(e.message);
-                if (position[1] && typeof (position[1] * 1) == "number") {
-                    position = position[1] * 1;
-                    var lineNo = jsonString.substring(0, position).split("\n").length;
-                    e.message += " (line number " + lineNo + ")";
-                    $("#" + elId + " tr:nth-child(" + lineNo + ")").addClass("jsonError");
-                }
-                return e.message;
+            var editor = elId == "descriptionJson" ? descEditor : dataEditor;
+            // get any annotation messages from ACE editor (these are the errors)
+            var messages = editor.session.getAnnotations();
+            if (messages.length) {
+                // return the error message
+                return messages[0].text + " [line " + (messages[0].row + 1) + ", col " + messages[0].column + "]";
             }
-            return false;
+            return true;
         };
 
         var startEditing = function(e) {
@@ -685,53 +680,37 @@ require([
             var saveButton = jquery(e.currentTarget)
                 .parent()
                 .children("[data-action='saveEdits']");
-
+            var editor = codeBlock[0].id == "descriptionJson" ? descEditor : dataEditor;
             // Reset the save button.
             saveButton
+                .css("color", "")
                 .children("span")
                 .attr("class", "fa fa-lg fa-save");
-
-            if (codeBlock.attr("contentEditable") !== "true") {
+            if (codeBlock.attr("contenteditable") !== "true") {
                 // Start editing.
+                saveButton.attr("title", "No changes").tooltip("fixTitle");
                 editButton
                     .children("span")
                     .attr("class", "fa fa-lg fa-undo");
-                editButton.attr("data-toggle", "tooltip");
-                editButton.attr("data-placement", "bottom");
-                editButton.attr("title", "Discard your edits");
-                editButton.tooltip();
-                jsonBackup[codeBlock[0].id] = codeBlock.html();
-                window.jsonBackup = jsonBackup;
-                codeBlock.attr("contentEditable", "true");
-                $("#" + codeBlock[0].id + " td:nth-child(1)").attr("contentEditable", "false");
-                // Check for IE ('Trident') which does not fire an `input` event in anything other than input.
-                var eventType = /Trident/.test(navigator.userAgent) ? "paste cut keyup" : "input";
-                codeBlock.bind(eventType, function() {
+                editButton.tooltip("hide").attr("title", "Discard your edits").tooltip("fixTitle");
+                jsonBackup[codeBlock[0].id] = editor.getValue();
+                codeBlock.attr("contenteditable", "true");
+                editor.setReadOnly(false);
+                editor.getSession().on("changeAnnotation", function() {
                     // Validate the JSON as it is edited.
+                    if (codeBlock.attr("contenteditable") != "true") return;
                     jsonValid = validateJson(codeBlock[0].id);
-                    saveButton.tooltip("destroy");
+                    saveButton.attr("title", "").tooltip("fixTitle");
                     if (jsonValid === true) {
                         // Valid. Allow saving.
                         saveButton.removeClass("disabled");
                         saveButton.css("color", "green");
-                        saveButton.attr("data-toggle", "tooltip");
-                        saveButton.attr("data-placement", "bottom");
-                        saveButton.attr("title",
-                            "JSON is valid. Click to save."
-                        );
+                        saveButton.attr("title", "JSON is valid. Click to save.").tooltip("fixTitle");
                     } else {
                         // Invalid. Prevent saving.
                         saveButton.css("color", "red");
-                        saveButton.attr("data-toggle", "tooltip");
-                        saveButton.attr("data-placement", "bottom");
-                        saveButton.attr("title",
-                            jsonValid
-                        );
+                        saveButton.attr("title", jsonValid).tooltip("fixTitle");
                     }
-
-                    saveButton.tooltip({
-                        container: "body"
-                    });
                 });
 
                 editButton.attr("class", "btn btn-default");
@@ -739,25 +718,25 @@ require([
             } else {
                 // Let the user back out of editing without saving.
                 // End editing and restore the original json.
-                codeBlock.attr("contentEditable", "false");
-                codeBlock.html(jsonBackup[codeBlock[0].id]);
+                editor.setValue(jsonBackup[codeBlock[0].id], -1);
+                editor.setReadOnly(true);
+                codeBlock.attr("contenteditable", "false");
 
                 editButton.attr("class", "btn btn-default");
                 editButton.children("span")
                     .attr("class", "fa fa-lg fa-pencil");
-                editButton.tooltip("destroy");
+                editButton.tooltip("hide").attr("title", "Edit JSON").tooltip("fixTitle");
                 saveButton.attr("class", "btn btn-default disabled");
                 saveButton.css("color", "black");
             }
 
             // Post the edited JSON.
+            saveButton.off("click");
             saveButton.click(function() {
-                if (jsonValid) {
+                if (jsonValid === true) {
                     // JSON is valid. Allow saving.
-                    var newJson = codeBlock.text();
-                    var itemInfo = JSON.parse(
-                        jquery("#descriptionJson").text()
-                    );
+                    var newJson = editor.getValue();
+                    var itemInfo = JSON.parse(descEditor.getValue());
                     editButton.attr("class", "btn btn-default");
                     editButton.children("span")
                         .attr("class", "fa fa-lg fa-pencil");
@@ -765,7 +744,9 @@ require([
                         "btn btn-default disabled"
                     );
                     saveButton.css("color", "black");
-                    codeBlock.attr("contentEditable", "false");
+                    codeBlock.attr("contenteditable", "false");
+                    editor.setReadOnly(true);
+                    editButton.attr("title", "Edit JSON").tooltip("fixTitle");
 
                     // Post the changes.
                     saveButton.children("span")
@@ -800,7 +781,7 @@ require([
                         });
                     }
                 } else {
-                    saveButton.removeClass("active");
+                    saveButton.blur();
                 }
             });
         };
@@ -867,10 +848,10 @@ require([
                                 url: portal.portalUrl,
                                 id: id,
                                 description: JSON.stringify(
-                                    description, undefined, 2
+                                    description, undefined, 4
                                 ),
                                 data: JSON.stringify(
-                                    itemData, undefined, 2
+                                    itemData, undefined, 4
                                 )
                             };
 
@@ -892,13 +873,36 @@ require([
 
                             // Add the HTML container with the JSON.
                             jquery("#dropArea").html(html);
+                            // Initialize the button tooltips
+                            jquery("#dropArea").find("button")
+                                .attr("data-toggle", "tooltip")
+                                .attr("data-placement", "bottom")
+                                .tooltip({
+                                    container: "body",
+                                    placement: "bottom"
+                                });
                             /**
                              * Color code the JSON to make it easier
-                             * to read (uses highlight.js).
+                             * to read and edit (uses Ace editor: https://ace.c9.io/).
                              */
                             jquery("pre").each(function(i, e) {
-                                hljs.highlightBlock(e);
-                                hljs.lineNumbersBlock(e);
+                                var editor = window.ace.edit(e.id);
+                                if (e.id == "descriptionJson") {
+                                    descEditor = editor;
+                                } else if (e.id == "dataJson") {
+                                    dataEditor = editor;
+                                }
+                                editor.getSession().setUseWrapMode(true);
+                                editor.setOptions({
+                                    maxLines: Infinity,
+                                    mode: "ace/mode/json",
+                                    readOnly: true,
+                                    showPrintMargin: false,
+                                    tabSize: 4,
+                                    theme: "ace/theme/tomorrow"
+                                });
+                                editor.$blockScrolling = Infinity;
+                                editor.setReadOnly(true);
                             });
 
                             jquery(".btn-default[data-action='startEdits']").click(function(e) {
@@ -2270,7 +2274,9 @@ require([
             "use strict";
             jquery("html").bind("keypress", function(e) {
                 if (e.keyCode === 13 &&
-                    jquery(e.target).attr("contenteditable") !== "true") {
+                    jquery(e.target).attr("contenteditable") !== "true" &&
+                    jquery(e.target).parent().attr("contenteditable") !== "true"
+                ) {
                     return false;
                 }
             });

@@ -96,8 +96,12 @@ body {
 
 .edit-controls {
     position: absolute;
-    top: 20px;
-    right: 25px;
+    top: -38px;
+    right: 3px;
+}
+
+.edit-controls button span {
+    pointer-events: none;
 }
 
 .portal-signin {
