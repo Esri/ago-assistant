@@ -696,6 +696,7 @@ require([
                 jsonBackup[codeBlock[0].id] = editor.getValue();
                 codeBlock.attr("contenteditable", "true");
                 editor.setReadOnly(false);
+                editor.setTheme("ace/theme/tomorrow_night");
                 editor.getSession().on("changeAnnotation", function() {
                     // Validate the JSON as it is edited.
                     if (codeBlock.attr("contenteditable") != "true") return;
@@ -720,6 +721,7 @@ require([
                 // End editing and restore the original json.
                 editor.setValue(jsonBackup[codeBlock[0].id], -1);
                 editor.setReadOnly(true);
+                editor.setTheme("ace/theme/tomorrow");
                 codeBlock.attr("contenteditable", "false");
 
                 editButton.attr("class", "btn btn-default");
@@ -746,6 +748,7 @@ require([
                     saveButton.css("color", "black");
                     codeBlock.attr("contenteditable", "false");
                     editor.setReadOnly(true);
+                    editor.setTheme("ace/theme/tomorrow");
                     editButton.attr("title", "Edit JSON").tooltip("fixTitle");
 
                     // Post the changes.
@@ -885,7 +888,7 @@ require([
                              * Color code the JSON to make it easier
                              * to read and edit (uses Ace editor: https://ace.c9.io/).
                              */
-                            jquery("pre").each(function(i, e) {
+                            jquery(".jsonViewer").each(function(i, e) {
                                 var editor = window.ace.edit(e.id);
                                 if (e.id == "descriptionJson") {
                                     descEditor = editor;
