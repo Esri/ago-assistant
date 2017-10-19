@@ -686,7 +686,7 @@ require([
                 .css("color", "")
                 .children("span")
                 .attr("class", "fa fa-lg fa-save");
-            if (codeBlock.attr("contenteditable") !== "true") {
+            if (editor.getReadOnly()) {
                 // Start editing.
                 saveButton.attr("title", "No changes").tooltip("fixTitle");
                 editButton
@@ -694,12 +694,11 @@ require([
                     .attr("class", "fa fa-lg fa-undo");
                 editButton.tooltip("hide").attr("title", "Discard your edits").tooltip("fixTitle");
                 jsonBackup[codeBlock[0].id] = editor.getValue();
-                codeBlock.attr("contenteditable", "true");
                 editor.setReadOnly(false);
                 editor.setTheme("ace/theme/tomorrow_night");
                 editor.getSession().on("changeAnnotation", function() {
                     // Validate the JSON as it is edited.
-                    if (codeBlock.attr("contenteditable") != "true") return;
+                    if (editor.getReadOnly()) return;
                     jsonValid = validateJson(codeBlock[0].id);
                     saveButton.attr("title", "").tooltip("fixTitle");
                     if (jsonValid === true) {
@@ -722,7 +721,6 @@ require([
                 editor.setValue(jsonBackup[codeBlock[0].id], -1);
                 editor.setReadOnly(true);
                 editor.setTheme("ace/theme/tomorrow");
-                codeBlock.attr("contenteditable", "false");
 
                 editButton.attr("class", "btn btn-default");
                 editButton.children("span")
@@ -746,7 +744,6 @@ require([
                         "btn btn-default disabled"
                     );
                     saveButton.css("color", "black");
-                    codeBlock.attr("contenteditable", "false");
                     editor.setReadOnly(true);
                     editor.setTheme("ace/theme/tomorrow");
                     editButton.attr("title", "Edit JSON").tooltip("fixTitle");
@@ -2278,7 +2275,7 @@ require([
             jquery("html").bind("keypress", function(e) {
                 if (e.keyCode === 13 &&
                     jquery(e.target).attr("contenteditable") !== "true" &&
-                    jquery(e.target).parent().attr("contenteditable") !== "true"
+                    jquery(e.target).parents(".jsonViewer").length === 0
                 ) {
                     return false;
                 }
