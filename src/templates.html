@@ -162,18 +162,18 @@
                     <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (View Item Details)</a>
                 </li>
                 <li class="list-group-item">
-                    <div class="btn-group btn-group-lg edit-controls" role="group">
-                      <button type="button" class="btn btn-default" data-clipboard-target="#descriptionJson" aria-label="Left Align">
+                    <div class="btn-group btn-group edit-controls" role="group">
+                      <button type="button" class="btn btn-default" data-clipboard-target="#descriptionJson" title="Copy JSON" aria-label="Left Align">
                         <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
                       </button>
-                        <button type="button" class="btn btn-default disabled" data-action="saveEdits">
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                             <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                         </button>
-                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" title="Edit JSON" aria-label="Left Align">
                             <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <pre id="descriptionJson">{{ description }}</pre>
+                    <div id="descriptionJson" class="jsonViewer">{{ description }}</div>
                 </li>
             </ul>
             {{ #data }}
@@ -181,18 +181,18 @@
                 <ul class="list-group">
                     <li class="list-group-item">Data</li>
                     <li class="list-group-item">
-                        <div class="btn-group btn-group-lg edit-controls" role="group">
-                            <button type="button" class="btn btn-default" data-clipboard-target="#dataJson" aria-label="Left Align">
+                        <div class="btn-group btn-group edit-controls" role="group">
+                            <button type="button" class="btn btn-default" data-clipboard-target="#dataJson" title="Copy JSON" aria-label="Left Align">
                               <span class="fa fa-lg fa-clipboard" aria-hidden="true"></span>
                             </button>
                             <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
                                 <span class="fa fa-lg fa-save" aria-hidden="true"></span>
                             </button>
-                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" title="Edit JSON" aria-label="Left Align">
                                 <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
                             </button>
                         </div>
-                        <pre id="dataJson">{{ data }}</pre>
+                        <div id="dataJson" class="jsonViewer">{{ data }}</div>
                     </li>
                 </ul>
             {{ /data }}
@@ -264,7 +264,7 @@
         <div class="panel-heading">
             <h2 class="panel-title">{{ webmapTitle }}</h2>
         </div>
-        <div class="panel-body" id="itemDescription>
+        <div class="panel-body" id="itemDescription">
             <form role="form">
                 <h5>Quick Text Find/Replace</h5>
                 <form class="form-inline">
@@ -334,7 +334,7 @@
 
 <script type="text/template" id="updateSuccessTemplate">
 
-    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99"">
+    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <strong>Success!</strong>
     </div>
@@ -356,7 +356,7 @@
         <div class="panel-heading">
             <h2 class="panel-title">{{ title }}</h2>
         </div>
-        <div class="panel-body" id="itemDescription>
+        <div class="panel-body" id="itemDescription">
             <form role="form">
                 <div class="form-group">
                     <div class="form-group">
