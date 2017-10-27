@@ -290,6 +290,10 @@ require([
             NProgress.start();
             listUserItems();
             NProgress.done();
+
+            // Set the default state to view and edit JSON.
+            jquery("li[data-action='inspectContent'").addClass("active");
+            inspectContent();
         });
     };
 
