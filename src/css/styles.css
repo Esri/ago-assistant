@@ -154,6 +154,10 @@ body {
     background:url(../assets/images/appsGray16.png);
 }
 
+.dashboard {
+    background:url(../assets/images/dashboard16.png);
+}
+
 .datafiles {
     background:url(../assets/images/datafiles16.png);
 }
