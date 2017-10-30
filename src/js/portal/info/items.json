@@ -9,6 +9,10 @@
       "icon": "datafilesGray"
     },
     {
+      "type": "Dashboard",
+      "icon": "dashboard"
+    },
+    {
       "type": "Document Link",
       "icon": "datafilesGray"
     },
@@ -99,6 +103,10 @@
     {
       "type": "WMS",
       "icon": "layers"
+    },
+    {
+      "type": "Workforce Project",
+      "icon": "maps"
     }
   ]
 }
