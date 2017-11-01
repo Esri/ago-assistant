@@ -46,7 +46,7 @@ body {
     white-space: normal;
 }
 
-.list-group-item pre{
+.list-group-item pre, .jsonEditor {
     font-size: .8em;
 }
 
@@ -96,8 +96,24 @@ body {
 
 .edit-controls {
     position: absolute;
-    top: 20px;
-    right: 25px;
+    top: -38px;
+    right: 3px;
+}
+
+.edit-controls button span {
+    pointer-events: none;
+}
+
+.jsonViewer.ace-tomorrow .ace_invisible.ace_invisible_space.ace_invalid {
+    background-color: rgba(0, 0, 0, 0);
+    color: #777;
+    outline: 1px #ccc solid;
+}
+
+.jsonViewer.ace-tomorrow-night .ace_invisible.ace_invisible_space.ace_invalid {
+    background-color: rgba(0, 0, 0, 0);
+    color: #999;
+    outline: 1px #555 solid;
 }
 
 .portal-signin {
@@ -136,6 +152,10 @@ body {
 
 .appsGray {
     background:url(../assets/images/appsGray16.png);
+}
+
+.dashboard {
+    background:url(../assets/images/dashboard16.png);
 }
 
 .datafiles {
