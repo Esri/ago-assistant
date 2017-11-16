@@ -1802,6 +1802,7 @@ require([
             "Web Mapping Application",
             "Mobile Application",
             "Operation View",
+            "Dashboard",
             "Symbol Set",
             "Color Set",
             "Document Link",
