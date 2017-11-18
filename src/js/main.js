@@ -821,9 +821,7 @@ require([
         jquery(".content").click(function() {
             var server = jquery(this).attr("data-portal");
             var id = jquery(this).attr("data-id");
-            var title = jquery(this).text();
-            // title is only the first part of the text, remove everything starting at "Type: "
-            title = title.substring(0, title.search("Type:")).trim();
+            var title = jquery(this).find(".itemTitle").text();
             var itemData;
 
             /**
@@ -978,7 +976,7 @@ require([
         jquery(".content").click(function() {
             // Display the selected Web Map's operational layers.
             var id = jquery(this).attr("data-id");
-            var webmapTitle = jquery(this).text();
+            var webmapTitle = jquery(this).find(".itemTitle").text();
             jquery(".content[data-type='Web Map']").addClass("btn-info");
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
