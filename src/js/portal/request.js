@@ -30,8 +30,8 @@ function get(url, parameters, options) {
 
         xhr.open("GET", `${url}?${serialize(parameters)}`);
 
-        // Reject the request after 120 seconds.
-        xhr.timeout = 120000;
+        // Reject the request after 300 seconds.
+        xhr.timeout = 300000;
         xhr.ontimeout = function() {
             console.log("timeout");
             reject(Error(xhr));
@@ -75,8 +75,8 @@ function post(url, data, options) {
 
         xhr.open("POST", url);
 
-        // Reject the request after 120 seconds.
-        xhr.timeout = 120000;
+        // Reject the request after 300 seconds.
+        xhr.timeout = 300000;
         xhr.ontimeout = function() {
             console.log("timeout");
             reject(Error(xhr));

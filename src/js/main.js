@@ -872,10 +872,10 @@ require([
                                 url: portal.portalUrl,
                                 id: id,
                                 description: JSON.stringify(
-                                    description, undefined, 4
+                                    description, undefined, 2
                                 ),
                                 data: JSON.stringify(
-                                    itemData, undefined, 4
+                                    itemData, undefined, 2
                                 )
                             };
 
@@ -1355,6 +1355,7 @@ require([
         var cloneDiv = jquery("#" + id + "_clone");
         cloneDiv.addClass("btn-info");
         cloneDiv.find(".copyInProgress").css("display", "inline-block");
+        cloneDiv.find(".itemOwner").css("display", "none");
         cloneDiv.find(".itemId a").css("display", "none");
         portal.itemData(id).then(function(data) {
             var thenFunction = function(response) {
@@ -1431,6 +1432,8 @@ require([
     var deepCopyFeatureService = function(id, folder) {
         var portalUrl = jquery("#" + id).attr("data-portal");
         var portal;
+        var newId;
+        var copyStatus;
         /**
          * Prevent trying to pass a portal token when
          * copying content from ArcGIS Online.
@@ -1444,32 +1447,20 @@ require([
 
         var destinationPortal = app.portals.destinationPortal;
         var name = jquery("#serviceName").val();
-        var item = jquery.grep(portal.items, function(item) {
-            return (item.id === id);
-        });
-
-        var description = item[0].description;
-        var serviceDescription = item[0].serviceDescription;
-        var layers = serviceDescription.layers;
 
         // Preserve the icon and label on the cloned button.
         var clone = jquery("#" + id + "_clone");
-        clone.find(".itemTitle").text("");
-        var span = jquery("#" + id + "_clone > span");
+        clone.find(".itemTitle").text(name);
+        clone.find(".itemId").text("");
+        clone.find(".itemOwner").text("");
+        clone.removeClass("btn-info");
+        clone.addClass("btn-primary");
+        clone.find(".copyInProgress").css("display", "inline-block");
 
-        clone.text(name);
-        clone.prepend(span);
-        clone.addClass("btn-info");
-        clone.append("<div class='message'><p class='messages'></p></div>");
+        unsaved[name] = true; // used to warn user of unfinished copy before leaving page
+        var cancelMethod = function() {};
 
-        var messages = jquery("#" + id + "_clone").find(".messages");
-
-        if (!window.notifies) {
-            window.notifies = [];
-        }
-        var finishText;
-        var finishType;
-        unsaved[name] = true;
+        // Track/report progress via a bootstrap notify message
         var notify = jquery.notify({
             title: "<strong>" + name + "</strong>: ",
             message: ""
@@ -1483,253 +1474,159 @@ require([
             },
             delay: 0,
             onClosed: function() {
-                console.log("closed", notify);
-                notify = jquery.notify({
-                    title: "<strong>" + name + "</strong>: ",
-                    message: finishText
-                }, {
-                    type: finishType,
-                    allow_dismiss: true,
-                    placement: {
-                        from: "bottom",
-                        align: "right"
-                    },
-                    delay: 0
-                });
-                window.notifies.push(notify);
+                cancelMethod();
             }
         });
-        window.notifies.push(notify);
 
-        var setMessage = function(message) {
-            messages.text(message);
+        // Updates dom elements with progress reported from `copyHostedFeatureService`
+        var lastMessage = "";
+        var setMessage = function(message, timeRemaining) {
+            lastMessage = message;
+            if (timeRemaining) {
+                message += "<br>About " + timeRemaining + " remaining";
+            }
             notify.update("message", message);
         };
+
+        var countDown; // the interval used for counting down remaining time
+
+        // The method used to clean up the bootstrap-notify object once complete
         var finishMessage = function(type, message) {
-            finishText = message;
-            finishType = type;
-            setMessage(message);
-            notify.close();
+            clearInterval(countDown);
+            notify.$ele.find(".progress").hide();
+            notify.update("message", message);
+            notify.update("type", type);
+            notify.update("allow_dismiss", true);
+            if (newId) {
+                clone = jquery("[id='" + newId + "']");
+            }
+            clone.find(".copyInProgress").css("display", "none");
+            // remove page unload warning since copy is no longer in progress
             delete unsaved[name];
         };
 
-        serviceDescription.name = name;
-        var serviceDefinition = serviceDescription;
-        delete serviceDefinition.layers;
-        setMessage("Creating service");
-        messages.after("<img src='css/grid.svg' class='harvester'/>");
-        destinationPortal.createService(destinationPortal.username, folder, JSON.stringify(serviceDefinition)).then(function(service) {
-            clone.attr("data-id", service.itemId);
-            clone.attr("data-portal", destinationPortal.portalUrl);
+        // Methods for computing time remaining and converting it to text
+        var finishTime = null;
+        var timeToText = function(duration) {
+            if (isNaN(duration)) {
+                return;
+            }
+            var seconds = parseInt((duration / 1000) % 60);
+            var minutes = parseInt((duration / (1000 * 60)) % 60);
+            var hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+            var text;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            if (hours) {
+                text = hours + ":" + minutes + ":" + seconds;
+            } else if (minutes && minutes != "00") {
+                text = parseInt(minutes) + ":" + seconds;
+            } else {
+                text = parseInt(seconds) + " seconds";
+            }
+            return text;
+        };
+        countDown = setInterval(function() {
+            var timeRemaining;
+            clone = jquery("[id='" + newId + "']");
+            if (copyStatus == "warn") {
+                clone.removeClass("btn-primary btn-info");
+                clone.addClass("btn-warning");
+            } else {
+                clone.removeClass("btn-warning btn-info");
+                clone.addClass("btn-primary");
+            }
+            clone.find(".copyInProgress").css("display", "inline-block");
+            if (finishTime) {
+                timeRemaining = timeToText(finishTime * 1 - Date.now());
+                setMessage(lastMessage, timeRemaining);
+            }
+        }, 1000);
 
-            // Upgrade the service url to https to prevent mixed content errors.
-            service.serviceurl = portalSelf.util.upgradeUrl(service.serviceurl);
+        // If an error is encountered during copy, the user will be allowed to cancel
+        // the copy operation (via a 'X' on the notify element)
+        var cancelled = false;
+        portalSelf.util.copyHostedFeatureService({
+            sourcePortal: portal,
+            sourceItemId: id,
+            destinationPortal: destinationPortal,
+            destinationFolder: folder,
+            destinationName: name,
+            newTags: ["sourceId-" + id, "copied with ago-assistant"],
+            numWorkers: 5,
+            numRecordsPer: 2000,
+            onStatusChange: function(status) {
+                var timeRemaining;
+                if (cancelled) {
+                    return;
+                }
+                finishTime = status.estimatedFinish;
+                if (finishTime) {
+                    timeRemaining = timeToText(finishTime * 1 - Date.now());
+                }
+                if (status.itemId) {
+                    if (!newId) {
+                        newId = status.itemId;
+                        clone.attr("id", status.itemId);
+                        clone.attr("data-id", status.itemId);
+                        clone.find(".itemId").html(
+                            "<strong>Item ID:</strong> <a href=\"" +  destinationPortal.portalUrl + "home/item.html?id=" + status.itemId +
+                            "\" target=\"_blank\"><abbr title=\"" + status.itemId + "\">" + status.itemId.substring(0, 6) + "</abbr></a>"
+                        );
+                    }
+                    clone = jquery("[id='" + newId + "']");
+                    clone.find(".copyInProgress").css("display", "inline-block");
+                }
+                cancelMethod = function() {
+                    cancelled = true;
+                    finishMessage("warning", "Cancelled by user");
+                    status.cancelMethod();
+                }
+                setMessage(status.message, timeRemaining);
+                copyStatus = status.type;
+                if (copyStatus != "info") {
+                    notify.update("allow_dismiss", true);
+                    notify.update("type", "warning");
+                    console.warn(status.message);
+                    clone.removeClass("btn-info btn-primary");
+                    clone.addClass("btn-warning");
+                } else {
+                    clone.removeClass("btn-info");
+                    clone.addClass("btn-primary");
+                    console.info(status.message);
+                }
+                if (status.percentComplete) {
+                    notify.update("progress", status.percentComplete);
+                }
+            }
+        })
+            .then(function(status) {
+                copyStatus = status.type;
+                var type = copyStatus == "info" ? "success" : "warning";
+                cancelMethod = function() {};
+                clone = jquery("[id='" + newId + "']");
+                clone.find(".copyInProgress").css("display", "none");
+                clone.removeClass("btn-primary btn-info");
+                clone.addClass("btn-" + type);
+                finishMessage(type, status.message);
+                console.info(status.summary);
+            })
+            .catch(function(status) {
+                cancelMethod = function() {};
+                clone = jquery("[id='" + newId + "']");
+                clone.find(".copyInProgress").css("display", "none");
+                clone.removeClass("btn-primary btn-info");
+                if (cancelled) {
+                    clone.addClass("btn-warning");
+                } else {
+                    clone.removeClass("btn-warning");
+                    clone.addClass("btn-danger");
+                }
+                finishMessage("danger", status.message);
+                console.warn(status.summary);
+            });
 
-            // Update the new item's tags to make it easier to trace its origins.
-            var newTags = description.tags;
-            newTags.push("sourceId-" + description.id);
-            newTags.push("copied with ago-assistant");
-            destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({tags: newTags}));
-
-            portal.serviceLayers(description.url)
-                .then(function(definition) {
-                    var layerCount = definition.layers.length;
-                    var layerJobs = {};
-                    var layerSummary = {};
-                    // var totalRecords = 0; // Keep track of the total records for the entire service.
-                    // var totalAdded = 0; // Keep track of the total successfully added records.
-                    var reportResult = function(layerId) {
-                        // Check if the current layer's requests have all finished.
-                        // Using 'attempted' handles both successes and failures.
-                        if (layerJobs[layerId].attempted >= layerJobs[layerId].recordCount) {
-                            layerSummary[layerId] = layerJobs[layerId];
-                            delete layerJobs[layerId];
-                        }
-
-                        // Check if all layers have completed.
-                        if (Object.keys(layerJobs).length === 0) {
-                            var errors = false;
-                            console.info("Copy summary for " + name);
-                            Object.keys(layerSummary).forEach(function(k) {
-                                // Check for errors and log to the console.
-                                var layer = layerSummary[k];
-                                if (layer.added !== layer.recordCount) {
-                                    errors = true;
-                                    console.warn(k + " (" + layer.name + "): Added " + layer.added.toLocaleString([]) + "/" + layer.recordCount.toLocaleString([]) + " records");
-                                } else {
-                                    console.info(k + " (" + layer.name + "): Added " + layer.added.toLocaleString([]) + "/" + layer.recordCount.toLocaleString([]) + " records");
-                                }
-                            });
-
-                            clone.find("img").remove();
-                            clone.removeClass("btn-info");
-                            if (errors) {
-                                clone.addClass("btn-warning");
-                                finishMessage("danger", "Incomplete--check console");
-                            } else {
-                                clone.addClass("btn-success");
-                                finishMessage("success", "Copy successful");
-                            }
-                        }
-                    };
-
-                    jquery.each(definition.layers, function(i, layer) {
-
-                        // Set up an object to track the copy status for this layer.
-                        layerJobs[layer.id] = {name: layer.name, recordCount: 0, attempted: 0, added: 0};
-
-                        /*
-                        * Force in the spatial reference.
-                        * Don't know why this is necessary, but if you
-                        * don't then any geometries not in 102100 end up
-                        * on Null Island.
-                        */
-                        layer.adminLayerInfo = {
-                            geometryField: {
-                                name: "Shape",
-                                srid: 102100
-                            }
-                        };
-
-                        /*
-                         * Clear out the layer's indexes.
-                         * This prevents occasional critical  errors on the addToServiceDefinition call.
-                         * The indexes will automatically be created when the new service is published.
-                         */
-                        layer.indexes = [];
-                    });
-
-                    setMessage("Updating definition");
-                    var startTime = new Date();
-                    var getTimeRemaining = function(miliseconds) {
-                        var seconds = miliseconds / 1000;
-                        var hours = Math.floor(seconds / 3600);
-                        var minutes = Math.floor((seconds - hours * 3600) / 60);
-                        seconds = Math.floor(seconds - hours * 3600 - minutes * 60);
-                        var timeRemaining;
-                        if (hours) {
-                            if (hours < 2) {
-                                timeRemaining = hours + " hours, " + minutes + " minutes";
-                            } else {
-                                timeRemaining = Math.round(hours + minutes / 60) + " hours";
-                            }
-                        } else if (minutes) {
-                            if (minutes < 2) {
-                                timeRemaining = minutes + " minutes, " + seconds + " seconds";
-                            } else {
-                                timeRemaining = Math.round(minutes + seconds / 60) + " minutes";
-                            }
-                        } else {
-                            timeRemaining = seconds + " seconds";
-                        }
-                        return timeRemaining;
-                    };
-                    destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
-                        .then(function(response) {
-                            if (!("error" in response)) {
-                                var totalNumberOfRecords = 0;
-                                var numberOfFinishedRecords = 0;
-                                var totalNumberOfLayers = layers.length;
-                                var numberOfFinishedLayers = 0;
-                                jquery.each(layers, function(i, v) {
-                                    var layerId = v.id;
-                                    portal.layerRecordCount(description.url, layerId)
-                                        .then(function(records) {
-                                            var offset = 0;
-                                            layerJobs[layerId].recordCount = records.count;
-                                            totalNumberOfLayers -= 1;
-                                            totalNumberOfRecords += records.count;
-                                            // Set the count manually in weird cases where maxRecordCount is negative.
-                                            var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
-                                            console.log("Copying records, " + count + " at a time");
-                                            var x = 1; // eslint-disable-line no-unused-vars
-
-
-
-                                            var totalWorkers = Math.min(Math.ceil(records.count / count), 20);
-                                            var harvestRecords = function(descUrl, lyrId, startRecord, stopRecord, numRecordsPer) {
-                                                portal.harvestRecords(descUrl, lyrId, startRecord, numRecordsPer)
-                                                .then(function(serviceData) {
-                                                    if (totalNumberOfLayers) {
-                                                        setMessage("Adding features for " + layerCount + " layers");
-                                                    } else {
-                                                        var recordsProgress = numberOfFinishedRecords / totalNumberOfRecords * 100;
-                                                        var timeRemaining = getTimeRemaining((new Date() - startTime) / recordsProgress * (100 - recordsProgress));
-                                                        notify.update("progress", recordsProgress);
-                                                        setMessage(
-                                                            "Adding features (" +
-                                                                numberOfFinishedRecords.toLocaleString("en") +
-                                                                " out of " + totalNumberOfRecords.toLocaleString("en") +
-                                                            ")" +
-                                                            (numberOfFinishedRecords ? ". About " + timeRemaining + " remaining." : "")
-                                                        );
-                                                    }
-                                                    destinationPortal.addFeatures(service.serviceurl, lyrId, JSON.stringify(serviceData.features))
-                                                        .then(function(result) {
-                                                            layerJobs[lyrId].attempted += serviceData.features.length;
-                                                            layerJobs[lyrId].added += result.addResults.length;
-                                                            numberOfFinishedRecords += result.addResults.length;
-
-                                                            var recordsProgress = numberOfFinishedRecords / totalNumberOfRecords * 100;
-                                                            var timeRemaining = getTimeRemaining((new Date() - startTime) / recordsProgress * (100 - recordsProgress));
-                                                            notify.update("progress", recordsProgress);
-                                                            setMessage(
-                                                                "Adding features (" +
-                                                                    numberOfFinishedRecords.toLocaleString("en") +
-                                                                    " out of " + totalNumberOfRecords.toLocaleString("en") +
-                                                                ")" +
-                                                                (numberOfFinishedRecords ? ". About " + timeRemaining + " remaining." : "")
-                                                            );
-
-                                                            reportResult(lyrId);
-                                                            startRecord += totalWorkers * numRecordsPer;
-                                                            if (stopRecord > startRecord) {
-                                                                numRecordsPer = (stopRecord - startRecord < numRecordsPer) ? stopRecord - startRecord : numRecordsPer;
-                                                                harvestRecords(descUrl, lyrId, startRecord, stopRecord, numRecordsPer);
-                                                            } else {
-                                                                numberOfFinishedLayers++;
-                                                            }
-                                                        })
-                                                        .catch(function() { // Catch on addFeatures.
-                                                            layerJobs[lyrId].attempted += serviceData.features.length;
-                                                            reportResult(lyrId);
-                                                        });
-                                                })
-                                                .catch(function() { // Catch on harvestRecords.
-                                                    finishMessage("danger", "Incomplete—check console");
-                                                    console.info("Errors creating service " + name);
-                                                    console.info("Failed to retrieve all records.");
-                                                });
-
-                                            };
-                                            for (var i = 0; i < totalWorkers; i++) {
-                                                harvestRecords(description.url, layerId, i * count, records.count, count, totalWorkers);
-                                            }
-
-                                        });
-                                });
-                            } else {
-                                clone.find("img").remove();
-                                clone.removeClass("btn-info");
-                                clone.addClass("btn-danger");
-                                finishMessage("danger", "Failed—check console");
-                                console.info("Copy summary for " + name);
-                                console.warn(response.error.message);
-                                response.error.details.forEach(function(detail) {
-                                    console.warn(detail);
-                                });
-                            }
-                        })
-                        .catch(function() { // Catch on addToServiceDefinition.
-                            clone.find("img").remove();
-                            clone.removeClass("btn-info");
-                            clone.addClass("btn-danger");
-                            finishMessage("danger", "Failed—check console");
-                            console.info("Errors creating service " + name);
-                            console.warn("Failed to create the service.");
-                        });
-                });
-        });
+        clone.attr("data-portal", destinationPortal.portalUrl);
     };
 
     // Make the drop area accept content items.
@@ -1864,12 +1761,6 @@ require([
 
     var highlightCopyableContent = function() {
 
-        var setMaxWidth = function(el) {
-            // Set the max-width of folder items so they don't fill the body when dragging.
-            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : (jquery("#itemsArea").width() ? $("#itemsArea").width() - 49 : 400);
-            jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
-        };
-
         jquery("#itemsArea .content").each(function() {
 
             var makeDraggable = function(el) {
@@ -1886,7 +1777,6 @@ require([
             var type = jquery(this).attr("data-type");
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
-                setMaxWidth(this);
                 makeDraggable(jquery(this)); // Make the content draggable.
             }
         });
@@ -2404,7 +2294,7 @@ require([
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
             "use strict";
-            jquery(".itemArea").height(jquery(window).height() - 60);
+            jquery(".itemArea").height(jquery(window).height() - jquery(".navbar").height() - 10);
         };
 
         resizeContentAreas();

@@ -19,7 +19,7 @@ export function addItem(username, folder, description, data, thumbnailUrl) {
         }
     }
     let payload = {
-        item: description.title,
+        title: description.title,
         overwrite: false, // Prevent users from accidentally overwriting items.
         thumbnailurl: thumbnailUrl,
         token: portal.token,

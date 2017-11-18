@@ -50,6 +50,10 @@ export class Portal {
         this.addFeatures = hosting.addFeatures;
         this.cacheItem = hosting.cacheItem;
     }
+
+    getCachedItem(itemId) {
+        return this.items.find(x => x.id == itemId);
+    }
 }
 
 export function itemInfo(type) {
