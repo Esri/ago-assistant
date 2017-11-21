@@ -1717,6 +1717,7 @@ require([
         jquery("#dropArea").empty(); // Clear any old items.
         jquery(".content").unbind("click"); // Remove old event handlers.
         jquery(".content").removeClass("active btn-primary btn-info ui-draggable");
+        jquery("#searchText").val(""); // Clear the search bar.
         // jquery(".content").attr("disabled", "disabled");
     };
 
@@ -1759,7 +1760,12 @@ require([
         // Highlight content supported by the currently selected action.
         switch (jquery("#actionDropdown li.active").attr("data-action")) {
         case "startOver":
+            // Reset everything to the default view with inspect content selected.
             cleanUp();
+            listUserItems();
+            inspectContent();
+            jquery("li[data-action='startOver'").removeClass("active");
+            jquery("li[data-action='inspectContent'").addClass("active");
             break;
         case "copyContent":
             highlightCopyableContent();
