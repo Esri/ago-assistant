@@ -1526,7 +1526,9 @@ require([
         };
         countDown = setInterval(function() {
             var timeRemaining;
-            clone = jquery("[id='" + newId + "']");
+            if (newId) {
+                clone = jquery("[id='" + newId + "']");
+            }
             if (copyStatus == "warn") {
                 clone.removeClass("btn-primary btn-info");
                 clone.addClass("btn-warning");
@@ -1602,7 +1604,9 @@ require([
                 copyStatus = status.type;
                 var type = copyStatus == "info" ? "success" : "warning";
                 cancelMethod = function() {};
-                clone = jquery("[id='" + newId + "']");
+                if (newId) {
+                    clone = jquery("[id='" + newId + "']");
+                }
                 clone.find(".copyInProgress").css("display", "none");
                 clone.removeClass("btn-primary btn-info");
                 clone.addClass("btn-" + type);
@@ -1611,7 +1615,9 @@ require([
             })
             .catch(function(status) {
                 cancelMethod = function() {};
-                clone = jquery("[id='" + newId + "']");
+                if (newId) {
+                    clone = jquery("[id='" + newId + "']");
+                }
                 clone.find(".copyInProgress").css("display", "none");
                 clone.removeClass("btn-primary btn-info");
                 if (cancelled) {
