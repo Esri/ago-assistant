@@ -83,7 +83,7 @@ class CopyStatusTracker {
         // Check if the current layer's requests have all finished.
         // Using 'attempted' handles both successes and failures.
         if (this.layerJobs[layerId].attempted >= this.layerJobs[layerId].recordCount) {
-            this.queue.destinationPortal.layerRecordCount(this.queue.destinationUrl, layerId)
+            this.queue.destinationPortal.layerRecordCount(this.queue.destinationUrl, this.layerJobs[layerId].destId)
                 .then(records => {
                     this.layerJobs[layerId].added = records.count;
                     this.layerSummary[layerId] = this.layerJobs[layerId];
@@ -118,6 +118,7 @@ class AddRecordsQueue {
         this.queue = [];
         this.totalWorkers = totalWorkers;
         this.cancelled = false;
+        this.mapFieldNames = serviceData => serviceData;
     }
 
     cancel() {
@@ -161,7 +162,8 @@ class AddRecordsQueue {
                     this.doWork(workerId);
                     return;
                 }
-                this.destinationPortal.addFeatures(destinationUrl, layerId, JSON.stringify(serviceData.features))
+                this.mapFieldNames(serviceData);
+                this.destinationPortal.addFeatures(destinationUrl, this.statusTracker.layerJobs[layerId].destId, JSON.stringify(serviceData.features))
                     .then(result => {
                         queueItem.status = "finished";
                         this.statusTracker.layerJobs[layerId].attempted += serviceData.features.length;
@@ -220,11 +222,30 @@ class AddRecordsQueue {
 
     start() {
         if (this.cancelled) {return;}
-        for (let i = 0; i < this.totalWorkers; i++) {
-            this.doWork(i);
-        }
+        // Check if destination is a portal
+        this.destinationPortal.self().then(data => {
+            if (data.isPortal === true) {
+                this.mapFieldNames = serviceData => {
+                    // field names must be all lowercase for portal hosted feature services
+                    serviceData.features.forEach((feature, idx) => {
+                        Object.keys(feature.attributes).forEach(key => {
+                            const value = feature.attributes[key];
+                            let newKey = key.toLowerCase();
+                            delete serviceData.features[idx].attributes[key];
+                            if (key == serviceData.objectIdFieldName || value == null) {
+                                return;
+                            }
+                            serviceData.features[idx].attributes[newKey] = value;
+                        });
+                    });
+                    return serviceData;
+                };
+            }
+            for (let i = 0; i < this.totalWorkers; i++) {
+                this.doWork(i);
+            }
+        });
     }
-
 }
 
 const statusFunction = ({message, type}) => {
@@ -277,7 +298,7 @@ export function copyHostedFeatureService({
                     .then(definition => {
                         definition.layers.forEach(layer => {
                             // Set up an object to track the copy status for this layer.
-                            statusTracker.layerJobs[layer.id] = {name: layer.name, recordCount: 0, attempted: 0, added: 0};
+                            statusTracker.layerJobs[layer.id] = {name: layer.name, recordCount: 0, attempted: 0, added: 0, destId: null};
 
                             // Force the spatial reference to 102100.  Don't know why, but if you don't
                             // then geometries not in 102100 end up as null
@@ -302,6 +323,8 @@ export function copyHostedFeatureService({
                                         const layerId = layer.id;
                                         const url = description.url;
                                         const p = sourcePortal.layerRecordCount(url, layerId);
+                                        const destLyrId = response.layers.filter(lyr => lyr.name == layer.name)[0].id;
+                                        statusTracker.layerJobs[layerId].destId = destLyrId;
                                         recordCountPromises.push(p);
                                         p.then(records => {
                                             statusTracker.layerJobs[layerId].recordCount = records.count;
