@@ -8,7 +8,8 @@ require([
     "esri/IdentityManager",
     "clipboard",
     "jquery.ui",
-    "bootstrap-shim"
+    "bootstrap-shim",
+    "bootstrap-notify"
 ], function(
     jquery,
     portalSelf,
@@ -19,6 +20,28 @@ require([
     esriId,
     Clipboard
 ) {
+
+    var unsaved = {};
+    var isDirty = function() {
+        var dirty = false;
+        for (var key in unsaved) {
+            dirty = unsaved[key] || dirty;
+        }
+        return dirty;
+    };
+
+    window.onload = function() {
+        window.addEventListener("beforeunload", function(e) {
+            if (!isDirty()) {
+                return undefined;
+            }
+
+            var confirmationMessage = "It looks like you have been editing something. " +
+                                    "If you leave before saving, your changes will be lost.";
+            (e || window.event).returnValue = confirmationMessage; // Gecko + IE
+            return confirmationMessage; // Gecko + Webkit, Safari, Chrome etc.
+        });
+    };
 
     // *** ArcGIS OAuth ***
     var appInfo = new arcgisOAuthInfo({
@@ -802,9 +825,7 @@ require([
         jquery(".content").click(function() {
             var server = jquery(this).attr("data-portal");
             var id = jquery(this).attr("data-id");
-            var title = jquery(this).text();
-            // title is only the first part of the text, remove everything starting at "Type: "
-            title = title.substring(0, title.search("Type:")).trim();
+            var title = jquery(this).find(".itemTitle").text();
             var itemData;
 
             /**
@@ -831,12 +852,13 @@ require([
              *  item.  Looks for a period in the name to indicate
              *  that it is a file based item, e.g. roads.kmz.
              */
-            var checkData = function(id, name){
+            var checkData = function(id, name) {
                 return new Promise(function(resolve, reject) {
-                    if ((!name) || ((name) && (name.indexOf('.') < 0))) {
+                    if ((!name) || ((name) && (name.indexOf(".") < 0))) {
                         resolve(portal.itemData(id));
+                    }                    else {
+                        resolve(null);
                     }
-                    else { resolve(null); }
                 });
             };
 
@@ -852,10 +874,10 @@ require([
                                 url: portal.portalUrl,
                                 id: id,
                                 description: JSON.stringify(
-                                    description, undefined, 4
+                                    description, undefined, 2
                                 ),
                                 data: JSON.stringify(
-                                    itemData, undefined, 4
+                                    itemData, undefined, 2
                                 )
                             };
 
@@ -958,7 +980,7 @@ require([
         jquery(".content").click(function() {
             // Display the selected Web Map's operational layers.
             var id = jquery(this).attr("data-id");
-            var webmapTitle = jquery(this).text();
+            var webmapTitle = jquery(this).find(".itemTitle").text();
             jquery(".content[data-type='Web Map']").addClass("btn-info");
             jquery(".content").removeClass("active");
             jquery(".content").removeClass("btn-primary");
@@ -1335,6 +1357,7 @@ require([
         var cloneDiv = jquery("#" + id + "_clone");
         cloneDiv.addClass("btn-info");
         cloneDiv.find(".copyInProgress").css("display", "inline-block");
+        cloneDiv.find(".itemOwner").css("display", "none");
         cloneDiv.find(".itemId a").css("display", "none");
         portal.itemData(id).then(function(data) {
             var thenFunction = function(response) {
@@ -1411,6 +1434,8 @@ require([
     var deepCopyFeatureService = function(id, folder) {
         var portalUrl = jquery("#" + id).attr("data-portal");
         var portal;
+        var newId;
+        var copyStatus;
         /**
          * Prevent trying to pass a portal token when
          * copying content from ArcGIS Online.
@@ -1424,175 +1449,192 @@ require([
 
         var destinationPortal = app.portals.destinationPortal;
         var name = jquery("#serviceName").val();
-        var item = jquery.grep(portal.items, function(item) {
-            return (item.id === id);
-        });
-
-        var description = item[0].description;
-        var serviceDescription = item[0].serviceDescription;
-        var layers = serviceDescription.layers;
 
         // Preserve the icon and label on the cloned button.
         var clone = jquery("#" + id + "_clone");
-        var span = jquery("#" + id + "_clone > span");
+        clone.find(".itemTitle").text(name);
+        clone.find(".itemId").text("");
+        clone.find(".itemOwner").text("");
+        clone.removeClass("btn-info");
+        clone.addClass("btn-primary");
+        clone.find(".copyInProgress").css("display", "inline-block");
 
-        clone.text(name);
-        clone.prepend(span);
-        clone.addClass("btn-info");
-        clone.append("<div class='message'><p class='messages'></p></div>");
+        unsaved[name] = true; // used to warn user of unfinished copy before leaving page
+        var cancelMethod = function() {};
 
-        var messages = jquery("#" + id + "_clone").find(".messages");
-        serviceDescription.name = name;
-        var serviceDefinition = serviceDescription;
-        delete serviceDefinition.layers;
-        messages.text("creating service");
-        messages.after("<img src='css/grid.svg' class='harvester'/>");
-        destinationPortal.createService(destinationPortal.username, folder, JSON.stringify(serviceDefinition)).then(function(service) {
-            clone.attr("data-id", service.itemId);
-            clone.attr("data-portal", destinationPortal.portalUrl);
-
-            // Upgrade the service url to https to prevent mixed content errors.
-            service.serviceurl = portalSelf.util.upgradeUrl(service.serviceurl);
-
-            // Update the new item's tags to make it easier to trace its origins.
-            var newTags = description.tags;
-            newTags.push("sourceId-" + description.id);
-            newTags.push("copied with ago-assistant");
-            destinationPortal.updateDescription(destinationPortal.username, service.itemId, folder, JSON.stringify({tags: newTags}));
-
-            portal.serviceLayers(description.url)
-                .then(function(definition) {
-                    var layerCount = definition.layers.length;
-                    var layerJobs = {};
-                    var layerSummary = {};
-                    // var totalRecords = 0; // Keep track of the total records for the entire service.
-                    // var totalAdded = 0; // Keep track of the total successfully added records.
-                    var reportResult = function(layerId) {
-                        // Check if the current layer's requests have all finished.
-                        // Using 'attempted' handles both successes and failures.
-                        if (layerJobs[layerId].attempted >= layerJobs[layerId].recordCount) {
-                            layerSummary[layerId] = layerJobs[layerId];
-                            delete layerJobs[layerId];
-                        }
-
-                        // Check if all layers have completed.
-                        if (Object.keys(layerJobs).length === 0) {
-                            var errors = false;
-                            console.info("Copy summary for " + name);
-                            Object.keys(layerSummary).forEach(function(k) {
-                                // Check for errors and log to the console.
-                                var layer = layerSummary[k];
-                                if (layer.added !== layer.recordCount) {
-                                    errors = true;
-                                    console.warn(k + " (" + layer.name + "): Added " + layer.added.toLocaleString([]) + "/" + layer.recordCount.toLocaleString([]) + " records");
-                                } else {
-                                    console.info(k + " (" + layer.name + "): Added " + layer.added.toLocaleString([]) + "/" + layer.recordCount.toLocaleString([]) + " records");
-                                }
-                            });
-
-                            clone.find("img").remove();
-                            clone.removeClass("btn-info");
-                            if (errors) {
-                                clone.addClass("btn-warning");
-                                messages.text("Incomplete--check console");
-                            } else {
-                                clone.addClass("btn-success");
-                                messages.text("Copy OK");
-                            }
-                        }
-                    };
-
-                    jquery.each(definition.layers, function(i, layer) {
-
-                        // Set up an object to track the copy status for this layer.
-                        layerJobs[layer.id] = {name: layer.name, recordCount: 0, attempted: 0, added: 0};
-
-                        /*
-                        * Force in the spatial reference.
-                        * Don't know why this is necessary, but if you
-                        * don't then any geometries not in 102100 end up
-                        * on Null Island.
-                        */
-                        layer.adminLayerInfo = {
-                            geometryField: {
-                                name: "Shape",
-                                srid: 102100
-                            }
-                        };
-
-                        /*
-                         * Clear out the layer's indexes.
-                         * This prevents occasional critical  errors on the addToServiceDefinition call.
-                         * The indexes will automatically be created when the new service is published.
-                         */
-                        layer.indexes = [];
-                    });
-
-
-                    messages.text("updating definition");
-                    destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
-                        .then(function(response) {
-                            if (!("error" in response)) {
-                                jquery.each(layers, function(i, v) {
-                                    var layerId = v.id;
-                                    portal.layerRecordCount(description.url, layerId)
-                                        .then(function(records) {
-                                            var offset = 0;
-                                            layerJobs[layerId].recordCount = records.count;
-                                            // Set the count manually in weird cases where maxRecordCount is negative.
-                                            var count = definition.layers[layerId].maxRecordCount < 1 ? 1000 : definition.layers[layerId].maxRecordCount;
-                                            var x = 1; // eslint-disable-line no-unused-vars
-                                            while (offset <= records.count) {
-                                                x++;
-                                                messages.text("harvesting data");
-                                                portal.harvestRecords(description.url, layerId, offset, count)
-                                                    // the linter doesn't like anonymous callback functions within loops
-                                                    /* eslint-disable no-loop-func */
-                                                    .then(function(serviceData) {
-                                                        messages.text("adding features for " + layerCount + " layers");
-                                                        destinationPortal.addFeatures(service.serviceurl, layerId, JSON.stringify(serviceData.features))
-                                                            .then(function(result) {
-                                                                layerJobs[layerId].attempted += serviceData.features.length;
-                                                                layerJobs[layerId].added += result.addResults.length;
-                                                                reportResult(layerId);
-                                                            })
-                                                            .catch(function() { // Catch on addFeatures.
-                                                                layerJobs[layerId].attempted += serviceData.features.length;
-                                                                reportResult(layerId);
-                                                            });
-                                                    })
-                                                    .catch(function() { // Catch on harvestRecords.
-                                                        messages.text("Incomplete—check console");
-                                                        console.info("Errors creating service " + name);
-                                                        console.info("Failed to retrieve all records.");
-                                                    });
-                                                    /* eslint-enable no-loop-func */
-                                                offset += count;
-                                            }
-                                        });
-                                });
-                            } else {
-                                clone.find("img").remove();
-                                clone.removeClass("btn-info");
-                                clone.addClass("btn-danger");
-                                messages.text("Failed—check console");
-                                console.info("Copy summary for " + name);
-                                console.warn(response.error.message);
-                                response.error.details.forEach(function(detail) {
-                                    console.warn(detail);
-                                });
-                            }
-                        })
-                        .catch(function() { // Catch on addToServiceDefinition.
-                            clone.find("img").remove();
-                            clone.removeClass("btn-info");
-                            clone.addClass("btn-danger");
-                            messages.text("Failed—check console");
-                            console.info("Errors creating service " + name);
-                            console.warn("Failed to create the service.");
-                        });
-                });
+        // Track/report progress via a bootstrap notify message
+        var notify = jquery.notify({
+            title: "<strong>" + name + "</strong>: ",
+            message: ""
+        }, {
+            type: "info",
+            allow_dismiss: false,
+            showProgressbar: true,
+            placement: {
+                from: "bottom",
+                align: "right"
+            },
+            delay: 0,
+            onClosed: function() {
+                cancelMethod();
+            }
         });
+
+        // Updates dom elements with progress reported from `copyHostedFeatureService`
+        var lastMessage = "";
+        var setMessage = function(message, timeRemaining) {
+            lastMessage = message;
+            if (timeRemaining) {
+                message += "<br>About " + timeRemaining + " remaining";
+            }
+            notify.update("message", message);
+        };
+
+        var countDown; // the interval used for counting down remaining time
+
+        // The method used to clean up the bootstrap-notify object once complete
+        var finishMessage = function(type, message) {
+            clearInterval(countDown);
+            notify.$ele.find(".progress").hide();
+            notify.update("message", message);
+            notify.update("type", type);
+            notify.update("allow_dismiss", true);
+            if (newId) {
+                clone = jquery("[id='" + newId + "']");
+            }
+            clone.find(".copyInProgress").css("display", "none");
+            // remove page unload warning since copy is no longer in progress
+            delete unsaved[name];
+        };
+
+        // Methods for computing time remaining and converting it to text
+        var finishTime = null;
+        var timeToText = function(duration) {
+            if (isNaN(duration)) {
+                return;
+            }
+            var seconds = parseInt((duration / 1000) % 60);
+            var minutes = parseInt((duration / (1000 * 60)) % 60);
+            var hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+            var text;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            if (hours) {
+                text = hours + ":" + minutes + ":" + seconds;
+            } else if (minutes && minutes != "00") {
+                text = parseInt(minutes) + ":" + seconds;
+            } else {
+                text = parseInt(seconds) + " seconds";
+            }
+            return text;
+        };
+        countDown = setInterval(function() {
+            var timeRemaining;
+            if (newId) {
+                clone = jquery("[id='" + newId + "']");
+            }
+            if (copyStatus == "warn") {
+                clone.removeClass("btn-primary btn-info");
+                clone.addClass("btn-warning");
+            } else {
+                clone.removeClass("btn-warning btn-info");
+                clone.addClass("btn-primary");
+            }
+            clone.find(".copyInProgress").css("display", "inline-block");
+            if (finishTime) {
+                timeRemaining = timeToText(finishTime * 1 - Date.now());
+                setMessage(lastMessage, timeRemaining);
+            }
+        }, 1000);
+
+        // If an error is encountered during copy, the user will be allowed to cancel
+        // the copy operation (via a 'X' on the notify element)
+        var cancelled = false;
+        portalSelf.util.copyHostedFeatureService({
+            sourcePortal: portal,
+            sourceItemId: id,
+            destinationPortal: destinationPortal,
+            destinationFolder: folder,
+            destinationName: name,
+            newTags: ["sourceId-" + id, "copied with ago-assistant"],
+            numWorkers: 5,
+            numRecordsPer: 2000,
+            onStatusChange: function(status) {
+                var timeRemaining;
+                if (cancelled) {
+                    return;
+                }
+                finishTime = status.estimatedFinish;
+                if (finishTime) {
+                    timeRemaining = timeToText(finishTime * 1 - Date.now());
+                }
+                if (status.itemId) {
+                    if (!newId) {
+                        newId = status.itemId;
+                        clone.attr("id", status.itemId);
+                        clone.attr("data-id", status.itemId);
+                        clone.find(".itemId").html(
+                            "<strong>Item ID:</strong> <a href=\"" +  destinationPortal.portalUrl + "home/item.html?id=" + status.itemId +
+                            "\" target=\"_blank\"><abbr title=\"" + status.itemId + "\">" + status.itemId.substring(0, 6) + "</abbr></a>"
+                        );
+                    }
+                    clone = jquery("[id='" + newId + "']");
+                    clone.find(".copyInProgress").css("display", "inline-block");
+                }
+                cancelMethod = function() {
+                    cancelled = true;
+                    finishMessage("warning", "Cancelled by user");
+                    status.cancelMethod();
+                }
+                setMessage(status.message, timeRemaining);
+                copyStatus = status.type;
+                if (copyStatus != "info") {
+                    notify.update("allow_dismiss", true);
+                    notify.update("type", "warning");
+                    console.warn(status.message);
+                    clone.removeClass("btn-info btn-primary");
+                    clone.addClass("btn-warning");
+                } else {
+                    clone.removeClass("btn-info");
+                    clone.addClass("btn-primary");
+                    console.info(status.message);
+                }
+                if (status.percentComplete) {
+                    notify.update("progress", status.percentComplete);
+                }
+            }
+        })
+            .then(function(status) {
+                copyStatus = status.type;
+                var type = copyStatus == "info" ? "success" : "warning";
+                cancelMethod = function() {};
+                if (newId) {
+                    clone = jquery("[id='" + newId + "']");
+                }
+                clone.find(".copyInProgress").css("display", "none");
+                clone.removeClass("btn-primary btn-info");
+                clone.addClass("btn-" + type);
+                finishMessage(type, status.message);
+                console.info(status.summary);
+            })
+            .catch(function(status) {
+                cancelMethod = function() {};
+                if (newId) {
+                    clone = jquery("[id='" + newId + "']");
+                }
+                clone.find(".copyInProgress").css("display", "none");
+                clone.removeClass("btn-primary btn-info");
+                if (cancelled) {
+                    clone.addClass("btn-warning");
+                } else {
+                    clone.removeClass("btn-warning");
+                    clone.addClass("btn-danger");
+                }
+                finishMessage("danger", status.message);
+                console.warn(status.summary);
+            });
+
+        clone.attr("data-portal", destinationPortal.portalUrl);
     };
 
     // Make the drop area accept content items.
@@ -1728,12 +1770,6 @@ require([
 
     var highlightCopyableContent = function() {
 
-        var setMaxWidth = function(el) {
-            // Set the max-width of folder items so they don't fill the body when dragging.
-            var maxWidth = jquery("#itemsArea .in").width() ? jquery("#itemsArea .in").width() : (jquery("#itemsArea").width() ? $("#itemsArea").width() - 49 : 400);
-            jquery(el).css("max-width", maxWidth); // Set the max-width so it doesn't fill the body when dragging.
-        };
-
         jquery("#itemsArea .content").each(function() {
 
             var makeDraggable = function(el) {
@@ -1750,7 +1786,6 @@ require([
             var type = jquery(this).attr("data-type");
             if (isSupported(type)) {
                 jquery(this).addClass("btn-info"); // Highlight supported content.
-                setMaxWidth(this);
                 makeDraggable(jquery(this)); // Make the content draggable.
             }
         });
@@ -2274,7 +2309,7 @@ require([
         // Resize the content areas to fill the window.
         var resizeContentAreas = function() {
             "use strict";
-            jquery(".itemArea").height(jquery(window).height() - 60);
+            jquery(".itemArea").height(jquery(window).height() - jquery(".navbar").height() - 10);
         };
 
         resizeContentAreas();

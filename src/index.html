@@ -103,7 +103,7 @@
                 </div>
             </div>
         </div>
-        <div class="container col-md-10 center">
+        <div id="mainContainer" class="container center">
             <!-- About modal -->
             <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -446,7 +446,7 @@
                 <div id="itemsArea" class="col-xs-5 itemArea">
                     <!-- content goes here -->
                 </div>
-                <div id="dropArea" class="col-xs-7 itemArea">
+                <div id="dropArea" class="itemArea">
                     <!-- dropped items will go here -->
                 </div>
             </div>
@@ -460,6 +460,7 @@
                     {name: "jquery.ui", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-ui-1.11.4.min"},
                     {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.4.min"},
                     {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
+                    {name: "bootstrap-notify", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-notify.min"},
                     {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
                     {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
                     {name: "clipboard", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "clipboard-1.5.15.min"},

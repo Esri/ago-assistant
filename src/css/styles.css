@@ -2,6 +2,7 @@ body {
     background: #fff;
     padding-top: 50px;
     overflow-y: hidden;
+    min-width: 750px;
 }
 
 .dropArea {
@@ -25,10 +26,30 @@ body {
     border-style: dashed;
 }
 
+#mainContainer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+
 .itemArea {
     background: #fff;
     overflow-y: auto;
     padding-top: 10px;
+}
+
+#itemsContainer {
+    display: flex;
+}
+
+#itemsArea {
+    min-width: 300px;
+    max-width: 550px;
+}
+
+#dropArea {
+    flex: 1 0 0px;
+    padding: 10px 15px 0 15px;
 }
 
 .accordion-inner {
@@ -92,6 +113,10 @@ body {
     float: left;
     margin-left: 10px;
     margin-right: 10px;
+}
+
+.itemHeader .icon {
+    margin-left: 0;
 }
 
 .edit-controls {
@@ -218,7 +243,6 @@ body {
 
 .itemDetailsDiv {
     position: relative;
-    margin-left: 15px;
     font-size: 0.8em;
 }
 
@@ -246,4 +270,21 @@ body {
 
 table.hljs-ln {
     width: 100%;
+}
+
+.content-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.content-item.ui-draggable-dragging {
+    max-width: 450px;
+}
+
+.itemHeader {
+    display: flex;
+}
+
+.itemTitle {
+    flex: 1 0 20px;
 }

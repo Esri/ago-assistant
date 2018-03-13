@@ -3,9 +3,7 @@
     <ul class="nav navbar-nav navbar-right" id="sessionDropdown">
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {{#user}}
-                    {{fullName}} ({{username}})
-                {{/user}}
+                {{#user}}{{fullName}} ({{username}}){{/user}}
             <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li>
@@ -112,9 +110,12 @@
 
 <script type="text/template" id="contentTemplate">
 
-    <div id="{{ id }}" class="btn btn-default btn-block content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-portal="{{ portal }}">
-        <span class="icon {{ icon }}"></span>
-        <span class="itemTitle">{{ title }}</span>
+    <div id="{{ id }}" class="btn btn-default btn-block content content-item" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-portal="{{ portal }}">
+        <div class="itemHeader">
+            <span class="icon {{ icon }}"></span>
+            <span class="itemTitle">{{ title }}</span>
+            <div class="copyInProgress" style="display:none;"><em>Copying</em> <img src='css/grid.svg' class='harvestCopier'/></div>
+        </div>
         <div class="itemDetailsDiv">
             <span class="itemType">
                 <strong>Type:</strong> {{ agoType }}
@@ -125,7 +126,6 @@
             <span class="itemId">
                 | <strong>Item ID:</strong>
                 <a href="{{ idLink }}" target="_blank"><abbr title="{{ id }}">{{ idAbbrev }}</abbr></a>
-                <div class="copyInProgress" style="display:none;"><em>Copying</em> <img src='css/grid.svg' class='harvestCopier'/></div>
             </span>
         </div>
     </div>
