@@ -1533,8 +1533,9 @@ require([
                     destinationPortal.addToServiceDefinition(service.serviceurl, JSON.stringify(definition))
                         .then(function(response) {
                             if (!("error" in response)) {
-                                jquery.each(layers, function(i, v) {
+                                jquery.each(definition.layers, function(i, v) {
                                     var layerId = v.id;
+                                    var hasZ = v.hasZ;
                                     portal.layerRecordCount(description.url, layerId)
                                         .then(function(records) {
                                             var offset = 0;
@@ -1545,7 +1546,7 @@ require([
                                             while (offset <= records.count) {
                                                 x++;
                                                 messages.text("harvesting data");
-                                                portal.harvestRecords(description.url, layerId, offset, count)
+                                                portal.harvestRecords(description.url, layerId, offset, count, hasZ)
                                                     // the linter doesn't like anonymous callback functions within loops
                                                     /* eslint-disable no-loop-func */
                                                     .then(function(serviceData) {
