@@ -15,7 +15,9 @@ This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to prov
 
 ## Instructions
 
-1. Fork and then clone the repo -OR- [download a recent release](https://github.com/Esri/ago-assistant/releases).
+1. If you want to contribute development or make changes to your own version of AGO-Assistant, fork and then clone this repo  
+-OR-  
+If you want to simply use the app on your own network, [download a recent release](https://github.com/Esri/ago-assistant/releases).
 2. Run and try the samples.
 
 #### Building the app
