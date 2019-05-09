@@ -258,8 +258,8 @@ require([
                 // Set it to the org's custom URL instead of www.arcgis.com.
                 app.portals.sourcePortal.portalUrl = "https://" + data.urlKey + "." + data.customBaseUrl + "/";
             } else {
-                // ArcGIS Online personal account.
-                app.portals.sourcePortal.portalUrl = "https://www.arcgis.com/";
+                // ArcGIS Online personal account (including support for development instances).
+                app.portals.sourcePortal.portalUrl = "https://" + data.portalHostname + "/";
             }
 
             jquery(".nav.navbar-nav").after(html);
