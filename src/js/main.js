@@ -2072,7 +2072,7 @@ require([
                     jquery("#itemsArea").append(html);
 
                     // Get the items in the group (sorted alphabetically).
-                    portal.search(query, 100, "title", "asc")
+                    portal.search(query, 1000, "title", "asc")
                         .then(function(search) {
 
                             // Update the folder count.
