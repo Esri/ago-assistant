@@ -21,7 +21,7 @@ export function updateDescription(username, id, folder, description) {
         } else if (value instanceof Array) {
             payload[key] = value.toString();
         } else if (value instanceof Object) {
-            payload[key] = JSON.stringify(value)
+            payload[key] = JSON.stringify(value);
         }
     }
     payload.token = portal.token;
