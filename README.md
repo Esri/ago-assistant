@@ -1,13 +1,13 @@
 # ago-assistant
 
-This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to provide several different utilities for working with content in [ArcGIS Online](http://www.arcgis.com/home/) and [Portal for ArcGIS](http://www.esri.com/software/arcgis/portal-for-arcgis).
+This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to provide several different utilities for working with content in [ArcGIS Online](http://www.arcgis.com/home/) and [ArcGIS Enterprise](https://www.esri.com/en-us/arcgis/products/arcgis-enterprise/overview).
 
 [View it live](https://ago-assistant.esri.com)
 
 ![App](ago-assistant.png)
 
 ## Features
-* Copy content between Portals and Organizations
+* Copy content between ArcGIS Enterprise portals and ArcGIS Online organizations
 * View and edit the JSON of content
 * Update the URLs of services in a web map
 * Update the URL of a registered application or service
@@ -39,7 +39,7 @@ This project uses npm scripts to automate building and optimizing the applicatio
 
 ## Resources
 
-* [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/)
+* [ArcGIS REST API](https://developers.arcgis.com/rest/)
 
 ## Issues
 
@@ -50,7 +50,7 @@ Find a bug or want to request a new feature?  Please let us know by [submitting 
 Anyone and everyone is welcome to contribute.
 
 ## Licensing
-Copyright 2015 Esri
+Copyright 2015-2020 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
