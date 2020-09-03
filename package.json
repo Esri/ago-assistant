@@ -46,7 +46,7 @@
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^2.0.1",
-    "serve": "^6.0.6",
+    "serve": "^10.1.2",
     "uglify-js": "^3.0.28"
   },
   "engines": {
