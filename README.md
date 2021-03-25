@@ -1,3 +1,11 @@
+#Deprecation
+**This application has not been updated in many years and needs a full overhaul of the code to be relevant and encourage community contributions going forward. Esri has been working on a new version of some of the key functionality from Assistant in a new, React-based application that supports enhanced JSON editing, working with ArcGIS Online and ArcGIS Enterprise, and multiple user sessions. We expect to have a beta released in Q2 2021.**
+
+
+
+
+
+
 # ago-assistant
 
 This app uses the [ArcGIS REST API](http://www.arcgis.com/apidocs/rest/) to provide several different utilities for working with content in [ArcGIS Online](http://www.arcgis.com/home/) and [Portal for ArcGIS](http://www.esri.com/software/arcgis/portal-for-arcgis).
