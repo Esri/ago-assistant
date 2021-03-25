@@ -1,4 +1,4 @@
-#Deprecation  
+# Deprecation  
 
 **This application has not been updated in many years and needs a full overhaul of the code to be relevant and encourage community contributions going forward. Esri has been working on a new version of some of the key functionality from Assistant in a new, React-based application that supports enhanced JSON editing, working with ArcGIS Online and ArcGIS Enterprise, and multiple user sessions. We expect to have a beta released in Q2 2021.**
 
