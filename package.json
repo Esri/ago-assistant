@@ -1,7 +1,7 @@
 {
   "name": "ago-assistant",
-  "description": "ArcGIS Online Assistant: A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.",
-  "version": "2.9.1",
+  "description": "ArcGIS Online Assistant: A swiss army knife for your ArcGIS Online and ArcGIS Enterprise accounts.",
+  "version": "2.9.2",
   "author": "Evan Caldwell",
   "contributors": [
     {
@@ -24,6 +24,9 @@
     },
     {
       "name": "Bjorn  Svensson"
+    },
+    {
+      "name": "Philip Heede"
     }
   ],
   "dependencies": {
@@ -55,7 +58,7 @@
   "homepage": "https://github.com/Esri/ago-assistant",
   "keywords": [
     "ArcGIS Online",
-    "Portal for ArcGIS",
+    "ArcGIS Enterprise",
     "javascript"
   ],
   "license": "Apache-2.0",

@@ -79,11 +79,11 @@
         <div id="splashContainer" class="container col-md-6 center">
             <div class="jumbotron">
                 <h2>ArcGIS Online Assistant</h2>
-                <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
+                <p class="lead">A swiss army knife for your ArcGIS Online and ArcGIS Enterprise accounts.</p>
                 <div class="loginButtons">
                     <p>
-                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Log in to ArcGIS Online</button>
-                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Log in to Portal for ArcGIS</button>
+                        <button type="button" class="btn btn-lg btn-block btn-success" data-action="login-agol" disabled="disabled">Sign in to ArcGIS Online</button>
+                        <button type="button" class="btn btn-lg btn-block btn-default" data-action="login-portal" disabled="disabled" data-toggle="modal" data-target="#portalLoginModal">Sign in to ArcGIS Enterprise</button>
                     </p>
                 </div>
             </div>
@@ -91,7 +91,7 @@
             <div class="row marketing">
                 <div class="col-lg-4">
                     <h4>Inspect</h4>
-                    <p>View the underlying JSON for any item in ArcGIS Online or your Portal.</p>
+                    <p>View the underlying JSON for any item in ArcGIS Online or ArcGIS Enterprise.</p>
                 </div>
                 <div class="col-lg-4">
                     <h4>Update</h4>
@@ -114,7 +114,7 @@
                             <p class="text-muted">v<package.version> <a href="https://github.com/esri/ago-assistant/releases" target="_blank">changelog</a></p>
                         </div>
                         <div class="modal-body">
-                            <p>This app uses the <a href="https://developers.arcgis.com/rest/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>
+                            <p>This app uses the <a href="https://developers.arcgis.com/rest/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and ArcGIS Enterprise accounts and content.</p>
                             <p>The code is available on GitHub. Please contribute to this project by submitting<a href="https://github.com/esri/ago-assistant/issues" target="_blank"> ideas, feedback, issues,</a> or <a href="https://github.com/esri/ago-assistant" target="_blank">code</a>.</p>
                         </div>
                         <div class="modal-footer">
@@ -129,11 +129,11 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                            <h3 id="portalLoginLabel">Log in to your Portal</h3>
+                            <h3 id="portalLoginLabel">Sign in to ArcGIS Enterprise</h3>
                         </div>
                         <div class="modal-body">
                             <form>
-                                <p>Enter the URL to your Portal</p>
+                                <p>Enter the URL to your ArcGIS Enterprise portal</p>
                                 <div class="form-group has-feedback">
                                     <div class="input-group">
                                         <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://myportal.domain.com/webadaptor" aria-label="..." id="portalUrl">
@@ -178,7 +178,7 @@
                                                 <div class="well">
                                                 This login method makes use of a direct call to the
                                                 <a href="https://developers.arcgis.com/rest/users-groups-and-items/generate-token.htm" target="_blank">GenerateToken</a>
-                                                operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                operation of the ArcGIS REST API in your ArcGIS Enterprise portal. Username and Password are case-sensitive.
                                                 </div>
                                             </div>                                        </div>
                                         <div role="tabpanel" class="tab-pane" id="oauthTab">
@@ -196,9 +196,9 @@
                                             </div>
                                             <div class="collapse" id="collapseInfo1">
                                                 <div class="well">
-                                                In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
-                                                you will need to Register AGO-Assistant as an application in your Portal, to generate an
-                                                AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                In order to sign in to ArcGIS Enterprise using a SAML-based Identity Provider,
+                                                you will need to Register AGO-Assistant as an application in your Enterprise portal, to generate an
+                                                AppID that can identify this app as an allowed client of that Enterprise portal. To do so, follow the
                                                 instructions
                                                 <u><a href="https://enterprise.arcgis.com/en/portal/latest/administer/windows/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
                                                 using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl"></span></mark> as the
@@ -215,11 +215,11 @@
                                             </div>
                                             <div class="collapse" id="collapseInfo2">
                                                 <div class="well">
-                                                This login method is used for Portals with web-tier authentication, using username and
+                                                This login method is used for ArcGIS Enterprise portals with web-tier authentication, using username and
                                                 password or client certificate (PKI) authentication methods, often referred to as “SSO”
                                                 or Single Sign On). This authentication method is most often used for internal-facing
-                                                Portals inside of an intranet.
-                                                <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                ArcGIS Enterprise setups inside of an intranet.
+                                                <a href="https://enterprise.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -229,7 +229,7 @@
                         </div>
                         <div class="modal-footer">
                             <button id="portalCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                            <button id="portalLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                            <button id="portalLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Sign in</button>
                         </div>
                     </div>
                 </div>
@@ -249,7 +249,7 @@
                                 <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyOtherAccount">Another account</button>
                             </div>
                             <div id="destinationForm" style="display:none">
-                                <p>Log in to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
+                                <p>Sign in to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
                                 <br>
                                 <form>
                                     <p>Select the destination:</p>
@@ -258,13 +258,13 @@
                                             <div class="col-md-6">
                                                 <div class="btn-group" data-toggle="buttons-radio">
                                                     <button type="button" id="destinationAgolBtn" class="btn btn-default btn-primary active" data-toggle="button">ArcGIS Online</button>
-                                                    <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                                    <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">ArcGIS Enterprise</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div id="portalDestinationGroup" style="display:none;">
-                                        <p>Enter the URL to your Portal</p>
+                                        <p>Enter the URL to your ArcGIS Enterprise portal</p>
                                         <div class="form-group has-feedback">
                                             <div class="input-group">
                                                 <input type="text" style="padding-right:25px;" class="form-control portalUrl" placeholder="https://myportal.domain.com/" aria-label="..." id="destinationUrl">
@@ -309,7 +309,7 @@
                                                         <div class="well">
                                                         This login method makes use of a direct call to the
                                                         <a href="https://developers.arcgis.com/rest/users-groups-and-items/generate-token.htm" target="_blank">GenerateToken</a>
-                                                        operation of the ArcGIS REST API on your Portal host. Username and Password are case-sensitive.
+                                                        operation of the ArcGIS REST API in your ArcGIS Enterprise portal. Username and Password are case-sensitive.
                                                         </div>
                                                     </div>
                                                 </div>
@@ -328,11 +328,11 @@
                                                     </div>
                                                     <div class="collapse" id="collapseInfo4">
                                                         <div class="well">
-                                                        In order to log in to a Portal for ArcGIS instance using a SAML-based Identity Provider,
-                                                        you will need to Register AGO-Assistant as an application in your Portal, to generate an
-                                                        AppID that can identify this app as an allowed client of the Portal. To do so, follow the
+                                                        In order to sign in to ArcGIS Enterprise using a SAML-based Identity Provider,
+                                                        you will need to Register AGO-Assistant as an application in your Enterprise portal, to generate an
+                                                        AppID that can identify this app as an allowed client of the Enterprise portal. To do so, follow the
                                                         instructions
-                                                        <u><a href="http://server.arcgis.com/en/portal/latest/administer/linux/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
+                                                        <u><a href="https://enterprise.arcgis.com/en/portal/latest/use/add-items.htm#ESRI_SECTION1_0D1B620254F745AE84F394289F8AF44B" target="_blank">here</a></u>,
                                                         using <strong>Application</strong> as the <strong><em>Type of App</em></strong> and <mark><span id="currentUrl2"></span></mark> as the
                                                         Redirect URI.
                                                         </div>
@@ -347,11 +347,11 @@
                                                     </div>
                                                     <div class="collapse" id="collapseInfo5">
                                                         <div class="well">
-                                                        This login method is used for Portals with web-tier authentication, using username and
+                                                        This login method is used for Enterprise portals with web-tier authentication, using username and
                                                         password or client certificate (PKI) authentication methods, often referred to as “SSO”
                                                         or Single Sign On). This authentication method is most often used for internal-facing
-                                                        Portals inside of an intranet.
-                                                        <a href="http://server.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
+                                                        ArcGIS Enterprise setup running inside of an intranet.
+                                                        <a href="https://enterprise.arcgis.com/en/portal/latest/administer/windows/use-integrated-windows-authentication-with-your-portal.htm" target="_blank">More info</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -363,8 +363,8 @@
                         </div>
                         <div class="modal-footer">
                             <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in..." style="display: none">Log in</button>
-                            <button id="destinationEnterpriseBtn" class="btn btn-primary" role="button" data-action="logindestination">Log in</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in..." style="display: none">Sign in</button>
+                            <button id="destinationEnterpriseBtn" class="btn btn-primary" role="button" data-action="logindestination">Sign in</button>
                         </div>
                     </div>
                 </div>
