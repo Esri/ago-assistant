@@ -2211,6 +2211,18 @@ require([
 
     // Do stuff when the DOM is ready.
     jquery(document).ready(function() {
+        jquery("#deprecationAcknowledgement").prop("checked", false).on("change", function() {
+            jquery("#deprecationContinue").prop("disabled", !this.checked);
+        });
+        jquery("#deprecationContinue").prop("disabled", true).on("click", function() {
+            if (jquery("#deprecationAcknowledgement").prop("checked")) {
+                jquery("#deprecationModal").modal("hide");
+            }
+        });
+        jquery("#deprecationModal").modal({backdrop: "static", keyboard: false});
+    });
+
+    jquery(document).one("hidden.bs.modal", "#deprecationModal", function() {
 
         // Enable the login buttons.
         // Doing it here ensures all required libraries have loaded.
