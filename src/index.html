@@ -104,6 +104,24 @@
             </div>
         </div>
         <div class="container col-md-10 center">
+            <div id="deprecationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deprecationModalLabel" aria-describedby="deprecationMessage" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="deprecationModalLabel">This application is deprecated.</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p id="deprecationMessage">AGO-Assistant in its current form has now been deprecated. This app will be removed and no longer accessible as of January 1, 2027. You can continue to use this app until that date.</p>
+                            <div class="checkbox">
+                                <label><input type="checkbox" id="deprecationAcknowledgement"> I understand</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="deprecationContinue" disabled>Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- About modal -->
             <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
